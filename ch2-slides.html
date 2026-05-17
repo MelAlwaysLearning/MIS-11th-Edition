@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 2: Organizational Strategy — Class Slides | MIS Journey</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0F0E17; }
+
+    #progress-bar { position:fixed;top:0;left:0;right:0;height:5px;background:rgba(255,255,255,0.08);z-index:200; }
+    #progress-fill { height:100%;background:linear-gradient(90deg,#D97706,#EF4444,#7C3AED);transition:width 0.4s ease; }
+    #slide-counter { position:fixed;top:14px;right:18px;color:rgba(255,255,255,0.35);font-size:0.8rem;font-weight:700;letter-spacing:0.1em;z-index:200; }
+
+    #slide-nav { position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;z-index:200; }
+    #slide-nav button { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:white;padding:9px 22px;border-radius:50px;cursor:pointer;font-size:0.88rem;font-weight:700;transition:background 0.2s,transform 0.15s;backdrop-filter:blur(8px); }
+    #slide-nav button:hover:not(:disabled) { background:rgba(255,255,255,0.18);transform:translateY(-2px); }
+    #slide-nav button:disabled { opacity:0.25;cursor:default;transform:none; }
+    #kbd-hint { position:fixed;bottom:68px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.2);font-size:0.72rem;letter-spacing:0.08em;white-space:nowrap;z-index:200; }
+
+    #scoreboard { position:fixed;top:44px;right:16px;background:rgba(10,10,20,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 18px;z-index:199;min-width:190px;backdrop-filter:blur(12px);display:none; }
+    #scoreboard.visible { display:block; }
+    .sb-title { font-size:0.68rem;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.4);margin-bottom:10px; }
+    .sb-row { display:flex;align-items:center;justify-content:space-between;margin:6px 0;gap:8px; }
+    .sb-name { font-size:0.88rem;color:white;font-weight:600;flex:1; }
+    .sb-score { font-size:1.1rem;font-weight:900;color:#FCD34D;min-width:24px;text-align:center; }
+    .sb-btns { display:flex;gap:4px; }
+    .sb-btns button { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:0.9rem;transition:background 0.15s; }
+    .sb-btns button:hover { background:rgba(255,255,255,0.2); }
+
+    .slide { position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 72px 100px;opacity:0;pointer-events:none;transition:opacity 0.35s ease;text-align:center;overflow:hidden; }
+    .slide.active { opacity:1;pointer-events:all; }
+
+    .slide-hook    { background:linear-gradient(150deg,#431407 0%,#1C0A00 50%,#0F0E17 100%); }
+    .slide-learn   { background:linear-gradient(150deg,#0A1628 0%,#0F172A 100%); }
+    .slide-activity{ background:linear-gradient(150deg,#450A0A 0%,#1A0000 100%); }
+    .slide-discuss { background:linear-gradient(150deg,#022C22 0%,#0F1A14 100%); }
+    .slide-wrap    { background:linear-gradient(150deg,#291008 0%,#15080A 100%); }
+    .slide-game    { background:linear-gradient(150deg,#1E1B4B 0%,#0F0E17 100%); }
+
+    .slide-badge { position:absolute;top:22px;left:24px;font-size:0.7rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;padding:4px 13px;border-radius:20px;opacity:0.9; }
+    .badge-hook     { background:#D97706;color:white; }
+    .badge-learn    { background:#1D4ED8;color:white; }
+    .badge-activity { background:#DC2626;color:white; }
+    .badge-discuss  { background:#059669;color:white; }
+    .badge-wrap     { background:#D97706;color:white; }
+    .badge-game     { background:#6D28D9;color:white; }
+
+    .back-link { position:absolute;top:22px;right:140px;color:rgba(255,255,255,0.25);font-size:0.75rem;text-decoration:none;transition:color 0.2s; }
+    .back-link:hover { color:rgba(255,255,255,0.6); }
+
+    .slide h1 { font-size:clamp(1.9rem,3.8vw,3.2rem);font-weight:900;color:white;line-height:1.15;margin-bottom:1.2rem; }
+    .slide h2 { font-size:clamp(1.4rem,2.6vw,2.1rem);font-weight:800;color:white;line-height:1.2;margin-bottom:0.9rem; }
+    .slide p  { font-size:clamp(0.95rem,1.4vw,1.2rem);color:rgba(255,255,255,0.72);line-height:1.65; }
+    .accent { color:#FCD34D; }
+    .amber  { color:#FBBF24; }
+    .green  { color:#34D399; }
+    .coral  { color:#F87171; }
+
+    .activity-box { background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:16px;padding:1.4rem 2rem;font-size:clamp(0.95rem,1.35vw,1.15rem);color:white;line-height:1.75;max-width:720px;margin-top:1rem; }
+    .activity-box strong { color:#FCD34D; }
+
+    .timer-btn { display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,0.15);border:2px solid #F59E0B;color:#FCD34D;padding:10px 22px;border-radius:50px;font-size:1.05rem;font-weight:800;cursor:pointer;transition:all 0.2s;margin-top:1.1rem;letter-spacing:0.04em; }
+    .timer-btn:hover { background:rgba(245,158,11,0.28); }
+    .timer-btn.running { animation:timer-pulse 1.2s infinite; }
+    @keyframes timer-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4);}50%{box-shadow:0 0 0 10px rgba(245,158,11,0);} }
+
+    .stats-row { display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin-top:1.6rem; }
+    .stat-box { text-align:center;min-width:110px; }
+    .big-stat { font-size:clamp(2.5rem,6vw,5rem);font-weight:900;color:#FCD34D;line-height:1;text-shadow:0 0 30px rgba(252,211,77,0.35); }
+    .stat-label { font-size:clamp(0.78rem,1.1vw,0.95rem);color:rgba(255,255,255,0.5);margin-top:0.4rem;line-height:1.4; }
+
+    /* Forces grid */
+    .forces-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:1.2rem;width:100%;max-width:900px; }
+    .force-card { background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.12);border-radius:12px;padding:1rem 0.7rem;cursor:pointer;transition:all 0.3s;user-select:none; }
+    .force-card:hover,.force-card.revealed { background:rgba(217,119,6,0.3);border-color:#D97706;transform:translateY(-4px); }
+    .force-card:focus { outline:3px solid #D97706;outline-offset:2px; }
+    .force-icon { font-size:1.8rem;display:block;margin-bottom:7px; }
+    .force-name { font-size:0.8rem;font-weight:800;color:white;text-transform:uppercase;letter-spacing:0.06em; }
+    .force-ex { display:none;font-size:0.76rem;color:rgba(255,255,255,0.55);margin-top:6px;line-height:1.35; }
+    .force-card.revealed .force-ex { display:block;color:#FBBF24; }
+
+    /* Value chain */
+    .vchain { display:flex;flex-direction:column;gap:8px;margin-top:1rem;width:100%;max-width:780px; }
+    .vc-section-label { font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.4);text-align:left;margin-bottom:2px; }
+    .vc-row { display:flex;gap:6px; }
+    .vc-cell { flex:1;border-radius:8px;padding:10px 8px;cursor:pointer;transition:all 0.3s;font-size:0.78rem;font-weight:700;color:white;text-align:center; }
+    .vc-cell:hover,.vc-cell.revealed { filter:brightness(1.3);transform:translateY(-3px); }
+    .vc-cell:focus { outline:3px solid white;outline-offset:2px; }
+    .vc-primary { background:#1D4ED8; }
+    .vc-support { background:#7C3AED; }
+    .vc-ex { display:none;font-size:0.7rem;opacity:0.8;margin-top:4px;font-weight:400; }
+    .vc-cell.revealed .vc-ex { display:block; }
+
+    /* Strategy cards */
+    .strategy-row { display:flex;gap:16px;margin-top:1.2rem;max-width:820px;width:100%; }
+    .strategy-card { flex:1;border-radius:14px;padding:1.2rem 1rem;cursor:pointer;transition:all 0.3s;border:2px solid transparent; }
+    .strategy-card:hover { transform:translateY(-4px); }
+    .strategy-card:focus { outline:3px solid white;outline-offset:2px; }
+    .sc-cost  { background:rgba(5,150,105,0.2);border-color:#059669; }
+    .sc-diff  { background:rgba(124,58,237,0.2);border-color:#7C3AED; }
+    .sc-focus { background:rgba(217,119,6,0.2);border-color:#D97706; }
+    .sc-title { font-size:1rem;font-weight:800;color:white;margin-bottom:6px; }
+    .sc-desc  { font-size:0.8rem;color:rgba(255,255,255,0.65);line-height:1.5; }
+    .sc-ex    { display:none;font-size:0.78rem;margin-top:8px;font-weight:700; }
+    .sc-cost .sc-ex  { color:#34D399; }
+    .sc-diff .sc-ex  { color:#A78BFA; }
+    .sc-focus .sc-ex { color:#FBBF24; }
+    .strategy-card.revealed .sc-ex { display:block; }
+
+    .sc-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:800px;margin-top:0.9rem;text-align:left; }
+    .sc-card { background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.12);border-radius:12px;padding:1rem 1.1rem;cursor:pointer;transition:all 0.3s; }
+    .sc-card:hover { background:rgba(255,255,255,0.1); }
+    .sc-card:focus { outline:3px solid #EF4444;outline-offset:2px; }
+    .sc-card.revealed { border-color:#22C55E;background:rgba(34,197,94,0.12); }
+    .sc-q { font-size:0.88rem;color:rgba(255,255,255,0.82);line-height:1.55; }
+    .sc-a { display:none;font-size:0.84rem;color:#4ADE80;font-weight:800;margin-top:8px; }
+    .sc-card.revealed .sc-a { display:block; }
+
+    .callout { background:rgba(217,119,6,0.18);border-left:4px solid #D97706;border-radius:0 10px 10px 0;padding:1rem 1.4rem;text-align:left;max-width:680px;font-size:clamp(0.95rem,1.3vw,1.1rem);color:white;line-height:1.65;margin-top:1rem; }
+
+    .compare { display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:720px;margin-top:1rem; }
+    .compare-col { background:rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;text-align:left; }
+    .compare-col h3 { font-size:1rem;color:white;margin-bottom:0.7rem;font-weight:800; }
+    .compare-col li { font-size:0.88rem;color:rgba(255,255,255,0.7);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.06);line-height:1.5;list-style:none; }
+    .compare-col li::before { content:"→ ";color:#D97706;font-weight:800; }
+
+    .reveal-list { text-align:left;max-width:700px;width:100%;list-style:none; }
+    .reveal-list li { padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.2);font-size:clamp(0.92rem,1.3vw,1.1rem);transition:color 0.5s,transform 0.35s;display:flex;align-items:flex-start;gap:12px;line-height:1.55; }
+    .reveal-list li.shown { color:white;transform:translateX(5px); }
+    .bullet { color:#D97706;font-weight:900;flex-shrink:0;margin-top:1px; }
+    .reveal-hint { font-size:0.8rem;color:rgba(255,255,255,0.25);margin-top:0.8rem; }
+
+    .game-card { display:inline-block;text-decoration:none;background:linear-gradient(135deg,#7C3AED,#4F46E5);border-radius:20px;padding:1.8rem 3.2rem;margin-top:1.4rem;box-shadow:0 8px 32px rgba(124,58,237,0.45);transition:all 0.3s; }
+    .game-card:hover { transform:translateY(-5px);box-shadow:0 14px 44px rgba(124,58,237,0.65); }
+    .game-card:focus { outline:3px solid #FCD34D;outline-offset:4px; }
+    .gc-emoji { font-size:2.8rem;display:block;margin-bottom:0.5rem; }
+    .gc-label { font-size:1.15rem;font-weight:800;color:white; }
+    .gc-sub   { font-size:0.88rem;color:rgba(255,255,255,0.65);margin-top:4px; }
+
+    .img-prompt { position:absolute;bottom:76px;left:18px;background:rgba(0,0,0,0.55);border:1px solid rgba(252,211,77,0.25);border-radius:8px;padding:6px 12px;font-size:0.68rem;color:rgba(252,211,77,0.55);max-width:300px;line-height:1.5;backdrop-filter:blur(6px); }
+    .img-prompt strong { color:#FCD34D; }
+
+    /* Dead company tombstones */
+    .tombstone-row { display:flex;gap:20px;justify-content:center;margin-top:1.2rem;flex-wrap:wrap; }
+    .tombstone { background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:12px;padding:1rem 1.4rem;text-align:center;min-width:160px;cursor:pointer;transition:all 0.3s; }
+    .tombstone:hover,.tombstone.revealed { border-color:#EF4444;background:rgba(239,68,68,0.15); }
+    .tombstone:focus { outline:3px solid #EF4444;outline-offset:2px; }
+    .ts-emoji { font-size:2rem;display:block;margin-bottom:4px; }
+    .ts-name  { font-weight:800;color:white;font-size:0.95rem; }
+    .ts-year  { font-size:0.78rem;color:rgba(255,255,255,0.4);margin-top:2px; }
+    .ts-why   { display:none;font-size:0.78rem;color:#F87171;margin-top:8px;line-height:1.45; }
+    .tombstone.revealed .ts-why { display:block; }
+
+    @media print {
+      html,body { overflow:visible;height:auto; }
+      #slide-nav,#scoreboard,#kbd-hint,#progress-bar,#slide-counter,.back-link,.img-prompt { display:none !important; }
+      .slide { position:relative !important;opacity:1 !important;pointer-events:all !important;page-break-after:always;height:100vh;background:white !important;padding:40px 60px 60px; }
+      .slide h1,.slide h2,.slide p,.slide li { color:black !important; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#s1" style="position:absolute;top:-100%;left:1rem;background:#D97706;color:white;padding:6px 14px;border-radius:0 0 8px 8px;font-weight:700;text-decoration:none;z-index:9999;" onfocus="this.style.top='0'" onblur="this.style.top='-100%'">Skip to slide content</a>
+
+  <div id="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="12" aria-valuenow="1" aria-label="Presentation progress">
+    <div id="progress-fill" style="width:8.33%"></div>
+  </div>
+  <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / 12</div>
+  <a href="index.html" class="back-link" aria-label="Back to MIS Journey app">← App</a>
+
+  <aside id="scoreboard" aria-label="Team scoreboard" aria-hidden="true">
+    <div class="sb-title">🏆 Team Scores</div>
+    <div class="sb-row"><span class="sb-name">🔴 Team Red</span><span class="sb-score" id="sc-a">0</span><div class="sb-btns"><button onclick="adj('a',1)" aria-label="Add point Team Red">+</button><button onclick="adj('a',-1)" aria-label="Remove point Team Red">−</button></div></div>
+    <div class="sb-row"><span class="sb-name">🔵 Team Blue</span><span class="sb-score" id="sc-b">0</span><div class="sb-btns"><button onclick="adj('b',1)" aria-label="Add point Team Blue">+</button><button onclick="adj('b',-1)" aria-label="Remove point Team Blue">−</button></div></div>
+    <div class="sb-row"><span class="sb-name">🟢 Team Green</span><span class="sb-score" id="sc-c">0</span><div class="sb-btns"><button onclick="adj('c',1)" aria-label="Add point Team Green">+</button><button onclick="adj('c',-1)" aria-label="Remove point Team Green">−</button></div></div>
+  </aside>
+
+  <nav id="slide-nav" aria-label="Slide navigation">
+    <button id="prev-btn" onclick="go(-1)" disabled aria-label="Previous slide">◀ Prev</button>
+    <button onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+    <button onclick="window.print()" aria-label="Print slides">🖨️</button>
+    <button id="next-btn" onclick="go(1)" aria-label="Next slide">Next ▶</button>
+  </nav>
+  <div id="kbd-hint" aria-hidden="true">← → Arrow Keys · Space to Advance</div>
+
+  <!-- SLIDE 1 — HOOK -->
+  <section class="slide slide-hook active" id="s1" role="region" aria-label="Slide 1 of 12: Hook">
+    <span class="slide-badge badge-hook">🎣 Hook</span>
+    <h1>Three Billion-Dollar Companies<br><span class="accent">That Died Because of Bad IS Strategy</span></h1>
+    <div class="tombstone-row">
+      <div class="tombstone" onclick="toggleTS(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" aria-label="Blockbuster - click to reveal why they failed">
+        <span class="ts-emoji" aria-hidden="true">📼</span>
+        <div class="ts-name">Blockbuster</div>
+        <div class="ts-year">Gone: 2010</div>
+        <div class="ts-why">Refused to build an online streaming IS. Netflix offered to partner for $50M. They said no. Netflix is now worth $280 billion.</div>
+      </div>
+      <div class="tombstone" onclick="toggleTS(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" aria-label="Kodak - click to reveal why they failed">
+        <span class="ts-emoji" aria-hidden="true">📷</span>
+        <div class="ts-name">Kodak</div>
+        <div class="ts-year">Bankrupt: 2012</div>
+        <div class="ts-why">Invented digital photography in 1975 but refused to pivot their IS strategy away from film. Sat on the technology for 10 years. Fatal mistake.</div>
+      </div>
+      <div class="tombstone" onclick="toggleTS(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" aria-label="Borders - click to reveal why they failed">
+        <span class="ts-emoji" aria-hidden="true">📚</span>
+        <div class="ts-name">Borders Books</div>
+        <div class="ts-year">Closed: 2011</div>
+        <div class="ts-why">Outsourced their entire e-commerce operation to Amazon. Literally handed their biggest competitor control of their digital IS strategy.</div>
+      </div>
+    </div>
+    <p style="margin-top:1.2rem;font-size:0.9rem;color:rgba(255,255,255,0.4);">Click each tombstone to see why they failed ↑ · Then discuss: what company in YOUR world is about to become a tombstone?</p>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Three gravestones in a dark dramatic landscape, each engraved with a famous failed company name (Blockbuster, Kodak, Borders), digital technology symbols crumbling around them, cinematic lighting, cautionary mood"</div>
+  </section>
+
+  <!-- SLIDE 2 — WHAT IS COMPETITIVE ADVANTAGE? -->
+  <section class="slide slide-learn" id="s2" role="region" aria-label="Slide 2 of 12: Competitive Advantage">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h1>What Is <span class="accent">Competitive Advantage</span>?</h1>
+    <div class="callout">
+      "Outperforming industry rivals in a meaningful, <strong>sustainable</strong> way — not just once, but consistently over time."
+    </div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="big-stat">Amazon</div>
+        <div class="stat-label">IS-driven logistics gave them<br>same-day delivery no one could match</div>
+      </div>
+      <div class="stat-box">
+        <div class="big-stat">Uber</div>
+        <div class="stat-label">IS disrupted an entire industry<br>with no cars of their own</div>
+      </div>
+      <div class="stat-box">
+        <div class="big-stat">Airbnb</div>
+        <div class="stat-label">IS built the world's largest hotel<br>with zero hotels</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:1rem;border-left-color:#22C55E;background:rgba(34,197,94,0.1);">
+      💡 In every case, the <strong style="color:white;">IS strategy</strong> — not the product — was the competitive advantage.
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Chess board with one golden king piece standing tall while other pieces are knocked over, dramatic overhead lighting, dark background, strategy and victory theme, photorealistic"</div>
+  </section>
+
+  <!-- SLIDE 3 — WHAT IS A BUSINESS PROCESS? -->
+  <section class="slide slide-learn" id="s3" role="region" aria-label="Slide 3 of 12: Business Process">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>First: What Is a <span class="amber">Business Process</span>?</h2>
+    <div class="callout">
+      "An <strong>ongoing collection of related activities</strong> that produces a specific outcome or value for the organization."
+    </div>
+    <p style="margin-top:1rem;">You experience business processes every day. Here's one you know well:</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1.2rem;max-width:800px;">
+      <div style="background:rgba(217,119,6,0.2);border:2px solid #D97706;border-radius:10px;padding:10px 16px;font-size:0.85rem;color:white;font-weight:700;">① You open DoorDash</div>
+      <div style="color:rgba(255,255,255,0.3);align-self:center;font-size:1.2rem;">→</div>
+      <div style="background:rgba(217,119,6,0.2);border:2px solid #D97706;border-radius:10px;padding:10px 16px;font-size:0.85rem;color:white;font-weight:700;">② Browse &amp; order</div>
+      <div style="color:rgba(255,255,255,0.3);align-self:center;font-size:1.2rem;">→</div>
+      <div style="background:rgba(217,119,6,0.2);border:2px solid #D97706;border-radius:10px;padding:10px 16px;font-size:0.85rem;color:white;font-weight:700;">③ Payment processed</div>
+      <div style="color:rgba(255,255,255,0.3);align-self:center;font-size:1.2rem;">→</div>
+      <div style="background:rgba(217,119,6,0.2);border:2px solid #D97706;border-radius:10px;padding:10px 16px;font-size:0.85rem;color:white;font-weight:700;">④ Restaurant notified</div>
+      <div style="color:rgba(255,255,255,0.3);align-self:center;font-size:1.2rem;">→</div>
+      <div style="background:rgba(217,119,6,0.2);border:2px solid #D97706;border-radius:10px;padding:10px 16px;font-size:0.85rem;color:white;font-weight:700;">⑤ Driver routed</div>
+      <div style="color:rgba(255,255,255,0.3);align-self:center;font-size:1.2rem;">→</div>
+      <div style="background:rgba(34,197,94,0.2);border:2px solid #22C55E;border-radius:10px;padding:10px 16px;font-size:0.85rem;color:white;font-weight:700;">⑥ Food delivered ✅</div>
+    </div>
+    <p style="margin-top:1rem;color:rgba(255,255,255,0.5);">That entire sequence = <strong style="color:white;">one business process</strong> — supported by IS at every step.</p>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Colorful flowchart of a food delivery process floating in space, each step glowing with icons, arrows connecting them, modern digital illustration, warm amber tones"</div>
+  </section>
+
+  <!-- SLIDE 4 — PORTER'S FIVE FORCES -->
+  <section class="slide slide-learn" id="s4" role="region" aria-label="Slide 4 of 12: Porter's Five Forces">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>Porter's Five Forces — <span class="amber">Every Industry Has These Threats</span></h2>
+    <p style="color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">Click each force to see how it plays out in the real world ↓</p>
+    <div class="forces-grid" role="list">
+      <div class="force-card" onclick="toggleForce(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Rivalry - click to reveal">
+        <span class="force-icon" aria-hidden="true">⚔️</span>
+        <div class="force-name">Rivalry</div>
+        <div class="force-ex">Coke vs Pepsi. McDonald's vs Burger King. Intense competition among existing players in the industry.</div>
+      </div>
+      <div class="force-card" onclick="toggleForce(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="New Entrants - click to reveal">
+        <span class="force-icon" aria-hidden="true">🚪</span>
+        <div class="force-name">New Entrants</div>
+        <div class="force-ex">When Uber entered the taxi market, they disrupted the whole industry. New entrants threaten established players.</div>
+      </div>
+      <div class="force-card" onclick="toggleForce(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Substitutes - click to reveal">
+        <span class="force-icon" aria-hidden="true">🔄</span>
+        <div class="force-name">Substitutes</div>
+        <div class="force-ex">Zoom didn't just compete with Skype — it substituted for the entire business travel industry. Different product, same need met.</div>
+      </div>
+      <div class="force-card" onclick="toggleForce(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Buyer Power - click to reveal">
+        <span class="force-icon" aria-hidden="true">🛒</span>
+        <div class="force-name">Buyer Power</div>
+        <div class="force-ex">Amazon's marketplace gives buyers so many choices that sellers have almost zero pricing power. Buyers are king.</div>
+      </div>
+      <div class="force-card" onclick="toggleForce(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Supplier Power - click to reveal">
+        <span class="force-icon" aria-hidden="true">🏭</span>
+        <div class="force-name">Supplier Power</div>
+        <div class="force-ex">TSMC makes 90% of the world's advanced chips. Apple, NVIDIA, AMD all depend on them. That's massive supplier power.</div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Five interconnected arrows pointing toward a central company icon, each labeled with a competitive force, business strategy diagram style, dark background, amber and white color scheme"</div>
+  </section>
+
+  <!-- SLIDE 5 — FIVE FORCES CHALLENGE -->
+  <section class="slide slide-activity" id="s5" role="region" aria-label="Slide 5 of 12: Five Forces Challenge">
+    <span class="slide-badge badge-activity">⚡ Team Activity</span>
+    <h2>⚡ Five Forces Challenge!</h2>
+    <p style="color:rgba(255,255,255,0.6);margin-bottom:0.8rem;">Which of Porter's Five Forces is at work? 2 points per correct answer! 🏆</p>
+    <div class="sc-grid">
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🚗 <strong style="color:white;">Tesla</strong> built its own charging network and battery supply chain so no external company can hold them hostage.</div>
+        <div class="sc-a">✅ Supplier Power — Tesla reduced it by building in-house</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">📱 <strong style="color:white;">ChatGPT</strong> launched in 2022 and immediately threatened Google's entire search business model.</div>
+        <div class="sc-a">✅ New Entrants / Substitutes — AI substituting for search</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🎵 <strong style="color:white;">Spotify vs Apple Music vs Tidal vs YouTube Music</strong> — all fighting for the same listeners with similar pricing.</div>
+        <div class="sc-a">✅ Rivalry — intense competition among existing players</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🛒 Because of comparison shopping apps, consumers can instantly find the lowest price on any product across 50 stores.</div>
+        <div class="sc-a">✅ Buyer Power — technology increased buyer bargaining power</div>
+      </div>
+    </div>
+    <button class="timer-btn" onclick="startTimer(this,300)" aria-label="Start 5-minute timer">⏱ Start Timer: 5:00</button>
+  </section>
+
+  <!-- SLIDE 6 — THE VALUE CHAIN -->
+  <section class="slide slide-learn" id="s6" role="region" aria-label="Slide 6 of 12: The Value Chain">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>The Value Chain — <span class="amber">Where Does IS Create Value?</span></h2>
+    <p style="color:rgba(255,255,255,0.4);margin-bottom:0.5rem;">Click each activity to see how IS supports it ↓</p>
+    <div class="vchain">
+      <div class="vc-section-label">PRIMARY ACTIVITIES (directly create/deliver value)</div>
+      <div class="vc-row" role="list">
+        <div class="vc-cell vc-primary" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Inbound Logistics">Inbound Logistics<div class="vc-ex">Walmart's RFID-based IS tracks every incoming shipment in real time</div></div>
+        <div class="vc-cell vc-primary" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Operations">Operations<div class="vc-ex">Amazon's robotics IS orchestrates 750,000 warehouse robots to pick and pack orders</div></div>
+        <div class="vc-cell vc-primary" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Outbound Logistics">Outbound Logistics<div class="vc-ex">UPS's ORION routing IS saves 100 million miles/year in driver routes</div></div>
+        <div class="vc-cell vc-primary" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Marketing & Sales">Marketing &amp; Sales<div class="vc-ex">Netflix's recommendation IS drives 80% of all content watched on the platform</div></div>
+        <div class="vc-cell vc-primary" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Service">Service<div class="vc-ex">Apple's IS recognizes your device history and routes you to the right support rep instantly</div></div>
+      </div>
+      <div class="vc-section-label" style="margin-top:8px;">SUPPORT ACTIVITIES (enable primary activities)</div>
+      <div class="vc-row" role="list">
+        <div class="vc-cell vc-support" style="flex:1.5" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="IT Infrastructure">IT Infrastructure<div class="vc-ex">Cloud IS (AWS, Azure) that runs every other activity in the chain</div></div>
+        <div class="vc-cell vc-support" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="HR Management">HR Management<div class="vc-ex">Workday IS automates hiring, payroll, and performance tracking</div></div>
+        <div class="vc-cell vc-support" onclick="toggleVC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Procurement">Procurement<div class="vc-ex">SAP IS manages supplier contracts, pricing, and purchase orders</div></div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Business value chain diagram as glowing interconnected conveyor belt, each station representing a business activity with digital IS icons above, dark industrial background, amber and blue glow"</div>
+  </section>
+
+  <!-- SLIDE 7 — BPR VS TWEAKING -->
+  <section class="slide slide-learn" id="s7" role="region" aria-label="Slide 7 of 12: BPR vs Incremental Change">
+    <span class="slide-badge badge-learn">📚 Key Distinction</span>
+    <h2>BPR vs. Incremental Improvement — <span class="amber">Don't Mix These Up</span></h2>
+    <div class="compare">
+      <div class="compare-col" style="border-top:3px solid #EF4444;">
+        <h3 style="color:#F87171;">🔧 Incremental Improvement</h3>
+        <ul>
+          <li>Small, gradual tweaks to existing processes</li>
+          <li>Working within current structure</li>
+          <li>Example: Blockbuster adding a late-fee waiver</li>
+          <li>Example: adding one more checkout lane</li>
+          <li>Result: marginal improvement</li>
+        </ul>
+      </div>
+      <div class="compare-col" style="border-top:3px solid #D97706;">
+        <h3 style="color:#FBBF24;">💥 BPR (Business Process Reengineering)</h3>
+        <ul>
+          <li>Fundamental rethinking from scratch</li>
+          <li>Throw out the old process entirely</li>
+          <li>Example: Netflix inventing streaming (not improving VHS)</li>
+          <li>Example: Amazon replacing stores with algorithms</li>
+          <li>Result: dramatic transformation</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:1.2rem;">
+      ⚡ <strong>Exam trap:</strong> BPR is NOT "improving" a process. It is <strong style="color:#FCD34D;">redesigning it from zero</strong>. If the question says "minor tweaks" or "gradual improvement" — that is NOT BPR.
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Split image: left side shows a rusty old machine with small patches being applied (incremental), right side shows the machine being completely rebuilt as a sleek robot (BPR), dramatic contrast lighting"</div>
+  </section>
+
+  <!-- SLIDE 8 — STRATEGIC IS -->
+  <section class="slide slide-learn" id="s8" role="region" aria-label="Slide 8 of 12: Strategic Information Systems">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>Strategic IS — <span class="amber">When Technology Becomes Your Moat</span></h2>
+    <div class="callout">
+      A <strong>Strategic IS</strong> provides a company with a <strong>sustainable competitive advantage</strong> that rivals cannot easily copy.
+    </div>
+    <div class="sc-grid" style="margin-top:1.1rem;">
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" style="cursor:pointer;">
+        <div class="sc-q">🛒 <strong style="color:white;">Amazon's Recommendation Engine</strong> — analyzes billions of data points to suggest what you'll buy next.</div>
+        <div class="sc-a" style="color:#FBBF24;">→ Drives 35% of Amazon's total revenue. No competitor has matched it.</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" style="cursor:pointer;">
+        <div class="sc-q">🏪 <strong style="color:white;">Walmart's RFID Supply Chain IS</strong> — tracks every single product from factory to shelf in real time.</div>
+        <div class="sc-a" style="color:#FBBF24;">→ Cut inventory costs by billions. Competitors spent years trying to replicate it.</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" style="cursor:pointer;">
+        <div class="sc-q">🚗 <strong style="color:white;">UPS's ORION Routing IS</strong> — AI optimizes 55,000 drivers' routes in real time, avoiding left turns.</div>
+        <div class="sc-a" style="color:#FBBF24;">→ Saves $400M/year and 10 million gallons of fuel. Pure IS competitive advantage.</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" style="cursor:pointer;">
+        <div class="sc-q">🎵 <strong style="color:white;">Spotify's Discover Weekly IS</strong> — machine learning creates a personalized playlist for 400M users every Monday.</div>
+        <div class="sc-a" style="color:#FBBF24;">→ Became the #1 reason people stay subscribed. Pure IS advantage over Apple Music.</div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Fortress made of glowing data streams and circuit boards protecting a company logo in the center, competitors on the outside unable to breach it, digital art, dark background, amber and blue tones"</div>
+  </section>
+
+  <!-- SLIDE 9 — THREE COMPETITIVE STRATEGIES -->
+  <section class="slide slide-learn" id="s9" role="region" aria-label="Slide 9 of 12: Three IT Competitive Strategies">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>Three Ways IT Creates <span class="amber">Competitive Strategy</span></h2>
+    <p style="color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">Click each strategy to reveal company examples ↓</p>
+    <div class="strategy-row">
+      <div class="strategy-card sc-cost" onclick="toggleStrategy(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" aria-label="Cost Leadership strategy">
+        <div class="sc-title">💰 Cost Leadership</div>
+        <div class="sc-desc">Use IS to become the lowest-cost producer in the industry. Win on price.</div>
+        <div class="sc-ex">Walmart's supply chain IS. Amazon's automated warehouses. Spirit Airlines' lean IT operations.</div>
+      </div>
+      <div class="strategy-card sc-diff" onclick="toggleStrategy(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" aria-label="Differentiation strategy">
+        <div class="sc-title">✨ Differentiation</div>
+        <div class="sc-desc">Use IS to offer something unique that no one else can. Win on distinctiveness.</div>
+        <div class="sc-ex">Netflix's recommendation engine. Apple's seamless device ecosystem. Starbucks' loyalty app predicting your order.</div>
+      </div>
+      <div class="strategy-card sc-focus" onclick="toggleStrategy(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button" aria-label="Focus/Niche strategy">
+        <div class="sc-title">🎯 Focus / Niche</div>
+        <div class="sc-desc">Use IS to serve a specific market segment better than anyone else. Win in your lane.</div>
+        <div class="sc-ex">Peloton serving premium fitness. Etsy serving handmade sellers. LinkedIn serving professional networking only.</div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Three distinct pathways on a dark road each glowing a different color (green for cost, purple for unique, gold for focus), business people choosing a path, top-down view, dramatic lighting"</div>
+  </section>
+
+  <!-- SLIDE 10 — STRATEGY CHALLENGE -->
+  <section class="slide slide-activity" id="s10" role="region" aria-label="Slide 10 of 12: Strategy Challenge">
+    <span class="slide-badge badge-activity">⚡ Team Competition</span>
+    <h2>🎯 Which Strategy Are They Using?</h2>
+    <p style="color:rgba(255,255,255,0.6);margin-bottom:0.8rem;">Cost Leadership · Differentiation · Focus — identify the strategy! 2 points each 🏆</p>
+    <div class="sc-grid">
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">✈️ <strong style="color:white;">Southwest Airlines</strong> uses IS to streamline operations and eliminate seat assignments, meals, and hubs — offering consistently the lowest fares.</div>
+        <div class="sc-a">✅ Cost Leadership — IS reduces costs to offer lowest price</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🎮 <strong style="color:white;">Roblox</strong> built an entire IS ecosystem specifically for children and teen game creators — no other platform serves this niche as well.</div>
+        <div class="sc-a">✅ Focus/Niche — IS targets one specific market segment</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🏋️ <strong style="color:white;">Nike's app ecosystem</strong> tracks your runs, suggests training plans, customizes shoes, and connects you to a community — no other brand does all of this.</div>
+        <div class="sc-a">✅ Differentiation — IS creates a unique experience competitors can't replicate</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🛒 <strong style="color:white;">Dollar Tree</strong> uses predictive IS to determine exactly which products to stock in each store location, keeping every single item at one dollar.</div>
+        <div class="sc-a">✅ Cost Leadership — IS enables extreme cost discipline</div>
+      </div>
+    </div>
+    <button class="timer-btn" onclick="startTimer(this,300)" aria-label="Start 5-minute timer">⏱ Start Timer: 5:00</button>
+  </section>
+
+  <!-- SLIDE 11 — KEY TAKEAWAYS -->
+  <section class="slide slide-wrap" id="s11" role="region" aria-label="Slide 11 of 12: Key Takeaways">
+    <span class="slide-badge badge-wrap">🎯 Wrap-Up</span>
+    <h2>5 Things You Must Walk Out Knowing</h2>
+    <ul class="reveal-list" id="takeaway-list" aria-live="polite">
+      <li><span class="bullet" aria-hidden="true">1</span> A business process = an ongoing collection of related activities that create value — IS supports every step</li>
+      <li><span class="bullet" aria-hidden="true">2</span> Porter's Five Forces: Rivalry · New Entrants · Substitutes · Buyer Power · Supplier Power</li>
+      <li><span class="bullet" aria-hidden="true">3</span> BPR = redesigning a process from SCRATCH — not tweaking, not improving — rebuilding from zero</li>
+      <li><span class="bullet" aria-hidden="true">4</span> A Strategic IS gives a company a sustainable competitive advantage rivals can't easily copy</li>
+      <li><span class="bullet" aria-hidden="true">5</span> Three IT strategies: Cost Leadership (cheapest), Differentiation (most unique), Focus (best for one niche)</li>
+    </ul>
+    <p class="reveal-hint" id="reveal-hint">Press Space or → to reveal each point</p>
+  </section>
+
+  <!-- SLIDE 12 — GAME TIME -->
+  <section class="slide slide-game" id="s12" role="region" aria-label="Slide 12 of 12: Game Time">
+    <span class="slide-badge badge-game">🎮 Game Time!</span>
+    <h1>🏆 Chapter 2 Team Quiz Challenge!</h1>
+    <p style="color:rgba(255,255,255,0.55);margin-bottom:1.2rem;">5 questions · Each correct answer = 1 team point · May the best team win!</p>
+    <a href="index.html" class="game-card" aria-label="Open MIS Journey app to play Chapter 2 quiz" target="_blank">
+      <span class="gc-emoji" aria-hidden="true">🏆</span>
+      <div class="gc-label">Launch MIS Journey App</div>
+      <div class="gc-sub">Find Ch 2 → Play Learning Game</div>
+    </a>
+    <div style="margin-top:1.8rem;display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;">
+      <a href="ch2-printables.html" style="color:rgba(255,255,255,0.35);font-size:0.88rem;text-decoration:none;" target="_blank">📄 Print Student Handout</a>
+      <a href="ch2-printables.html#bingo" style="color:rgba(255,255,255,0.35);font-size:0.88rem;text-decoration:none;" target="_blank">🎲 Print Bingo Cards</a>
+      <a href="professor-portal.html" style="color:rgba(255,255,255,0.35);font-size:0.88rem;text-decoration:none;" target="_blank">🎓 Professor Notes</a>
+    </div>
+  </section>
+
+  <script>
+    let cur=0;
+    const slides=Array.from(document.querySelectorAll('.slide'));
+    const N=slides.length;
+    const prev=document.getElementById('prev-btn');
+    const next=document.getElementById('next-btn');
+    const counter=document.getElementById('slide-counter');
+    const pfill=document.getElementById('progress-fill');
+    const pbar=document.getElementById('progress-bar');
+
+    function go(dir){
+      if(cur===10&&dir===1){
+        const items=document.querySelectorAll('#takeaway-list li:not(.shown)');
+        if(items.length>0){items[0].classList.add('shown');
+          if(!document.querySelectorAll('#takeaway-list li:not(.shown)').length)document.getElementById('reveal-hint').style.display='none';
+          return;}
+      }
+      const nxt=Math.max(0,Math.min(N-1,cur+dir));
+      if(nxt===cur)return;
+      slides[cur].classList.remove('active');
+      cur=nxt;
+      slides[cur].classList.add('active');
+      prev.disabled=cur===0;next.disabled=cur===N-1;
+      counter.textContent=(cur+1)+' / '+N;
+      pfill.style.width=((cur+1)/N*100)+'%';
+      pbar.setAttribute('aria-valuenow',cur+1);
+      slides[cur].focus();
+    }
+    document.addEventListener('keydown',e=>{
+      if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+      if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(1);}
+      if(e.key==='ArrowLeft'){e.preventDefault();go(-1);}
+    });
+    function toggleTS(el){el.classList.toggle('revealed');}
+    function toggleForce(el){el.classList.toggle('revealed');}
+    function toggleVC(el){el.classList.toggle('revealed');}
+    function toggleSC(el){el.classList.toggle('revealed');}
+    function toggleStrategy(el){el.classList.toggle('revealed');}
+    function kbClick(e,el){if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}}
+    const scores={a:0,b:0,c:0};
+    function adj(t,d){scores[t]=Math.max(0,scores[t]+d);document.getElementById('sc-'+t).textContent=scores[t];}
+    function toggleSB(){const sb=document.getElementById('scoreboard');const v=sb.classList.toggle('visible');sb.setAttribute('aria-hidden',!v);}
+    function startTimer(btn,secs){
+      if(btn._iv){clearInterval(btn._iv);delete btn._iv;btn.classList.remove('running');btn.textContent='⏱ Start Timer: '+fmt(secs);btn.style.cssText='';return;}
+      let rem=secs;btn.classList.add('running');btn.textContent='⏹ '+fmt(rem);
+      btn._iv=setInterval(()=>{rem--;
+        if(rem<=0){clearInterval(btn._iv);delete btn._iv;btn.classList.remove('running');btn.textContent="✅ Time's Up!";btn.style.background='rgba(34,197,94,0.2)';btn.style.borderColor='#22C55E';btn.style.color='#4ADE80';}
+        else btn.textContent='⏹ '+fmt(rem);},1000);
+    }
+    function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+  </script>
+</body>
+</html>

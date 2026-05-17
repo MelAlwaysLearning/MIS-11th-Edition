@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 4 Printables — Student Handout &amp; Bingo | ISM3011</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: Georgia, "Times New Roman", serif; background: #fff1f2; color: #1E293B; }
+
+    .screen-nav {
+      background: #1E293B; color: white;
+      padding: 1rem 2rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .screen-nav h1 { font-size: 1rem; font-weight: 700; }
+    .screen-nav p  { font-size: 0.8rem; color: #94A3B8; margin-top: 2px; }
+    .nav-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-print { background: #DC2626; color: white; }
+    .btn-print:hover { background: #B91C1C; }
+    .btn-back { background: transparent; border: 1px solid #475569; color: #94A3B8; }
+    .btn-back:hover { background: #334155; color: white; }
+
+    .print-preview { max-width: 860px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .page-label {
+      font-family: -apple-system, sans-serif; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #64748B;
+      margin: 2rem 0 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .page-label::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+    .print-page {
+      background: white; width: 100%; max-width: 780px; margin: 0 auto 1rem;
+      padding: 0.7in 0.75in; border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); min-height: 10.5in;
+    }
+
+    .handout-header { border-bottom: 3px solid #1E293B; padding-bottom: 10px; margin-bottom: 18px; }
+    .handout-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .handout-header .meta { font-size: 0.78rem; color: #475569; margin-top: 3px; }
+    .student-info { display: flex; gap: 2rem; margin-bottom: 18px; }
+    .info-field { flex: 1; }
+    .info-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; display: block; margin-bottom: 3px; }
+    .info-field .line { border-bottom: 1px solid #1E293B; height: 22px; }
+
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #991B1B; margin: 18px 0 8px;
+      border-left: 3px solid #DC2626; padding-left: 8px;
+    }
+    p, li { font-size: 0.82rem; line-height: 1.55; }
+    .fill-blank { display: inline-block; border-bottom: 1px solid #1E293B; min-width: 120px; height: 16px; margin: 0 3px; }
+
+    /* CIA TABLE */
+    table.cia-table {
+      width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0;
+    }
+    .cia-table th { background: #1E293B; color: white; padding: 5px 8px; text-align: left; }
+    .cia-table td { border: 1px solid #CBD5E1; padding: 6px 8px; vertical-align: top; }
+    .cia-table tr:nth-child(even) td { background: #FFF1F2; }
+    .cia-table .letter-cell { font-size: 1.1rem; font-weight: 900; color: #DC2626; text-align: center; width: 32px; }
+
+    /* THREAT MATCH */
+    .match-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .match-table th { background: #1E293B; color: white; padding: 5px 8px; text-align: left; }
+    .match-table td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .match-table tr:nth-child(even) td { background: #FFF1F2; }
+
+    /* 2FA BOXES */
+    .auth-row { display: flex; gap: 8px; margin: 8px 0; }
+    .auth-box {
+      flex: 1; border: 1.5px solid #DC2626; border-radius: 6px; padding: 8px;
+      text-align: center;
+    }
+    .auth-box .ab-factor { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #991B1B; }
+    .auth-box .ab-label { font-size: 0.88rem; font-weight: 700; margin: 4px 0; }
+    .auth-box .ab-blank { border-bottom: 1px solid #CBD5E1; margin: 4px 0; height: 14px; }
+
+    /* SCENARIO ANALYSIS */
+    .scenario-analysis { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+    .sa-item { border: 1px solid #CBD5E1; border-radius: 6px; padding: 6px 10px; }
+    .sa-item p { font-size: 0.78rem; line-height: 1.35; }
+    .sa-item .sa-blanks { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+    .sa-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #DC2626; font-weight: 700; }
+    .sa-blank { border-bottom: 1px solid #CBD5E1; min-width: 120px; height: 14px; flex: 1; }
+
+    /* KEY TERMS */
+    .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 8px 0; }
+    .term-entry .term-name { font-weight: 700; font-size: 0.8rem; color: #991B1B; }
+    .term-entry .term-line { border-bottom: 1px solid #CBD5E1; height: 14px; margin: 3px 0; }
+
+    /* EXIT TICKET */
+    .exit-ticket { border: 2px dashed #DC2626; border-radius: 10px; padding: 12px 14px; margin-top: 18px; }
+    .exit-ticket .et-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #991B1B; margin-bottom: 8px; }
+    .et-line { border-bottom: 1px solid #CBD5E1; height: 16px; margin: 6px 0; }
+
+    /* BINGO */
+    .bingo-header { text-align: center; margin-bottom: 10px; }
+    .bingo-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .bingo-header .card-num { font-size: 0.8rem; color: #64748B; }
+    .bingo-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .bingo-table th {
+      background: #DC2626; color: white; text-align: center;
+      padding: 10px 4px; font-size: 1.2rem; font-weight: 800; border: 2px solid white;
+    }
+    .bingo-table td {
+      border: 2px solid #DC2626; text-align: center;
+      padding: 5px 3px; font-size: 0.62rem; font-weight: 700;
+      height: 1.3in; vertical-align: middle; line-height: 1.2;
+    }
+    .bingo-table td.free { background: #FEE2E2; color: #991B1B; font-size: 0.75rem; font-weight: 800; }
+    .bingo-table tr:nth-child(odd) td  { background: #FFF1F2; }
+    .bingo-table tr:nth-child(even) td { background: #FFF5F5; }
+    .bingo-table td.free { background: #FEE2E2 !important; }
+
+    /* CALL LIST */
+    .call-list { columns: 2; column-gap: 1.5rem; margin: 8px 0; }
+    .call-item { font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #E2E8F0; break-inside: avoid; }
+    .call-item .ci-term { font-weight: 700; color: #991B1B; }
+    .how-to-box { border: 1.5px solid #DC2626; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-size: 0.78rem; background: #FFF1F2; }
+    .how-to-box h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #991B1B; }
+    .how-to-box ol { padding-left: 1.2rem; }
+    .how-to-box li { margin-bottom: 4px; }
+
+    @media print {
+      .screen-nav { display: none; }
+      .print-preview { margin: 0; padding: 0; }
+      .page-label { display: none; }
+      .print-page {
+        box-shadow: none; border: none; padding: 0.6in 0.7in;
+        page-break-after: always; min-height: 0; margin: 0;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="screen-nav" aria-label="Page navigation">
+  <div>
+    <h1>Chapter 4 Printables — Information Security</h1>
+    <p>ISM3011 | Print-ready student handout, key terms page, call list &amp; 4 Bingo cards</p>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn btn-print" onclick="window.print()">🖨 Print All Pages</button>
+    <button class="nav-btn btn-back" onclick="window.location='index.html'">← Back to MIS Journey</button>
+  </div>
+</nav>
+
+<div class="print-preview">
+
+  <!-- ══ PAGE 1 — STUDENT HANDOUT ══ -->
+  <div class="page-label">Page 1 of 6 — Student Handout</div>
+  <div class="print-page" id="page1">
+
+    <div class="handout-header">
+      <h2>Chapter 4 Study Guide — Information Security</h2>
+      <div class="meta">ISM3011 | Introduction to Management of Information Systems | 10th Edition</div>
+    </div>
+
+    <div class="student-info">
+      <div class="info-field"><label>Name</label><div class="line"></div></div>
+      <div class="info-field"><label>Date</label><div class="line"></div></div>
+      <div class="info-field"><label>Section</label><div class="line"></div></div>
+    </div>
+
+    <div class="section-title">Part 1 — The CIA Triad</div>
+    <p>Complete the table. For each pillar, write the definition AND give a real-world example of a violation.</p>
+    <table class="cia-table">
+      <thead>
+        <tr><th style="width:32px;">Letter</th><th>Pillar Name</th><th>Definition (in your own words)</th><th>Real-world violation example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="letter-cell">C</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="letter-cell">I</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="letter-cell">A</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:8px;">A DDoS attack floods a website with traffic until it crashes. Which CIA pillar does this primarily violate? <span class="fill-blank" style="min-width:160px;"></span></p>
+
+    <div class="section-title">Part 2 — CIA Scenario Sort</div>
+    <p>For each breach, write which CIA pillar was primarily violated: <strong>C, I, or A</strong></p>
+    <p style="margin-top:6px;">_____ A hacker reads private emails stored on a company server without changing them.</p>
+    <p style="margin-top:4px;">_____ A disgruntled employee quietly changes invoice amounts in the accounting system.</p>
+    <p style="margin-top:4px;">_____ Ransomware encrypts all files and employees can't open anything for 3 days.</p>
+    <p style="margin-top:4px;">_____ A third-party contractor's credentials are stolen and used to download customer records.</p>
+
+    <div class="section-title">Part 3 — Threat Matching</div>
+    <p>Match each attack to its description. Write the letter in the blank.</p>
+    <p style="margin-top:6px;"><strong>Attack types: &nbsp; A) Phishing &nbsp; B) Ransomware &nbsp; C) Trojan &nbsp; D) Spyware &nbsp; E) DDoS &nbsp; F) Social Engineering</strong></p>
+    <table class="match-table">
+      <thead><tr><th>Description</th><th>Attack Type (A–F)</th></tr></thead>
+      <tbody>
+        <tr><td>Malware that encrypts your files and demands payment for the decryption key</td><td></td></tr>
+        <tr><td>Fake emails or websites that trick users into entering their credentials</td><td></td></tr>
+        <tr><td>Psychological manipulation to get a person to hand over access or information</td><td></td></tr>
+        <tr><td>Malicious code disguised as a legitimate app or game</td><td></td></tr>
+        <tr><td>Silently monitors keystrokes and screenshots without the user's knowledge</td><td></td></tr>
+        <tr><td>Floods a server with traffic to make a website crash and become unavailable</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">Part 4 — Two-Factor Authentication</div>
+    <p>Label each factor type and give two real examples for each.</p>
+    <div class="auth-row">
+      <div class="auth-box">
+        <div class="ab-factor">Factor 1</div>
+        <div class="ab-label">Something You <span class="fill-blank" style="min-width:60px;"></span></div>
+        <div class="ab-blank"></div>
+        <div class="ab-blank"></div>
+      </div>
+      <div class="auth-box">
+        <div class="ab-factor">Factor 2</div>
+        <div class="ab-label">Something You <span class="fill-blank" style="min-width:60px;"></span></div>
+        <div class="ab-blank"></div>
+        <div class="ab-blank"></div>
+      </div>
+      <div class="auth-box">
+        <div class="ab-factor">Factor 3</div>
+        <div class="ab-label">Something You <span class="fill-blank" style="min-width:60px;"></span></div>
+        <div class="ab-blank"></div>
+        <div class="ab-blank"></div>
+      </div>
+    </div>
+
+  </div><!-- /page1 -->
+
+  <!-- ══ PAGE 2 — KEY TERMS + REFLECTION ══ -->
+  <div class="page-label">Page 2 of 6 — Key Terms &amp; Reflection</div>
+  <div class="print-page" id="page2">
+
+    <div class="handout-header">
+      <h2>Chapter 4 — Key Terms &amp; Security Analysis</h2>
+      <div class="meta">ISM3011 | Define each term in your own words</div>
+    </div>
+
+    <div class="section-title">Key Terms</div>
+    <div class="terms-grid">
+      <div class="term-entry"><div class="term-name">CIA Triad</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Phishing</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Ransomware</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Firewall</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Encryption</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Two-Factor Authentication (2FA)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Social Engineering</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">VPN</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Business Continuity Plan (BCP)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Disaster Recovery (DR)</div><div class="term-line"></div><div class="term-line"></div></div>
+    </div>
+
+    <div class="section-title">Breach Analysis</div>
+    <p style="font-size:0.78rem;margin-bottom:6px;">For each scenario, identify: (1) the attack type, (2) the CIA pillar violated, and (3) one security control that would have prevented it.</p>
+    <div class="scenario-analysis">
+      <div class="sa-item">
+        <p><strong>Scenario 1:</strong> An employee clicked a link in an email and entered their work credentials on a fake login page. The attacker used those credentials to log into company systems.</p>
+        <div class="sa-blanks">
+          <div><span class="sa-label">Attack type:</span><div class="sa-blank"></div></div>
+          <div><span class="sa-label">CIA pillar:</span><div class="sa-blank"></div></div>
+          <div><span class="sa-label">Prevention:</span><div class="sa-blank"></div></div>
+        </div>
+      </div>
+      <div class="sa-item">
+        <p><strong>Scenario 2:</strong> Malware encrypted every file on a logistics company's network at 3am. By morning, no shipments could be processed and the company paid $2M in ransom.</p>
+        <div class="sa-blanks">
+          <div><span class="sa-label">Attack type:</span><div class="sa-blank"></div></div>
+          <div><span class="sa-label">CIA pillar:</span><div class="sa-blank"></div></div>
+          <div><span class="sa-label">Prevention:</span><div class="sa-blank"></div></div>
+        </div>
+      </div>
+      <div class="sa-item">
+        <p><strong>Scenario 3:</strong> Someone called the IT helpdesk pretending to be the company's CFO and asked them to reset the CFO's email password. The IT employee complied without verifying identity.</p>
+        <div class="sa-blanks">
+          <div><span class="sa-label">Attack type:</span><div class="sa-blank"></div></div>
+          <div><span class="sa-label">CIA pillar:</span><div class="sa-blank"></div></div>
+          <div><span class="sa-label">Prevention:</span><div class="sa-blank"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exit-ticket">
+      <div class="et-title">🎟 Exit Ticket — You're the CISO</div>
+      <p style="font-size:0.78rem;margin-bottom:6px;">You are the Chief Information Security Officer (CISO) of a mid-sized hospital. You have a budget for ONE new security control. Choose between: (a) company-wide 2FA, (b) employee phishing training, or (c) offline backups for all systems. Which do you choose and why?</p>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+    </div>
+
+  </div><!-- /page2 -->
+
+  <!-- ══ PAGE 3 — BINGO CALL LIST ══ -->
+  <div class="page-label">Page 3 of 6 — Bingo Call List (Professor Use)</div>
+  <div class="print-page" id="page3">
+
+    <div class="handout-header">
+      <h2>Chapter 4 Bingo — Call List &amp; Instructions</h2>
+      <div class="meta">ISM3011 | Read the CLUE aloud — students identify the term on their card</div>
+    </div>
+
+    <div class="how-to-box">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Distribute one Bingo card (pages 4–7) per student. Cards 1–4 have different layouts.</li>
+        <li>Read the <strong>clue</strong> aloud. Do NOT read the term in parentheses.</li>
+        <li>Students mark the matching term on their card.</li>
+        <li>First to get 5-in-a-row calls "BINGO!" Verify and award a prize.</li>
+      </ol>
+    </div>
+
+    <p style="font-size:0.78rem;margin-bottom:6px;"><em>Prize suggestions: extra credit point, snack, skip-one-quiz pass, preferred exam seat.</em></p>
+
+    <div class="section-title">Call List</div>
+    <div class="call-list">
+      <div class="call-item"><span class="ci-term">CIA Triad</span> — "The three-pillar security framework: Confidentiality, Integrity, Availability"</div>
+      <div class="call-item"><span class="ci-term">Confidentiality</span> — "Only authorized people can see the data — preventing unauthorized access or disclosure"</div>
+      <div class="call-item"><span class="ci-term">Integrity</span> — "Data is accurate and hasn't been tampered with — it can be trusted"</div>
+      <div class="call-item"><span class="ci-term">Availability</span> — "Authorized users can access data and systems when they need to"</div>
+      <div class="call-item"><span class="ci-term">Phishing</span> — "Fake emails or websites designed to steal your credentials"</div>
+      <div class="call-item"><span class="ci-term">Spear Phishing</span> — "A targeted phishing attack using your name, company, or personal details"</div>
+      <div class="call-item"><span class="ci-term">Ransomware</span> — "Malware that encrypts your files and demands payment to restore access"</div>
+      <div class="call-item"><span class="ci-term">Trojan</span> — "Malicious code disguised as legitimate software"</div>
+      <div class="call-item"><span class="ci-term">Spyware</span> — "Software that silently monitors your activity and sends data to attackers"</div>
+      <div class="call-item"><span class="ci-term">DDoS</span> — "Flooding a server with traffic until it crashes — targeting Availability"</div>
+      <div class="call-item"><span class="ci-term">Social Engineering</span> — "Psychological manipulation to trick humans into handing over access"</div>
+      <div class="call-item"><span class="ci-term">Firewall</span> — "The network gatekeeper that filters incoming and outgoing traffic"</div>
+      <div class="call-item"><span class="ci-term">Encryption</span> — "Scrambling data so only authorized parties with the key can read it"</div>
+      <div class="call-item"><span class="ci-term">2FA</span> — "Requiring two verification types to log in — blocks 99.9% of automated attacks"</div>
+      <div class="call-item"><span class="ci-term">VPN</span> — "Creates an encrypted tunnel for your internet traffic on public Wi-Fi"</div>
+      <div class="call-item"><span class="ci-term">Antivirus</span> — "Detects, quarantines, and removes known malware from your system"</div>
+      <div class="call-item"><span class="ci-term">Biometric Auth</span> — "Using your fingerprint, face, or iris to verify identity — something you ARE"</div>
+      <div class="call-item"><span class="ci-term">BCP</span> — "Business Continuity Plan — how an org keeps running during and after a disruption"</div>
+      <div class="call-item"><span class="ci-term">Disaster Recovery</span> — "The IT-specific plan to restore systems and data after an incident"</div>
+      <div class="call-item"><span class="ci-term">Data Breach</span> — "Unauthorized access to or disclosure of protected information"</div>
+      <div class="call-item"><span class="ci-term">Zero-Day</span> — "A vulnerability unknown to the software vendor — no patch exists yet"</div>
+      <div class="call-item"><span class="ci-term">Patch Management</span> — "Keeping software updated to fix known security vulnerabilities"</div>
+      <div class="call-item"><span class="ci-term">Intrusion Detection</span> — "Systems that monitor network traffic for signs of an attack in progress"</div>
+      <div class="call-item"><span class="ci-term">Backup</span> — "The best defense against ransomware — restore data without paying the ransom"</div>
+      <div class="call-item"><span class="ci-term">FREE SPACE</span> — "Everyone marks the center square!"</div>
+    </div>
+
+  </div><!-- /page3 -->
+
+  <!-- ══ PAGE 4 — BINGO CARD 1 ══ -->
+  <div class="page-label">Page 4 of 6 — Bingo Card 1</div>
+  <div class="print-page" id="page4">
+    <div class="bingo-header">
+      <h2>Chapter 4 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 1</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 1">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>CIA Triad</td><td>Phishing</td><td>Ransomware</td><td>Firewall</td><td>Encryption</td>
+        </tr>
+        <tr>
+          <td>Confidentiality</td><td>Social Engineering</td><td>2FA</td><td>BCP</td><td>Spyware</td>
+        </tr>
+        <tr>
+          <td>Integrity</td><td>VPN</td><td class="free">★<br>FREE<br>SPACE</td><td>Trojan</td><td>Antivirus</td>
+        </tr>
+        <tr>
+          <td>Availability</td><td>DDoS</td><td>Data Breach</td><td>Spear Phishing</td><td>Disaster Recovery</td>
+        </tr>
+        <tr>
+          <td>Backup</td><td>Biometric Auth</td><td>Zero-Day</td><td>Patch Management</td><td>Intrusion Detection</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 5 — BINGO CARD 2 ══ -->
+  <div class="page-label">Page 5 of 6 — Bingo Card 2</div>
+  <div class="print-page" id="page5">
+    <div class="bingo-header">
+      <h2>Chapter 4 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 2</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 2">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Antivirus</td><td>Integrity</td><td>Social Engineering</td><td>Ransomware</td><td>Patch Management</td>
+        </tr>
+        <tr>
+          <td>Disaster Recovery</td><td>Spear Phishing</td><td>Confidentiality</td><td>Firewall</td><td>CIA Triad</td>
+        </tr>
+        <tr>
+          <td>Zero-Day</td><td>2FA</td><td class="free">★<br>FREE<br>SPACE</td><td>Spyware</td><td>Backup</td>
+        </tr>
+        <tr>
+          <td>Encryption</td><td>Data Breach</td><td>Availability</td><td>BCP</td><td>Phishing</td>
+        </tr>
+        <tr>
+          <td>Intrusion Detection</td><td>Trojan</td><td>VPN</td><td>Biometric Auth</td><td>DDoS</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 6 — BINGO CARDS 3 & 4 ══ -->
+  <div class="page-label">Page 6 of 6 — Bingo Cards 3 &amp; 4</div>
+  <div class="print-page" id="page6">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3in;">
+
+      <!-- Card 3 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 4 Bingo | ISM3011</h2>
+          <div class="card-num">Card 3</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 3" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>Backup</td><td>Phishing</td><td>VPN</td><td>CIA Triad</td><td>Spear Phishing</td></tr>
+            <tr><td>2FA</td><td>Availability</td><td>Integrity</td><td>Social Engineering</td><td>Ransomware</td></tr>
+            <tr><td>Firewall</td><td>BCP</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Encryption</td><td>Trojan</td></tr>
+            <tr><td>Intrusion Detection</td><td>Data Breach</td><td>Confidentiality</td><td>Zero-Day</td><td>Antivirus</td></tr>
+            <tr><td>DDoS</td><td>Biometric Auth</td><td>Spyware</td><td>Patch Management</td><td>Disaster Recovery</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card 4 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 4 Bingo | ISM3011</h2>
+          <div class="card-num">Card 4</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 4" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>DDoS</td><td>Encryption</td><td>Spyware</td><td>Backup</td><td>CIA Triad</td></tr>
+            <tr><td>Disaster Recovery</td><td>Trojan</td><td>Biometric Auth</td><td>Antivirus</td><td>2FA</td></tr>
+            <tr><td>Spear Phishing</td><td>Confidentiality</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Ransomware</td><td>VPN</td></tr>
+            <tr><td>Phishing</td><td>Patch Management</td><td>BCP</td><td>Social Engineering</td><td>Integrity</td></tr>
+            <tr><td>Zero-Day</td><td>Firewall</td><td>Data Breach</td><td>Intrusion Detection</td><td>Availability</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /page6 -->
+
+</div><!-- /print-preview -->
+</body>
+</html>

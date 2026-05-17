@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 3: Ethics &amp; Privacy — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:   #059669;
+      --accent2:  #047857;
+      --accent3:  #D1FAE5;
+      --dark:     #0F172A;
+      --card-bg:  #1E293B;
+      --muted:    #94A3B8;
+      --white:    #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    /* PROGRESS BAR */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+
+    /* SLIDE COUNTER */
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    /* SCOREBOARD */
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px;
+      display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-row span:first-child { font-size: 0.82rem; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    /* CONTROLS */
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    /* SLIDE CONTAINER */
+    #slides-wrap {
+      width: 100vw; height: 100vh; position: relative; overflow: hidden;
+    }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1; transform: translateX(0); pointer-events: all;
+    }
+    .slide.exit {
+      opacity: 0; transform: translateX(-60px);
+    }
+
+    /* SLIDE TYPOGRAPHY */
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+
+    /* ACCENT LINE */
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    /* CARDS GRID */
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 210px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(5,150,105,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; color: var(--white); display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    /* STAT BOXES */
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    /* TOMBSTONE / SCENARIO BOXES */
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: var(--accent); margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* COMPARISON TABLE */
+    .compare-table {
+      width: 100%; max-width: 820px; border-collapse: collapse; margin-top: 1rem;
+    }
+    .compare-table th {
+      background: var(--accent); color: white; padding: 10px 14px;
+      font-size: 0.85rem; text-align: left;
+    }
+    .compare-table td {
+      border-bottom: 1px solid #334155; padding: 10px 14px;
+      font-size: 0.82rem; vertical-align: top;
+    }
+    .compare-table tr:nth-child(odd) td { background: rgba(30,41,59,0.5); }
+
+    /* ACTIVITY TIMER */
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display {
+      font-size: 2.5rem; font-weight: 900; color: var(--accent);
+      font-variant-numeric: tabular-nums; line-height: 1;
+    }
+    .timer-btn {
+      margin-top: 0.6rem; background: var(--accent); color: white;
+      border: none; padding: 10px 28px; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    .timer-btn:hover { background: var(--accent2); }
+
+    /* TAKEAWAY LIST */
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px);
+      transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    /* BADGE */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-green { background: rgba(5,150,105,0.2); color: #6EE7B7; }
+    .badge-red   { background: rgba(239,68,68,0.2);  color: #FCA5A5; }
+    .badge-blue  { background: rgba(59,130,246,0.2); color: #93C5FD; }
+    .badge-amber { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+
+    /* AI PROMPT */
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45;
+      display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+
+    /* PII VISUAL */
+    .pii-row {
+      display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center;
+      margin-top: 1rem; max-width: 860px;
+    }
+    .pii-chip {
+      padding: 8px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; border: 2px solid transparent;
+    }
+    .pii-chip.pii-yes { background: rgba(239,68,68,0.15); color: #FCA5A5; border-color: #EF4444; }
+    .pii-chip.pii-no  { background: rgba(5,150,105,0.15); color: #6EE7B7; border-color: #059669; }
+    .pii-chip.hidden-type { background: #1E293B; color: #1E293B; border-color: #334155; }
+    .pii-chip.hidden-type:hover { border-color: var(--accent); color: var(--white); }
+
+    /* ETHICS SCENARIO */
+    .ethics-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; max-width: 960px;
+    }
+    .ethics-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem; flex: 1; min-width: 200px; max-width: 260px;
+      cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .ethics-card .ec-company { font-size: 1.2rem; margin-bottom: 6px; }
+    .ethics-card .ec-scenario { font-size: 0.8rem; line-height: 1.4; color: var(--muted); }
+    .ethics-card .ec-verdict { font-size: 0.82rem; font-weight: 700; margin-top: 8px; display: none; }
+    .ethics-card.revealed .ec-verdict { display: block; }
+    .ethics-card.revealed { border-color: var(--accent); }
+
+    /* LAWS TABLE */
+    .laws-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .law-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1; min-width: 180px; max-width: 220px;
+      cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .law-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .law-card.revealed { border-color: var(--accent); background: rgba(5,150,105,0.1); }
+    .law-card .lc-name { font-size: 1.1rem; font-weight: 900; color: var(--accent); }
+    .law-card .lc-full { font-size: 0.72rem; color: var(--muted); margin: 4px 0; }
+    .law-card .lc-body { font-size: 0.8rem; line-height: 1.4; display: none; margin-top: 6px; }
+    .law-card.revealed .lc-body { display: block; }
+    .law-card .lc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 6px; }
+    .law-card.revealed .lc-hint { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<!-- SCOREBOARD -->
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row">
+    <span>🔴 Team Red</span>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract point Red">−</button>
+      <span class="score-val" id="sc-r">0</span>
+      <button class="score-btn" onclick="adj('r',1)" aria-label="Add point Red">+</button>
+    </div>
+  </div>
+  <div class="score-row">
+    <span>🔵 Team Blue</span>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract point Blue">−</button>
+      <span class="score-val" id="sc-b">0</span>
+      <button class="score-btn" onclick="adj('b',1)" aria-label="Add point Blue">+</button>
+    </div>
+  </div>
+  <div class="score-row">
+    <span>🟢 Team Green</span>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract point Green">−</button>
+      <span class="score-val" id="sc-g">0</span>
+      <button class="score-btn" onclick="adj('g',1)" aria-label="Add point Green">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDES -->
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 — HOOK -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Hook</div>
+    <div class="slide-title">Sold for $0.00</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Your apps are free. But what's the actual price you're paying?</div>
+    <div class="cards-row" style="margin-top:1.5rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📍</div>
+        <div class="card-label">Your Location</div>
+        <div class="card-body">Google Maps, Instagram, TikTok — all track where you are, where you've been, and how long you stayed. This is sold to advertisers and governments.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">👁️</div>
+        <div class="card-body">Every scroll, pause, like, and tap is logged. Platforms build a psychological profile of you to predict — and influence — what you do next.</div>
+        <div class="card-label">Your Attention</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💳</div>
+        <div class="card-label">Your Spending</div>
+        <div class="card-body">Your bank app, PayPal, and retailer loyalty cards map every purchase. Target famously predicts pregnancies before the person tells their family.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤖</div>
+        <div class="card-label">Your Identity</div>
+        <div class="card-body">Face ID scans, voice patterns, and biometrics create a permanent digital fingerprint. This data doesn't expire — it lives forever in databases.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:6px;">Partner activity — 90 seconds: What's one thing your most-used app definitely knows about you?</div>
+      <div class="timer-display" id="t1">1:30</div>
+      <button class="timer-btn" onclick="startTimer('t1',90)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A smartphone on a table with a tiny price tag reading "$0.00" but surrounded by floating icons of an eye, location pin, credit card, and fingerprint — dark background, neon green glow</div>
+  </section>
+
+  <!-- SLIDE 2 — WHAT IS IT ETHICS? -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 3 · IT Ethics</div>
+    <div class="slide-title">What Is IT Ethics?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Standards of <strong>right and wrong</strong> in how we collect, use, and share information</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔒</div>
+        <div class="card-label">Privacy</div>
+        <div class="card-body">The right to control who sees your personal information. Violated when companies collect data without consent or share it without permission.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">©️</div>
+        <div class="card-label">Intellectual Property</div>
+        <div class="card-body">Software, music, videos, and text are protected by copyright. Pirating software or stealing code violates IP rights.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">✅</div>
+        <div class="card-label">Accuracy</div>
+        <div class="card-body">Data must be correct and up-to-date. Inaccurate data in a credit report, medical record, or background check can ruin someone's life.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌐</div>
+        <div class="card-label">Accessibility</div>
+        <div class="card-body">Digital Divide: not everyone has equal access to technology. IS professionals must consider who gets left out when systems are designed.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1.2rem;text-align:center;max-width:700px;">
+      <span class="badge badge-amber">Key Point</span>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:6px;">Ethics goes beyond what's <em>legal</em>. Something can be legal but still unethical — and vice versa.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four glowing symbols (lock, copyright, checkmark, globe) arranged around a central scale of justice — dark teal background, clean flat icon style</div>
+  </section>
+
+  <!-- SLIDE 3 — PII -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Privacy</div>
+    <div class="slide-title">What Is PII?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub"><strong>Personally Identifiable Information</strong> — data that can uniquely identify you</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:0.8rem;">Click each chip — is it PII?</p>
+    <div class="pii-row" style="margin-top:0.8rem;">
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'PII ✓ — your SSN is the most sensitive piece of identifying data you have')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'PII ✓ — your SSN is the most sensitive piece of identifying data you have')">Social Security Number</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'NOT PII — general weather data tells us nothing about a specific person')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'NOT PII — general weather data tells us nothing about a specific person')">Weather Data</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'PII ✓ — your home address can locate and identify you personally')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'PII ✓ — your home address can locate and identify you personally')">Home Address</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'NOT PII — stock prices are public market data with no individual identifier')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'NOT PII — stock prices are public market data with no individual identifier')">Stock Prices</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'PII ✓ — biometrics are permanent and uniquely identify you — cannot be changed like a password')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'PII ✓ — biometrics are permanent and uniquely identify you — cannot be changed like a password')">Fingerprint</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'NOT PII — your city alone is too vague to uniquely identify you')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'NOT PII — your city alone is too vague to uniquely identify you')">City (general)</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'PII ✓ — medical records contain diagnoses, medications, and treatment history tied to your identity')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'PII ✓ — medical records contain diagnoses, medications, and treatment history tied to your identity')">Medical Records</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'PII ✓ — your email address is a direct, unique identifier for you online')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'PII ✓ — your email address is a direct, unique identifier for you online')">Email Address</div>
+      <div class="pii-chip hidden-type" onclick="flipPii(this,'NOT PII — public news articles are published for all and identify no individual')" tabindex="0" onkeydown="if(event.key==='Enter')flipPii(this,'NOT PII — public news articles are published for all and identify no individual')">News Article</div>
+    </div>
+    <div id="pii-feedback" style="margin-top:1rem;min-height:40px;text-align:center;font-size:0.85rem;color:var(--white);font-weight:600;"></div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A person's silhouette made up of floating data points (SSN, fingerprint, location pin, email icon) — glowing teal — surrounded by a protective data shield, dark background</div>
+  </section>
+
+  <!-- SLIDE 4 — PII CHALLENGE -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Team Activity</div>
+    <div class="slide-title">PII or Not PII?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Team challenge — 2 points per correct answer. Fastest team wins the round.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">Netflix tracks which movies people in Miami watch most. They use this in aggregate reports. Is this PII?</div>
+        <div class="sc-a">NOT PII — aggregate data with no individual identifiers is not personally identifiable. If Netflix stored YOUR watch history tied to YOUR account, that IS PII.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">A hospital stores a patient's name, date of birth, diagnosis, and insurance ID in their system. PII?</div>
+        <div class="sc-a">YES — PII (and protected by HIPAA). All four fields individually or combined can uniquely identify this patient.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">A grocery store tracks that "customers who buy diapers also buy beer on Fridays." Is this PII?</div>
+        <div class="sc-a">NOT PII — this is an aggregated behavioral pattern. No individual is identified. But if this data is linked to a specific loyalty card account, THEN it becomes PII.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">An app collects your real-time GPS coordinates every 30 seconds and stores them with your username. PII?</div>
+        <div class="sc-a">YES — PII. Precise location data tied to a username creates a detailed personal profile and can identify where you live, work, worship, and receive medical care.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four glowing data bubbles, each containing icons representing movie film, hospital cross, shopping cart, and GPS pin — red X on PII ones, green check on safe ones — teal neon style</div>
+  </section>
+
+  <!-- SLIDE 5 — GDPR -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Privacy Law</div>
+    <div class="slide-title">GDPR — Europe's Privacy Shield</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub"><strong>General Data Protection Regulation</strong> — the world's strongest data privacy law (EU, 2018)</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">✍️</div>
+        <div class="card-label">Informed Consent</div>
+        <div class="card-body">Companies MUST get clear, specific consent before collecting personal data. Pre-checked boxes and vague terms don't count.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🗂️</div>
+        <div class="card-label">Right of Access</div>
+        <div class="card-body">You can demand to see ALL data a company holds about you. They must provide it within 30 days.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🗑️</div>
+        <div class="card-label">Right to be Forgotten</div>
+        <div class="card-body">You can request permanent deletion of your personal data. The company must comply unless they have a legal reason to keep it.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💸</div>
+        <div class="card-label">Massive Fines</div>
+        <div class="card-body">Up to €20 million OR 4% of global annual revenue — whichever is higher. Google was fined €50M, Amazon €746M.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-blue">Scope</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">GDPR applies to ANY company serving EU citizens — including US companies like Google and Meta.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> EU flag with a digital shield overlay, four glowing cards representing consent, access, deletion, and a euro fine symbol — teal and blue gradient background, corporate infographic style</div>
+  </section>
+
+  <!-- SLIDE 6 — US PRIVACY LAWS -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 3 · US Law</div>
+    <div class="slide-title">US Privacy Laws</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Each law protects a different sector. Click to learn what each one covers.</div>
+    <div class="laws-row">
+      <div class="law-card" onclick="revealLaw(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealLaw(this)">
+        <div class="lc-name">HIPAA</div>
+        <div class="lc-full">Health Insurance Portability &amp; Accountability Act</div>
+        <div class="lc-body">Protects personal health information in healthcare settings. Hospitals, doctors, and insurers cannot share your medical records without consent.</div>
+        <div class="lc-hint">Click to reveal</div>
+      </div>
+      <div class="law-card" onclick="revealLaw(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealLaw(this)">
+        <div class="lc-name">FERPA</div>
+        <div class="lc-full">Family Educational Rights &amp; Privacy Act</div>
+        <div class="lc-body">Protects student education records. Schools cannot release your grades, transcripts, or disciplinary records without your consent (after age 18).</div>
+        <div class="lc-hint">Click to reveal</div>
+      </div>
+      <div class="law-card" onclick="revealLaw(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealLaw(this)">
+        <div class="lc-name">COPPA</div>
+        <div class="lc-full">Children's Online Privacy Protection Act</div>
+        <div class="lc-body">Restricts websites from collecting data on children under 13. Requires parental consent before any personal data is collected from minors.</div>
+        <div class="lc-hint">Click to reveal</div>
+      </div>
+      <div class="law-card" onclick="revealLaw(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealLaw(this)">
+        <div class="lc-name">CCPA</div>
+        <div class="lc-full">California Consumer Privacy Act</div>
+        <div class="lc-body">US's closest equivalent to GDPR — California residents can opt out of data sales, know what is collected, and request deletion.</div>
+        <div class="lc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-red">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">GDPR is NOT a US law. HIPAA ≠ student records (that's FERPA). Each law = one sector.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four US government-style law documents labeled HIPAA, FERPA, COPPA, CCPA — each glowing in teal with sector icons: hospital cross, graduation cap, child figure, California state outline</div>
+  </section>
+
+  <!-- SLIDE 7 — LAW MATCH CHALLENGE -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Team Competition</div>
+    <div class="slide-title">Law Match Challenge</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Which law applies? 2 points per correct answer — fastest team wins.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario A</div>
+        <div class="sc-q">A parent demands to know why their 10-year-old's TikTok account was collecting their location data. What law is relevant?</div>
+        <div class="sc-a">COPPA — Children's Online Privacy Protection Act. Children under 13 require parental consent for any data collection.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario B</div>
+        <div class="sc-q">A student in Germany wants to know what data FIU holds about their academic performance and wants it deleted. What law?</div>
+        <div class="sc-a">GDPR — as an EU citizen, they have the right to access and delete personal data under the General Data Protection Regulation. (FERPA would apply if they were a US student.)</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario C</div>
+        <div class="sc-q">A doctor accidentally emails your test results to the wrong patient. What law was violated?</div>
+        <div class="sc-a">HIPAA — Health Insurance Portability and Accountability Act. Medical information is protected health data that cannot be shared without consent.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario D</div>
+        <div class="sc-q">A university posts a student's grades on a public bulletin board without their permission. What law?</div>
+        <div class="sc-a">FERPA — Family Educational Rights and Privacy Act. Student education records are protected and cannot be disclosed without consent after age 18.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four scenario bubbles connected by dotted lines to matching law badges (COPPA, GDPR, HIPAA, FERPA) — teal connecting lines on dark background, puzzle-piece visual style</div>
+  </section>
+
+  <!-- SLIDE 8 — REAL-WORLD CASES -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Case Studies</div>
+    <div class="slide-title">When Ethics Failed</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each case to see what went wrong and what it cost</div>
+    <div class="ethics-cards" style="margin-top:1.2rem;">
+      <div class="ethics-card" onclick="revealEthics(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEthics(this)">
+        <div class="ec-company">📘 Facebook / Cambridge Analytica</div>
+        <div class="ec-scenario">A quiz app harvested 87 million users' data without consent and used it to target political ads.</div>
+        <div class="ec-verdict"><span class="badge badge-red">$5B FTC Fine</span> — Largest ever at the time. Violated user privacy by sharing PII with third parties without informed consent.</div>
+      </div>
+      <div class="ethics-card" onclick="revealEthics(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEthics(this)">
+        <div class="ec-company">🏨 Marriott Hotels</div>
+        <div class="ec-scenario">A data breach exposed 500 million guests' passport numbers, emails, and credit card data — for 4 years before detection.</div>
+        <div class="ec-verdict"><span class="badge badge-red">£18.4M UK Fine (GDPR)</span> — Violated data integrity and availability. Guests were not notified promptly.</div>
+      </div>
+      <div class="ethics-card" onclick="revealEthics(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEthics(this)">
+        <div class="ec-company">🚗 Uber</div>
+        <div class="ec-scenario">Uber suffered a breach of 57 million users' data — then paid hackers $100K to stay silent and hid it from regulators for a year.</div>
+        <div class="ec-verdict"><span class="badge badge-red">$148M Settlement</span> — Violated breach disclosure laws. Cover-up made it dramatically worse than the breach itself.</div>
+      </div>
+      <div class="ethics-card" onclick="revealEthics(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEthics(this)">
+        <div class="ec-company">🧬 23andMe</div>
+        <div class="ec-scenario">Genetic data from 6.9 million users was accessed in a breach. The data included ancestry and health predisposition information.</div>
+        <div class="ec-verdict"><span class="badge badge-amber">Ongoing Litigation</span> — Biometric/genetic data is the most sensitive PII category. Once leaked, it can NEVER be changed.</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four company logos shown as cracked glass screens with data leaking out — Facebook, hotel building, Uber car, DNA helix — dark background with red warning glow</div>
+  </section>
+
+  <!-- SLIDE 9 — INTELLECTUAL PROPERTY -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 3 · IP Rights</div>
+    <div class="slide-title">Intellectual Property in IT</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Digital content is property. Copying it without permission is theft — even if it's easy.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💻</div>
+        <div class="card-label">Software Piracy</div>
+        <div class="card-body">Copying, distributing, or using software without a valid license. Costs the industry $46B+ annually. Companies face audits and lawsuits.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">©️</div>
+        <div class="card-label">Copyright Violation</div>
+        <div class="card-body">Using someone's code, images, music, or text without permission. "I found it on Google" is not a legal defense — most online content is copyrighted.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📝</div>
+        <div class="card-label">Plagiarism</div>
+        <div class="card-body">Using someone else's digital content as your own — code, papers, or reports. Academic and professional consequences can be career-ending.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔓</div>
+        <div class="card-label">Open Source &amp; Creative Commons</div>
+        <div class="card-body">Licenses that explicitly allow reuse — often with conditions (credit the author, share-alike, no commercial use). Always check the license.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;max-width:700px;">
+      <span class="badge badge-green">Real Talk</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">In a business context: using unlicensed software costs companies millions in fines and legal exposure. One audit can change everything.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing padlock on a piece of software code with a copyright symbol — split image: left side shows illegal copying with red warning, right side shows licensed use with green checkmark</div>
+  </section>
+
+  <!-- SLIDE 10 — ETHICS CHALLENGE -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Team Competition</div>
+    <div class="slide-title">Ethical or Not? You Decide.</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Teams get 20 seconds. Ethical ✅ or Unethical ❌ — and WHY? 2 points per correct answer.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Situation 1</div>
+        <div class="sc-q">A company monitors employees' work emails using an IS to ensure productivity. Legal in the US. Ethical?</div>
+        <div class="sc-a">DEBATABLE — Legal, but ethically questionable. Employees have reduced privacy expectations at work, but covert surveillance without disclosure erodes trust. Best practice: disclose the monitoring policy clearly.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Situation 2</div>
+        <div class="sc-q">A hospital sells de-identified (anonymized) patient data to a pharmaceutical company for research. No names, just diagnoses and ZIP codes. Ethical?</div>
+        <div class="sc-a">GENERALLY ETHICAL — if truly de-identified. But ZIP code + rare diagnosis can re-identify someone. The ethics of "anonymized" data is more complex than it appears.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Situation 3</div>
+        <div class="sc-q">A developer copies 50 lines of code from Stack Overflow without checking the license and ships it in a commercial product. Ethical?</div>
+        <div class="sc-a">UNETHICAL (and potentially illegal). Stack Overflow content has licensing terms. Using code without checking and attributing it violates intellectual property rights.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Situation 4</div>
+        <div class="sc-q">An AI system trained on job applications rejects candidates from certain zip codes at higher rates, but the company didn't explicitly program this. Ethical issue?</div>
+        <div class="sc-a">YES — Algorithmic bias creates discriminatory outcomes even without intent. IS professionals have a responsibility to audit systems for fairness. "We didn't mean it" is not a defense.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four scenario cards with a giant green checkmark or red X revealed — scales of justice glowing in the background — teal and white color scheme, classroom presentation style</div>
+  </section>
+
+  <!-- SLIDE 11 — KEY TAKEAWAYS -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>IT Ethics = standards of right and wrong for collecting, using, and sharing data — four pillars: Privacy, IP, Accuracy, Accessibility</li>
+      <li>PII = data that uniquely identifies you: SSN, address, biometrics, medical records, email. Aggregate or public data is NOT PII.</li>
+      <li>GDPR (EU): informed consent + right of access + right to be forgotten + fines up to 4% of global revenue</li>
+      <li>US Laws by sector: HIPAA (healthcare) · FERPA (education) · COPPA (children under 13) · CCPA (California consumers)</li>
+      <li>Ethics ≠ Legal. Something can be legal but still unethical — IS professionals must consider both.</li>
+      <li>Intellectual property includes software, code, and digital content. Piracy and plagiarism carry serious legal and career consequences.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing list of six key points emerging from a digital shield — teal neon lighting — each bullet has a small matching icon, dark background, clean modern typography</div>
+  </section>
+
+  <!-- SLIDE 12 — GAME TIME -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 3 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 3 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions covering Ethics, PII, GDPR &amp; US laws</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Study tips loaded in the app before the quiz</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — expect these concepts on every test</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-green" style="font-size:0.85rem;padding:8px 20px;">Remember: HIPAA = Health · FERPA = Education · COPPA = Children · GDPR = EU</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing game controller surrounded by privacy law abbreviations and a shield icon — teal neon against dark background, celebration confetti style</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<!-- NAVIGATION CONTROLS -->
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) {
+        items[takeawayIdx].classList.add('show');
+        takeawayIdx++;
+        return;
+      }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    const next = document.getElementById('s' + current);
+    next.classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pct = (current / TOTAL * 100).toFixed(2);
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = pct + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card) {
+    card.classList.toggle('revealed');
+  }
+
+  function revealSc(card) {
+    card.classList.toggle('revealed');
+  }
+
+  function revealLaw(card) {
+    card.classList.toggle('revealed');
+  }
+
+  function revealEthics(card) {
+    card.classList.toggle('revealed');
+  }
+
+  function flipPii(chip, msg) {
+    const isPii = msg.startsWith('PII');
+    chip.classList.remove('hidden-type');
+    if (isPii) {
+      chip.classList.add('pii-yes');
+    } else {
+      chip.classList.add('pii-no');
+    }
+    document.getElementById('pii-feedback').textContent = msg;
+  }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) { clearInterval(timerIntervals[id]); }
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]);
+        el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart';
+        btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

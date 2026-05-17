@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 4: Information Security — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #DC2626;
+      --accent2: #B91C1C;
+      --accent3: #FEE2E2;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(220,38,38,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #86EFAC; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* CIA TRIAD VISUAL */
+    .cia-triangle {
+      display: flex; flex-direction: column; align-items: center;
+      margin-top: 1rem; gap: 0.8rem; width: 100%; max-width: 780px;
+    }
+    .cia-row { display: flex; gap: 0.8rem; justify-content: center; width: 100%; }
+    .cia-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 16px; padding: 1.2rem 1.8rem; flex: 1; max-width: 260px;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .cia-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .cia-card.revealed { border-color: var(--accent); background: rgba(220,38,38,0.15); }
+    .cia-card .cia-letter { font-size: 2.5rem; font-weight: 900; color: var(--accent); line-height: 1; }
+    .cia-card .cia-word { font-size: 0.9rem; font-weight: 700; margin: 4px 0; }
+    .cia-card .cia-def { font-size: 0.82rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .cia-card.revealed .cia-def { display: block; color: var(--white); }
+    .cia-card .cia-example { font-size: 0.75rem; color: var(--accent); display: none; margin-top: 6px; font-style: italic; }
+    .cia-card.revealed .cia-example { display: block; }
+
+    /* THREAT CARDS */
+    .threat-cards {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+      margin-top: 1rem; max-width: 1000px;
+    }
+    .threat-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 12px; padding: 1rem 1.2rem; flex: 1;
+      min-width: 150px; max-width: 200px; cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .threat-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .threat-card.revealed { border-color: var(--accent); background: rgba(220,38,38,0.1); }
+    .threat-card .tc-icon { font-size: 1.6rem; margin-bottom: 6px; }
+    .threat-card .tc-name { font-size: 0.82rem; font-weight: 800; }
+    .threat-card .tc-body { font-size: 0.75rem; color: var(--muted); margin-top: 5px; line-height: 1.4; display: none; }
+    .threat-card.revealed .tc-body { display: block; color: var(--white); }
+    .threat-card .tc-hint { font-size: 0.68rem; color: var(--muted); margin-top: 4px; }
+    .threat-card.revealed .tc-hint { display: none; }
+
+    /* DEFENSE GRID */
+    .defense-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0.8rem; margin-top: 1.2rem; max-width: 900px; width: 100%;
+    }
+    .defense-cell {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .defense-cell:hover { border-color: var(--accent); }
+    .defense-cell.revealed { border-color: var(--accent); background: rgba(220,38,38,0.1); }
+    .defense-cell .dc-icon { font-size: 1.5rem; margin-bottom: 5px; }
+    .defense-cell .dc-name { font-size: 0.8rem; font-weight: 800; }
+    .defense-cell .dc-body { font-size: 0.73rem; color: var(--muted); margin-top: 4px; line-height: 1.35; display: none; }
+    .defense-cell.revealed .dc-body { display: block; color: var(--white); }
+
+    /* 2FA VISUAL */
+    .factors-row {
+      display: flex; gap: 1.2rem; justify-content: center; margin-top: 1.2rem;
+      max-width: 860px; width: 100%;
+    }
+    .factor-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 14px; padding: 1.4rem 1.6rem; flex: 1; max-width: 260px; text-align: center;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .factor-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .factor-card.revealed { border-color: var(--accent); background: rgba(220,38,38,0.1); }
+    .factor-card .fc-icon { font-size: 2rem; margin-bottom: 8px; }
+    .factor-card .fc-type { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+    .factor-card .fc-label { font-size: 1rem; font-weight: 700; margin: 4px 0; }
+    .factor-card .fc-examples { font-size: 0.78rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .factor-card.revealed .fc-examples { display: block; color: var(--white); }
+
+    /* BREACH CARDS */
+    .breach-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; max-width: 960px;
+    }
+    .breach-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem; flex: 1; min-width: 200px; max-width: 250px;
+      cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .breach-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .breach-card.revealed { border-color: var(--accent); }
+    .breach-card .bc-org { font-size: 1.1rem; margin-bottom: 5px; }
+    .breach-card .bc-incident { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+    .breach-card .bc-cost { font-size: 0.82rem; font-weight: 700; color: var(--accent); margin-top: 6px; display: none; }
+    .breach-card .bc-lesson { font-size: 0.75rem; color: #86EFAC; margin-top: 4px; display: none; line-height: 1.35; }
+    .breach-card.revealed .bc-cost, .breach-card.revealed .bc-lesson { display: block; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-red    { background: rgba(220,38,38,0.2);  color: #FCA5A5; }
+    .badge-green  { background: rgba(34,197,94,0.2);  color: #86EFAC; }
+    .badge-amber  { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+    .badge-blue   { background: rgba(59,130,246,0.2); color: #93C5FD; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px);
+      transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 — HOOK -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Hook</div>
+    <div class="slide-title">Breaking News: You've Been Breached</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">These headlines were real. The damage was permanent.</div>
+    <div class="breach-cards" style="margin-top:1.4rem;">
+      <div class="breach-card" onclick="revealBreach(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealBreach(this)">
+        <div class="bc-org">🏥 Change Healthcare (2024)</div>
+        <div class="bc-incident">Ransomware attack disrupted prescriptions for 100M+ Americans. Pharmacies couldn't process claims for weeks.</div>
+        <div class="bc-cost">Cost: $872M+ and counting</div>
+        <div class="bc-lesson">Lesson: A single compromised credential (no MFA) took down the largest US health payment processor.</div>
+      </div>
+      <div class="breach-card" onclick="revealBreach(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealBreach(this)">
+        <div class="bc-org">⛽ Colonial Pipeline (2021)</div>
+        <div class="bc-incident">Ransomware forced a shutdown of the pipeline supplying 45% of East Coast fuel. Gas lines stretched for miles.</div>
+        <div class="bc-cost">Paid $4.4M ransom (recovered $2.3M)</div>
+        <div class="bc-lesson">Lesson: Entry point was a leaked VPN password with no MFA. One password = critical infrastructure down.</div>
+      </div>
+      <div class="breach-card" onclick="revealBreach(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealBreach(this)">
+        <div class="bc-org">🛒 Target (2013)</div>
+        <div class="bc-incident">Hackers stole 40M credit card numbers by getting in through Target's HVAC vendor — a third-party contractor.</div>
+        <div class="bc-cost">$292M total cost; CEO resigned</div>
+        <div class="bc-lesson">Lesson: Your security is only as strong as your weakest vendor. Third-party access must be secured.</div>
+      </div>
+      <div class="breach-card" onclick="revealBreach(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealBreach(this)">
+        <div class="bc-org">🎮 MGM Resorts (2023)</div>
+        <div class="bc-incident">Hackers called the IT helpdesk, impersonated an employee (found on LinkedIn), and got access reset in 10 minutes.</div>
+        <div class="bc-cost">$100M+ in lost revenue</div>
+        <div class="bc-lesson">Lesson: Social engineering — not hacking code — was the weapon. Human error is the #1 security vulnerability.</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: What do all four breaches have in common?</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four cracked digital screens showing news headlines for each breach — red warning glow, dark background, breaking news ticker style</div>
+  </section>
+
+  <!-- SLIDE 2 — WHY SECURITY MATTERS -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Stakes</div>
+    <div class="slide-title">The Cost of Getting It Wrong</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Information security isn't optional — the numbers make the case for every organization</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">$4.88M</div>
+        <div class="stat-label">Average cost of a data breach in 2024 (IBM Cost of Data Breach Report)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">39 sec</div>
+        <div class="stat-label">How often a cyberattack occurs somewhere in the world</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">82%</div>
+        <div class="stat-label">Of breaches involve a human element — phishing, stolen credentials, or insider error</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">277 days</div>
+        <div class="stat-label">Average time to identify and contain a breach before it's discovered</div>
+      </div>
+    </div>
+    <div style="margin-top:1.2rem;text-align:center;max-width:700px;">
+      <span class="badge badge-red">Bottom Line</span>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:8px;">Information security is not an IT department problem. It is a business survival problem. Every employee is a potential attack surface.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four large glowing stat numbers on dark panels — dollar sign, clock, percentage, and calendar — red neon glow, corporate infographic style</div>
+  </section>
+
+  <!-- SLIDE 3 — CIA TRIAD -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Framework</div>
+    <div class="slide-title">The CIA Triad</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Every security decision in every organization maps back to these three pillars</div>
+    <div class="cia-triangle">
+      <div class="cia-row">
+        <div class="cia-card" onclick="revealCIA(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealCIA(this)">
+          <div class="cia-letter">C</div>
+          <div class="cia-word">Confidentiality</div>
+          <div class="cia-def">Only authorized people can access the data. Prevent unauthorized viewing, access, or disclosure.</div>
+          <div class="cia-example">Example: Encryption, access controls, passwords, role-based permissions</div>
+        </div>
+        <div class="cia-card" onclick="revealCIA(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealCIA(this)">
+          <div class="cia-letter">I</div>
+          <div class="cia-word">Integrity</div>
+          <div class="cia-def">Data is accurate, complete, and hasn't been tampered with. Ensure data is trustworthy.</div>
+          <div class="cia-example">Example: Checksums, version control, audit logs, digital signatures</div>
+        </div>
+      </div>
+      <div class="cia-row">
+        <div class="cia-card" onclick="revealCIA(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealCIA(this)" style="max-width:300px;">
+          <div class="cia-letter">A</div>
+          <div class="cia-word">Availability</div>
+          <div class="cia-def">Authorized users can access data and systems when needed. Prevent downtime and disruption.</div>
+          <div class="cia-example">Example: Backups, redundant servers, disaster recovery plans, uptime SLAs</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">CIA here stands for Confidentiality, Integrity, Availability — NOT the government agency.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> An equilateral triangle with three glowing vertices labeled C, I, A — each vertex a different shade of red — dark background, clean minimalist security poster style</div>
+  </section>
+
+  <!-- SLIDE 4 — CIA CHALLENGE -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Team Competition</div>
+    <div class="slide-title">Which Pillar Was Violated?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Teams get 20 seconds — identify the CIA violation. 2 points each.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">A hacker breaks into a hospital's database and reads patient records — but doesn't change or delete anything.</div>
+        <div class="sc-a">CONFIDENTIALITY — unauthorized parties accessed data they shouldn't have seen. Integrity and Availability were not affected (data wasn't changed or made unavailable).</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">Ransomware encrypts all of a company's files. Employees cannot open any documents or access any systems.</div>
+        <div class="sc-a">AVAILABILITY — authorized users can no longer access data. (Also arguably Integrity if files are corrupted, but the primary violation is Availability.)</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">A disgruntled employee subtly changes pricing data in the company's database before quitting. The errors go undetected for months.</div>
+        <div class="sc-a">INTEGRITY — data was modified by an unauthorized actor and is no longer accurate or trustworthy. The company made decisions based on corrupted data.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">A DDoS attack floods a bank's website with traffic, crashing it for 6 hours. No data was accessed or changed.</div>
+        <div class="sc-a">AVAILABILITY — the system is inaccessible to legitimate users. A Denial of Service attack specifically targets the Availability pillar without touching Confidentiality or Integrity.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four scenario panels each with a glowing C, I, or A revealed — lock icons, file icons, server icons — red warning glow on dark background</div>
+  </section>
+
+  <!-- SLIDE 5 — THREAT LANDSCAPE -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Threats</div>
+    <div class="slide-title">How Attackers Strike</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each threat to see how it works and who it targets</div>
+    <div class="threat-cards" style="margin-top:1.2rem;">
+      <div class="threat-card" onclick="revealThreat(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealThreat(this)">
+        <div class="tc-icon">🎣</div>
+        <div class="tc-name">Phishing</div>
+        <div class="tc-body">Fake emails, texts, or websites trick you into entering credentials. Most common attack vector — 3.4 billion phishing emails sent daily.</div>
+        <div class="tc-hint">Click</div>
+      </div>
+      <div class="threat-card" onclick="revealThreat(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealThreat(this)">
+        <div class="tc-icon">🔒</div>
+        <div class="tc-name">Ransomware</div>
+        <div class="tc-body">Malware encrypts your files and demands payment for the decryption key. Average ransom demand: $1.5M. Average payout: $570K.</div>
+        <div class="tc-hint">Click</div>
+      </div>
+      <div class="threat-card" onclick="revealThreat(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealThreat(this)">
+        <div class="tc-icon">🐴</div>
+        <div class="tc-name">Trojan</div>
+        <div class="tc-body">Malicious code disguised as legitimate software. You install what looks like a game or utility — you also install the attacker's backdoor.</div>
+        <div class="tc-hint">Click</div>
+      </div>
+      <div class="threat-card" onclick="revealThreat(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealThreat(this)">
+        <div class="tc-icon">👁️</div>
+        <div class="tc-name">Spyware</div>
+        <div class="tc-body">Silently monitors your activity — keystrokes, screenshots, camera access — and sends the data to attackers without your knowledge.</div>
+        <div class="tc-hint">Click</div>
+      </div>
+      <div class="threat-card" onclick="revealThreat(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealThreat(this)">
+        <div class="tc-icon">💀</div>
+        <div class="tc-name">DDoS Attack</div>
+        <div class="tc-body">Floods a server with so much fake traffic it crashes, making websites or services unavailable to real users. Targets Availability.</div>
+        <div class="tc-hint">Click</div>
+      </div>
+      <div class="threat-card" onclick="revealThreat(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealThreat(this)">
+        <div class="tc-icon">🎭</div>
+        <div class="tc-name">Social Engineering</div>
+        <div class="tc-body">Psychological manipulation — not hacking code. Pretending to be IT support, an executive, or a vendor to get someone to hand over access.</div>
+        <div class="tc-hint">Click</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing threat icons in a honeycomb layout — fishing hook, padlock, Trojan horse, eyeball, skull, and theater mask — red neon on dark background</div>
+  </section>
+
+  <!-- SLIDE 6 — PHISHING DEEP DIVE -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Social Engineering</div>
+    <div class="slide-title">The #1 Weapon: Human Error</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">82% of breaches involve a human element. Click each tactic to see how it works.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📧</div>
+        <div class="card-label">Phishing Email</div>
+        <div class="card-body">"Your Netflix account has been suspended. Click here to reactivate." The link goes to a fake site that harvests your credentials. Tip-off: check the actual sender email address.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎯</div>
+        <div class="card-label">Spear Phishing</div>
+        <div class="card-body">Targeted phishing using personal details (found on LinkedIn, social media). "Hi David, per our call yesterday..." — feels real because it uses your actual name, job title, and company.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📞</div>
+        <div class="card-label">Vishing (Voice)</div>
+        <div class="card-body">"This is Microsoft support — your computer has a virus. Give me remote access." The MGM $100M breach started with a 10-minute phone call to IT helpdesk.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🚪</div>
+        <div class="card-label">Tailgating</div>
+        <div class="card-body">Physically following an authorized person through a secure door by pretending to carry boxes or acting like you belong. The body bypasses the digital lock.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;max-width:720px;">
+      <span class="badge badge-red">Key Insight</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">The attacker's goal is always the same: get a human to do something they shouldn't. No amount of technology protects against a person who is deceived.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four panels showing social engineering scenarios — phishing email on screen, targeted letter with name, phone with fake caller ID, person tailgating through a door — red danger indicators on each panel</div>
+  </section>
+
+  <!-- SLIDE 7 — ATTACK ID CHALLENGE -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Team Competition</div>
+    <div class="slide-title">Identify the Attack</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Name the attack type. 2 points for the correct term, bonus point for explaining the CIA violation.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Attack A</div>
+        <div class="sc-q">An employee gets an email from "IT Support" saying their VPN password expired. They click a link and re-enter their credentials on what looks like the company portal.</div>
+        <div class="sc-a">PHISHING — fake email + fake login page to harvest credentials. CIA: Confidentiality (stolen credentials expose access). Always verify through a separate channel before clicking.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Attack B</div>
+        <div class="sc-q">A hospital system wakes up to find all patient record files replaced with a message: "Your files are encrypted. Send 50 Bitcoin to restore access."</div>
+        <div class="sc-a">RANSOMWARE — malware encrypts files and demands ransom. CIA: Availability (system is down) + Integrity (files corrupted). Organizations must have offline backups to recover without paying.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Attack C</div>
+        <div class="sc-q">An attacker downloads a free game from an unofficial site. When installed, the game also installs software that screenshots the user's screen every 30 seconds and emails them to a server.</div>
+        <div class="sc-a">TROJAN + SPYWARE — the game is the Trojan (disguised malware). The screenshotter is spyware. CIA: Confidentiality (private information captured and exfiltrated).</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Attack D</div>
+        <div class="sc-q">Someone calls the HR manager, says they're from payroll, and needs the employee roster updated. The HR manager emails the full staff directory to an external address.</div>
+        <div class="sc-a">SOCIAL ENGINEERING / PRETEXTING — creating a fake scenario (pretext) to manipulate someone into disclosing data. No hacking needed. CIA: Confidentiality (PII disclosed). The MGM Resorts breach used this exact technique.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four attack scenario panels each labeled with a glowing attack type badge — fishing hook, ransomware lock, Trojan horse, phone — dark red UI on dark background</div>
+  </section>
+
+  <!-- SLIDE 8 — DEFENSE TOOLS -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Defenses</div>
+    <div class="slide-title">The Security Toolkit</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each control to learn what it defends against</div>
+    <div class="defense-grid">
+      <div class="defense-cell" onclick="revealDef(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealDef(this)">
+        <div class="dc-icon">🔥</div>
+        <div class="dc-name">Firewall</div>
+        <div class="dc-body">Monitors and filters all incoming/outgoing network traffic based on rules. The "gatekeeper" between your network and the internet. Defends: Confidentiality, Availability.</div>
+      </div>
+      <div class="defense-cell" onclick="revealDef(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealDef(this)">
+        <div class="dc-icon">🔐</div>
+        <div class="dc-name">Encryption</div>
+        <div class="dc-body">Scrambles data so only authorized parties with the decryption key can read it. At rest (stored files) and in transit (HTTPS). Defends: Confidentiality.</div>
+      </div>
+      <div class="defense-cell" onclick="revealDef(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealDef(this)">
+        <div class="dc-icon">🔑</div>
+        <div class="dc-name">Two-Factor Auth (2FA)</div>
+        <div class="dc-body">Requires two verification types: something you KNOW + something you HAVE or ARE. Even if your password is stolen, the attacker still can't log in. Defends: Confidentiality.</div>
+      </div>
+      <div class="defense-cell" onclick="revealDef(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealDef(this)">
+        <div class="dc-icon">🛡️</div>
+        <div class="dc-name">Antivirus / Antimalware</div>
+        <div class="dc-body">Detects, quarantines, and removes known malware signatures. Modern tools also use behavioral analysis to catch new threats. Defends: Confidentiality, Integrity.</div>
+      </div>
+      <div class="defense-cell" onclick="revealDef(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealDef(this)">
+        <div class="dc-icon">🌐</div>
+        <div class="dc-name">VPN</div>
+        <div class="dc-body">Virtual Private Network creates an encrypted tunnel for internet traffic. Protects data on public Wi-Fi. Masks your IP address from surveillance. Defends: Confidentiality.</div>
+      </div>
+      <div class="defense-cell" onclick="revealDef(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealDef(this)">
+        <div class="dc-icon">💾</div>
+        <div class="dc-name">Backups</div>
+        <div class="dc-body">Regular copies of critical data stored separately (including offline/offsite). The only reliable defense against ransomware — you restore from backup instead of paying. Defends: Availability, Integrity.</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six security tool icons in a 3x2 grid — flame, padlock, key, shield, globe, hard drive — glowing red on dark panels, cybersecurity dashboard style</div>
+  </section>
+
+  <!-- SLIDE 9 — 2FA & AUTHENTICATION -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Authentication</div>
+    <div class="slide-title">The Three Factors of Authentication</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2FA = any two of these three. MFA = multiple factors combined.</div>
+    <div class="factors-row">
+      <div class="factor-card" onclick="revealFactor(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealFactor(this)">
+        <div class="fc-icon">🧠</div>
+        <div class="fc-type">Factor 1</div>
+        <div class="fc-label">Something You KNOW</div>
+        <div class="fc-examples">Password · PIN · Security question answer · Passphrase<br><br><strong>Weakness:</strong> Can be guessed, phished, or stolen — and you don't know it's gone.</div>
+      </div>
+      <div class="factor-card" onclick="revealFactor(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealFactor(this)">
+        <div class="fc-icon">📱</div>
+        <div class="fc-type">Factor 2</div>
+        <div class="fc-label">Something You HAVE</div>
+        <div class="fc-examples">Phone (SMS code) · Authenticator app · Security key (YubiKey) · Smart card<br><br><strong>Weakness:</strong> Can be lost, stolen, or SIM-swapped (phone number hijacked).</div>
+      </div>
+      <div class="factor-card" onclick="revealFactor(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealFactor(this)">
+        <div class="fc-icon">👁️</div>
+        <div class="fc-type">Factor 3</div>
+        <div class="fc-label">Something You ARE</div>
+        <div class="fc-examples">Fingerprint · Face scan · Iris recognition · Voice pattern<br><br><strong>Weakness:</strong> Can't be changed if compromised. Biometric databases are high-value targets.</div>
+      </div>
+    </div>
+    <div style="margin-top:1.2rem;text-align:center;max-width:700px;">
+      <span class="badge badge-green">Real Impact</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">Microsoft reports that MFA blocks 99.9% of automated credential-based attacks. The Colonial Pipeline breach and Change Healthcare breach both lacked MFA on critical systems.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Three factor cards side by side — brain glowing blue, phone glowing green, eye scanning red — connected by a security lock symbol in the center — dark background, authentication flow diagram style</div>
+  </section>
+
+  <!-- SLIDE 10 — BCP & DISASTER RECOVERY -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Business Continuity</div>
+    <div class="slide-title">When Security Fails: BCP &amp; Disaster Recovery</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Prevention is the goal. But resilience is the backup plan. Click each card.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📋</div>
+        <div class="card-label">Business Continuity Plan (BCP)</div>
+        <div class="card-body">A documented plan for how an organization will continue operating during and after a disruption. Covers people, processes, and technology. Answers: "What do we do if our systems go down?"</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⚡</div>
+        <div class="card-label">Disaster Recovery (DR)</div>
+        <div class="card-body">The technical subset of BCP — specifically how to restore IT systems, data, and infrastructure after an incident. DR includes backup systems, failover servers, and recovery time objectives (RTO).</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎯</div>
+        <div class="card-label">RTO vs RPO</div>
+        <div class="card-body"><strong>RTO (Recovery Time Objective)</strong>: How long can we be down? "We must be back online within 4 hours."<br><br><strong>RPO (Recovery Point Objective)</strong>: How much data can we lose? "We can't lose more than 1 hour of transactions."</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏥</div>
+        <div class="card-label">Incident Response</div>
+        <div class="card-body">The step-by-step process when a breach happens: Identify → Contain → Eradicate → Recover → Review. Every organization above a certain size is legally required to have an IR plan.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;max-width:700px;">
+      <span class="badge badge-blue">Real World</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">Change Healthcare had no BCP covering a ransomware attack. Result: 100M+ patient prescriptions halted for weeks. A plan might not prevent the breach, but it prevents the chaos.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four recovery plan document icons — clipboard, lightning bolt, target arrows, hospital cross — glowing on dark panels, business continuity planning visual style</div>
+  </section>
+
+  <!-- SLIDE 11 — KEY TAKEAWAYS -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>CIA Triad: Confidentiality (who sees it) · Integrity (is it accurate?) · Availability (can you access it?). Every security decision maps to one or more of these.</li>
+      <li>82% of breaches involve a human element. Phishing, social engineering, and insider error are the most common attack vectors — not Hollywood hacking.</li>
+      <li>Attack types: Phishing (deception) · Ransomware (encrypt + ransom) · Trojan (disguised malware) · Spyware (silent surveillance) · DDoS (overwhelm = crash).</li>
+      <li>Defense toolkit: Firewall (gatekeeper) · Encryption (scramble data) · 2FA (two verification types) · Antivirus (detect malware) · VPN (encrypted tunnel) · Backups (ransomware antidote).</li>
+      <li>2FA = something you KNOW + something you HAVE or ARE. MFA blocks 99.9% of automated attacks.</li>
+      <li>BCP = how the business survives a disruption. DR = how IT systems are restored. RTO = how fast. RPO = how much data loss is acceptable.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet points on dark panels — each with a small matching icon — red left border on each card, clean cybersecurity briefing style</div>
+  </section>
+
+  <!-- SLIDE 12 — GAME TIME -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 4 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 4 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: CIA Triad, Phishing, Firewall, Ransomware, 2FA</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips loaded before the quiz</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — Ch 4 is on every IS exam in the country</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-red" style="font-size:0.85rem;padding:8px 20px;">Remember: CIA = Confidentiality · Integrity · Availability (not the government)</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with a security shield overlay — red neon celebration style on dark background, quiz time energy</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) {
+        items[takeawayIdx].classList.add('show');
+        takeawayIdx++;
+        return;
+      }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    const next = document.getElementById('s' + current);
+    next.classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pct = (current / TOTAL * 100).toFixed(2);
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = pct + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)        { card.classList.toggle('revealed'); }
+  function revealSc(card)      { card.classList.toggle('revealed'); }
+  function revealBreach(card)  { card.classList.toggle('revealed'); }
+  function revealCIA(card)     { card.classList.toggle('revealed'); }
+  function revealThreat(card)  { card.classList.toggle('revealed'); }
+  function revealDef(cell)     { cell.classList.toggle('revealed'); }
+  function revealFactor(card)  { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]);
+        el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart';
+        btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

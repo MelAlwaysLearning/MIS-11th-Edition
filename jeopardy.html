@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIS Jeopardy! — ISM 3011</title>
+<style>
+:root {
+  --blue-deep: #04007a;
+  --blue-mid: #0a00b0;
+  --blue-tile: #1a0dce;
+  --blue-hover: #2a1fe8;
+  --gold: #FFD700;
+  --used: #12103a;
+  --dd: #FF1493;
+  --ok: #22c55e;
+  --bad: #ef4444;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  font-family: 'Arial Black', Arial, sans-serif;
+  background: var(--blue-deep);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--blue-mid);
+  border-bottom: 3px solid var(--gold);
+  padding: .6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.game-title {
+  font-size: 1.8rem;
+  color: var(--gold);
+  text-shadow: 2px 2px 6px rgba(0,0,0,.6);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── SCOREBOARD ── */
+.scoreboard { display:flex; gap:.6rem; flex-wrap:wrap; }
+.team-card {
+  background: rgba(0,0,0,.35);
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  padding: .4rem .8rem;
+  min-width: 130px;
+  text-align: center;
+}
+.team-name {
+  font-size: .7rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--gold);
+  font-family: inherit;
+  font-weight: 900;
+  width: 100%;
+  text-align: center;
+}
+.team-name:focus { outline: 1px dashed rgba(255,215,0,.5); border-radius: 3px; }
+.team-score { font-size: 1.7rem; line-height: 1.1; }
+.t1 .team-score { color: #f87171; }
+.t2 .team-score { color: #4ade80; }
+.t3 .team-score { color: #fbbf24; }
+.score-btns { display:flex; gap:3px; justify-content:center; margin-top:4px; flex-wrap:wrap; }
+.sbtn {
+  background: none;
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  border-radius: 4px;
+  font-size: .6rem;
+  padding: 2px 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+}
+.sbtn:hover { background: rgba(255,255,255,.15); }
+.sbtn.p { border-color: var(--ok); color: var(--ok); }
+.sbtn.m { border-color: var(--bad); color: var(--bad); }
+
+/* ── HEADER RIGHT ── */
+.hdr-right { margin-left:auto; display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+.ctrl-btn {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  border-radius: 6px;
+  padding: .35rem .8rem;
+  font-family: inherit;
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+.ctrl-btn:hover { background: rgba(255,255,255,.2); }
+.ctrl-btn.danger { border-color: var(--bad); color: var(--bad); }
+
+/* ── BOARD TABS ── */
+.board-tabs {
+  display: flex;
+  background: var(--blue-mid);
+  padding: .4rem 1rem 0;
+  border-bottom: 2px solid var(--gold);
+  gap: .25rem;
+}
+.btab {
+  padding: .5rem 1.2rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: rgba(255,255,255,.45);
+  font-family: inherit;
+  font-size: .8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  cursor: pointer;
+}
+.btab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.btab:hover:not(.active) { color: rgba(255,255,255,.75); }
+
+/* ── BOARD SUBTITLE ── */
+.board-sub {
+  text-align: center;
+  padding: .3rem;
+  font-size: .7rem;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+/* ── GRID ── */
+.board {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: auto repeat(5, 1fr);
+  gap: 4px;
+  padding: 4px;
+}
+.board.hidden { display:none; }
+
+.cat-hdr {
+  background: var(--blue-mid);
+  border: 2px solid rgba(255,255,255,.15);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: .5rem .3rem;
+  font-size: clamp(.55rem, 1.15vw, .85rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  line-height: 1.2;
+}
+
+.tile {
+  background: var(--blue-tile);
+  border: 2px solid rgba(255,255,255,.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .12s, transform .1s, border-color .12s;
+  user-select: none;
+}
+.tile:hover:not(.used) {
+  background: var(--blue-hover);
+  transform: scale(1.025);
+  border-color: var(--gold);
+}
+.tile.used {
+  background: var(--used);
+  cursor: default;
+  border-color: rgba(255,255,255,.04);
+}
+.tile.used .pts { color: rgba(255,255,255,.12); text-decoration: line-through; }
+.tile.dd { border-color: var(--dd) !important; }
+.tile.dd:not(.used) .pts { color: var(--dd); }
+
+.pts {
+  font-size: clamp(1rem, 2.8vw, 2rem);
+  color: var(--gold);
+  font-weight: 900;
+  text-shadow: 1px 1px 4px rgba(0,0,0,.5);
+}
+
+/* ── OVERLAY ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.93);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1.5rem;
+}
+.overlay.hidden { display:none; }
+
+/* ── QUESTION CARD ── */
+.q-card {
+  background: var(--blue-mid);
+  border: 3px solid var(--gold);
+  border-radius: 12px;
+  max-width: 860px;
+  width: 100%;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+.q-meta {
+  font-size: .75rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: .4rem;
+}
+.q-cat {
+  font-size: .7rem;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 1.5rem;
+}
+.q-clue {
+  font-size: clamp(1.05rem, 2.8vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fff;
+  margin-bottom: 2rem;
+  font-family: Arial, sans-serif;
+}
+.q-answer {
+  font-size: clamp(.9rem, 2.3vw, 1.3rem);
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0,0,0,.35);
+  border-radius: 8px;
+  border: 2px solid var(--gold);
+  font-family: Arial, sans-serif;
+  line-height: 1.4;
+}
+.btn-row { display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+.btn {
+  padding: .55rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  cursor: pointer;
+  transition: opacity .12s;
+}
+.btn:hover { opacity: .85; }
+.btn-reveal { background: var(--gold); color: #000; }
+.btn-close { background: rgba(255,255,255,.12); color: #fff; }
+
+.award-row { margin-top:.75rem; }
+.award-label { font-size:.65rem; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.4rem; }
+.award-btns { display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; }
+.abtn {
+  padding: .4rem .9rem;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: .72rem;
+  font-weight: 900;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.abtn:hover { opacity:.85; }
+.abtn.t1 { background:#ef4444; color:#fff; }
+.abtn.t2 { background:#22c55e; color:#fff; }
+.abtn.t3 { background:#f59e0b; color:#000; }
+
+/* ── DAILY DOUBLE ── */
+.dd-screen { text-align:center; max-width:600px; width:100%; }
+.dd-headline {
+  font-size: clamp(3rem, 10vw, 7rem);
+  color: var(--dd);
+  text-shadow: 0 0 40px rgba(255,20,147,.6);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  animation: ddPop .5s ease;
+  line-height: 1;
+}
+@keyframes ddPop {
+  0%   { transform:scale(.4); opacity:0; }
+  70%  { transform:scale(1.12); }
+  100% { transform:scale(1); opacity:1; }
+}
+.dd-sub {
+  font-size: .9rem;
+  color: rgba(255,255,255,.55);
+  margin: 1rem 0 2rem;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="game-title">MIS Jeopardy!</div>
+  <div class="scoreboard" id="scoreboard"></div>
+  <div class="hdr-right">
+    <button class="ctrl-btn" onclick="resetTiles()">Reset Board</button>
+    <button class="ctrl-btn danger" onclick="resetAll()">Reset All</button>
+  </div>
+</header>
+
+<!-- BOARD TABS -->
+<div class="board-tabs">
+  <button class="btab active" onclick="switchBoard('w1',this)">Week 1 — Ch 1, 2, 3, 5</button>
+  <button class="btab" onclick="switchBoard('w2',this)">Week 2 — Ch 4, 6, 7</button>
+  <button class="btab" onclick="switchBoard('ch4',this)">Ch 4 Only — Cybersecurity</button>
+  <button class="btab" onclick="switchBoard('ch6',this)">Ch 6 Only — Networks</button>
+  <button class="btab" onclick="switchBoard('ch7',this)">Ch 7 Only — E-Commerce</button>
+</div>
+<div class="board-sub" id="board-sub"></div>
+
+<!-- BOARDS -->
+<div id="board-w1" class="board"></div>
+<div id="board-w2" class="board hidden"></div>
+<div id="board-ch4" class="board hidden"></div>
+<div id="board-ch6" class="board hidden"></div>
+<div id="board-ch7" class="board hidden"></div>
+
+<!-- QUESTION OVERLAY -->
+<div class="overlay hidden" id="q-overlay">
+  <div class="q-card">
+    <div class="q-meta" id="q-meta"></div>
+    <div class="q-cat" id="q-cat"></div>
+    <div class="q-clue" id="q-clue"></div>
+    <div class="q-answer hidden" id="q-answer"></div>
+    <div class="btn-row">
+      <button class="btn btn-reveal" id="reveal-btn" onclick="revealAnswer()">Reveal Answer</button>
+      <button class="btn btn-close" onclick="closeOverlay()">Close</button>
+    </div>
+    <div class="award-row hidden" id="award-row">
+      <div class="award-label">Award points to:</div>
+      <div class="award-btns" id="award-btns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY DOUBLE OVERLAY -->
+<div class="overlay hidden" id="dd-overlay">
+  <div class="dd-screen">
+    <div class="dd-headline">Daily Double!</div>
+    <div class="dd-sub">Place your wager, then reveal the clue.</div>
+    <button class="btn btn-reveal" onclick="showDDQuestion()" style="margin-top:.5rem;">Show Clue →</button>
+  </div>
+</div>
+
+<script>
+// ── GAME DATA ──────────────────────────────────────────────────────────────────
+
+const BOARDS = {
+  w1: {
+    title: "Week 1 Review — Chapters 1, 2, 3, 5",
+    cats: ["IS FOUNDATIONS","COMPETITIVE ADVANTAGE","ETHICS & PRIVACY","DATA & DATABASES","NAME THAT SYSTEM","REAL WORLD"],
+    // questions[row][col]  row 0=200 … row 4=1000
+    questions: [
+      // 200 pts
+      [
+        { clue:"The 5 components of every IS — hardware, software, data, and these two.", ans:"People and Procedures", dd:false },
+        { clue:"This is what you call it when a company throws out its old process entirely and redesigns from scratch — NOT incremental improvement.", ans:"BPR — Business Process Reengineering", dd:false },
+        { clue:"This acronym describes data that can uniquely identify a specific individual.", ans:"PII — Personally Identifiable Information", dd:false },
+        { clue:"This SQL keyword filters rows based on a condition — like WHERE City = 'Miami'.", ans:"WHERE", dd:false },
+        { clue:"The system a cashier uses to scan your items and process your payment at checkout.", ans:"TPS — Transaction Processing System", dd:false },
+        { clue:"This company invented the digital camera in 1975, suppressed it to protect film sales, and went bankrupt.", ans:"Kodak", dd:false }
+      ],
+      // 400 pts
+      [
+        { clue:"This IS type processes every individual transaction in real time — every card swipe, every order entry, every scan.", ans:"TPS — Transaction Processing System", dd:false },
+        { clue:"Porter's framework identifying 5 structural forces that determine how competitive — and how profitable — an industry is.", ans:"Porter's Five Forces", dd:false },
+        { clue:"This EU law gives individuals the right to access, correct, and request deletion of their personal data.", ans:"GDPR — General Data Protection Regulation", dd:false },
+        { clue:"Unlike an operational database that stores current data, this stores historical data for complex trend analysis and reporting.", ans:"Data Warehouse", dd:false },
+        { clue:"A store manager's weekly sales report showing each department's revenue compared to the prior week.", ans:"MIS — Management Information System", dd:false },
+        { clue:"Blockbuster declined to buy this company for $50 million in 2000, calling it a 'small niche business.'", ans:"Netflix", dd:false }
+      ],
+      // 600 pts
+      [
+        { clue:"IT is a _____ of IS — meaning IS includes IT plus people, data, and procedures working together.", ans:"Subset", dd:false },
+        { clue:"Walmart wins by offering the lowest prices, using IS to cut cost at every supply chain step. This is Porter's _____ strategy.", ans:"Cost Leadership", dd:true },
+        { clue:"HIPAA protects this category of data. FERPA protects this other category.", ans:"HIPAA: medical/health records. FERPA: educational/student records.", dd:false },
+        { clue:"Name 3 of the 5 Vs of Big Data.", ans:"Any 3 of: Volume, Velocity, Variety, Veracity, Value", dd:false },
+        { clue:"A regional VP asks: 'Should we open a new store in Hialeah?' — a new question never asked before. This IS type runs the custom analysis.", ans:"DSS — Decision Support System", dd:false },
+        { clue:"When a manufacturer sells directly to consumers online, cutting out retailers like Foot Locker or Bed Bath & Beyond.", ans:"Disintermediation", dd:false }
+      ],
+      // 800 pts
+      [
+        { clue:"A CEO reviews a real-time dashboard showing company-wide KPIs compared to last quarter and industry benchmarks.", ans:"EIS — Executive Information System", dd:false },
+        { clue:"Ford reduced accounts payable from 500 employees to 125 by eliminating invoices entirely — redesigning the process from zero. That is _____.", ans:"BPR — Business Process Reengineering", dd:false },
+        { clue:"This 2018 scandal used a Facebook personality quiz to harvest 87 million users' data — including their friends' data — for political targeting.", ans:"Cambridge Analytica scandal", dd:false },
+        { clue:"A CustomerID column in the ORDERS table that points back to the primary key in the CUSTOMERS table is this type of key.", ans:"Foreign Key", dd:true },
+        { clue:"The CEO's quarterly dashboard showing the company vs. industry benchmarks is this IS type. A manager's custom analysis to answer a new question is this other IS type.", ans:"EIS (executive dashboard) and DSS (custom analysis)", dd:false },
+        { clue:"Amazon's fulfillment network took 30 years and $100B to build. Competitors cannot replicate it. This makes it a _____ Information System.", ans:"Strategic Information System", dd:false }
+      ],
+      // 1000 pts
+      [
+        { clue:"MIS produces standard, scheduled reports for middle management. This IS type answers new, ad hoc questions a manager has never asked before.", ans:"DSS — Decision Support System", dd:false },
+        { clue:"An IS that creates competitive advantage so hard to copy that rivals would need years and billions to replicate — not just useful, but ___.", ans:"Strategic Information System", dd:false },
+        { clue:"The 4 pillars of IT ethics — Privacy, Accuracy, Accessibility, and this fourth pillar.", ans:"Intellectual Property", dd:false },
+        { clue:"Target identified 25 purchasing signals — unscented lotion, certain vitamins, cotton balls — that appeared together in pregnant customers' shopping patterns. This data mining technique.", ans:"Association Rules", dd:false },
+        { clue:"Netflix analyzes 3 years of viewing data across 260 million subscribers to decide which original series to greenlight. This IS type.", ans:"DSS or Data Mining/Big Data system (accept either)", dd:false },
+        { clue:"Change Healthcare's ransomware breach exposed 100 million patients. The attackers used a compromised VPN login because there was no ___.", ans:"MFA — Multi-Factor Authentication", dd:false }
+      ]
+    ]
+  },
+
+  w2: {
+    title: "Week 2 Review — Chapters 4, 6, 7",
+    cats: ["CIA TRIAD","SECURITY TOOLKIT","NETWORKS","E-COMMERCE","ATTACK ID","CONNECT THE CHAPTERS"],
+    questions: [
+      // 200 pts
+      [
+        { clue:"The three letters CIA in the CIA Triad stand for these three words.", ans:"Confidentiality, Integrity, Availability", dd:false },
+        { clue:"Microsoft research found this single control blocks 99.9% of automated account compromise attempts.", ans:"MFA — Multi-Factor Authentication", dd:false },
+        { clue:"The network type connecting your Bluetooth earbuds to your phone — maximum range ~10 meters.", ans:"PAN — Personal Area Network", dd:false },
+        { clue:"All e-commerce is e-business, but not all e-business is _____.", ans:"E-Commerce", dd:false },
+        { clue:"A fake email appearing to be from 'your bank' asking you to click a link and verify your account.", ans:"Phishing", dd:false },
+        { clue:"Target's pregnancy prediction used data mining from Chapter 5. Using a customer's purchase data without consent connects to Chapter _____.", ans:"Chapter 3 — Ethics & Privacy (PII / IT Ethics)", dd:false }
+      ],
+      // 400 pts
+      [
+        { clue:"Ransomware encrypts your files so you cannot access them. Which CIA pillar is primarily violated?", ans:"Availability — you cannot access your own system", dd:false },
+        { clue:"If you have current offline backups, this attack loses virtually all its leverage — you restore and pay nothing.", ans:"Ransomware", dd:false },
+        { clue:"This device connects DIFFERENT networks using IP addresses. This other device connects devices WITHIN the same network.", ans:"Router (different networks) and Switch (same network)", dd:false },
+        { clue:"B2B e-commerce is this many times LARGER than B2C by total transaction value.", ans:"5 times larger", dd:false },
+        { clue:"The MGM Resorts $100 million hack: attackers found an employee on LinkedIn, called IT helpdesk, said they were locked out. This attack type.", ans:"Social Engineering / Pretexting", dd:false },
+        { clue:"The Colonial Pipeline attack used a compromised VPN. The attackers got in because the VPN login had no _____.", ans:"MFA — Multi-Factor Authentication", dd:false }
+      ],
+      // 600 pts
+      [
+        { clue:"An attacker reads 1 million customer records but changes nothing and deletes nothing. Which single CIA pillar was violated?", ans:"Confidentiality ONLY — nothing was changed (Integrity) or blocked (Availability)", dd:false },
+        { clue:"This is the IT restoration component specifically inside the larger Business Continuity Plan — not the whole BCP, just the systems recovery piece.", ans:"DR — Disaster Recovery", dd:false },
+        { clue:"This OSI layer is where SSL/TLS encryption operates.", ans:"Layer 6 — Presentation Layer", dd:true },
+        { clue:"This decades-old 1960s technology still processes more dollar value than Amazon and PayPal combined — automated B2B data exchange in standardized format.", ans:"EDI — Electronic Data Interchange", dd:false },
+        { clue:"Malicious software that encrypts your files and demands payment for the decryption key.", ans:"Ransomware", dd:false },
+        { clue:"HTTPS protects payment data on e-commerce sites. This connects to Chapter 4's security controls AND Chapter 6's concept of _____.", ans:"SSL/TLS encryption (Layer 6 of OSI / Presentation Layer)", dd:false }
+      ],
+      // 800 pts
+      [
+        { clue:"An attacker changes a patient's blood type in a hospital database. Nothing is stolen. No system goes down. Which CIA pillar?", ans:"Integrity — data was silently modified", dd:false },
+        { clue:"How fast an organization must restore IT systems after a disaster. Measured as _____, which stands for _____.", ans:"RTO — Recovery Time Objective", dd:false },
+        { clue:"The mnemonic for all 7 OSI layers from Layer 7 down to Layer 1.", ans:"All People Seem To Need Data Processing", dd:true },
+        { clue:"70% of online shopping carts are _____. The #1 cause is unexpected shipping costs appearing at checkout.", ans:"Abandoned", dd:false },
+        { clue:"A highly personalized phishing attack targeting a SPECIFIC individual using their real name, employer, and recent activity.", ans:"Spear Phishing", dd:false },
+        { clue:"Blockbuster chose incremental improvement over this — covered in Chapter 2 — when they should have redesigned their entire business model from scratch.", ans:"BPR — Business Process Reengineering", dd:false }
+      ],
+      // 1000 pts
+      [
+        { clue:"A DDoS attack floods servers with fake traffic so legitimate users cannot connect. Which CIA pillar — and which of the other two is NOT violated?", ans:"Availability violated. Confidentiality and Integrity are NOT violated — data is untouched.", dd:false },
+        { clue:"The average time between when an attacker enters a network and when the breach is discovered — 9 months expressed in days.", ans:"277 days", dd:false },
+        { clue:"FIU's internal HR and payroll system — accessible only to FIU employees with credentials, using the same TCP/IP technology as the internet.", ans:"Intranet", dd:false },
+        { clue:"Nike cut out Foot Locker and sells directly on Nike.com, keeping the margin and collecting direct customer data. This e-commerce concept.", ans:"Disintermediation", dd:false },
+        { clue:"An attacker follows an employee through a secure door by pretending to carry something heavy. The social norm being exploited.", ans:"Tailgating — exploiting social courtesy", dd:false },
+        { clue:"The Facebook Cambridge Analytica case violated these TWO pillars of IT ethics from Chapter 3.", ans:"Privacy AND Accuracy (or Privacy + Intellectual Property — accept Privacy + any second valid pillar)", dd:false }
+      ]
+    ]
+  },
+
+  ch4: {
+    title: "Chapter 4 — Cybersecurity",
+    cats: ["CIA TRIAD","ATTACK TYPES","SECURITY TOOLS","REAL SCENARIOS","NAME THAT THREAT"],
+    questions: [
+      // 200 pts
+      [
+        { clue:"The three letters CIA stand for Confidentiality, ___, and Availability.", ans:"Integrity", dd:false },
+        { clue:"A fake email appearing to be from 'your bank' asking you to click a link and verify your account.", ans:"Phishing", dd:false },
+        { clue:"A network device that monitors and controls incoming and outgoing network traffic based on security rules.", ans:"Firewall", dd:false },
+        { clue:"The MGM Resorts $100M hack: attackers found an employee on LinkedIn and called IT helpdesk pretending to be locked out. This attack type.", ans:"Social Engineering / Pretexting", dd:false },
+        { clue:"Software that secretly records your keystrokes and sends them to an attacker.", ans:"Keylogger", dd:false }
+      ],
+      // 400 pts
+      [
+        { clue:"Ransomware encrypts your files so you cannot access them. Which CIA pillar is primarily violated?", ans:"Availability — you cannot access your own system", dd:false },
+        { clue:"Self-replicating malware that spreads across networks without any user interaction.", ans:"Worm", dd:false },
+        { clue:"This single security control blocks 99.9% of automated account compromise attempts according to Microsoft research.", ans:"MFA — Multi-Factor Authentication", dd:false },
+        { clue:"Target's 2013 breach started when attackers accessed the network through this type of third-party vendor.", ans:"HVAC / supply chain vendor", dd:false },
+        { clue:"Malware that encrypts your files and demands payment — usually in cryptocurrency — for the decryption key.", ans:"Ransomware", dd:false }
+      ],
+      // 600 pts
+      [
+        { clue:"An attacker reads 1 million customer records but changes nothing and deletes nothing. Which single CIA pillar was violated?", ans:"Confidentiality ONLY — nothing was changed or blocked", dd:false },
+        { clue:"A highly personalized phishing attack targeting a SPECIFIC individual using their real name, employer, and recent activity.", ans:"Spear Phishing", dd:false },
+        { clue:"This security test involves hiring ethical hackers to find vulnerabilities before criminals do.", ans:"Penetration Testing", dd:true },
+        { clue:"The Colonial Pipeline attack succeeded because the compromised VPN login had no ___.", ans:"MFA — Multi-Factor Authentication", dd:false },
+        { clue:"An attacker follows an authorized employee through a secure door by pretending to carry something heavy.", ans:"Tailgating", dd:false }
+      ],
+      // 800 pts
+      [
+        { clue:"An attacker modifies a patient's blood type in a hospital database without being detected. Which CIA pillar?", ans:"Integrity — data was silently modified", dd:false },
+        { clue:"Malware that appears to be legitimate software but secretly opens a backdoor for attackers.", ans:"Trojan Horse", dd:false },
+        { clue:"The IT restoration plan nested inside the larger Business Continuity Plan — specifically covers restoring systems after a disaster.", ans:"DR — Disaster Recovery", dd:false },
+        { clue:"Change Healthcare's ransomware attack exposed 100 million patients. The root cause: no ___ on the VPN.", ans:"MFA — Multi-Factor Authentication", dd:true },
+        { clue:"Your device is secretly added to a network of thousands of compromised machines controlled remotely to launch attacks.", ans:"Botnet", dd:false }
+      ],
+      // 1000 pts
+      [
+        { clue:"A DDoS attack floods a server with fake traffic. Which CIA pillar does it violate — and which two does it NOT violate?", ans:"Availability violated. Confidentiality and Integrity are NOT violated — data is untouched.", dd:false },
+        { clue:"An attack that exploits a software vulnerability before the vendor even knows it exists — named for the zero days available to patch.", ans:"Zero-Day Exploit", dd:false },
+        { clue:"How fast an organization must restore IT systems after a disaster. Measured as ___, which stands for ___.", ans:"RTO — Recovery Time Objective", dd:false },
+        { clue:"The average time between an attacker entering a network and the breach being discovered — 9 months, expressed in days.", ans:"277 days", dd:false },
+        { clue:"An employee uses their own legitimate credentials to steal company data and sell it to a competitor. This threat type.", ans:"Insider Threat", dd:false }
+      ]
+    ]
+  },
+
+  ch6: {
+    title: "Chapter 6 — Networks & Communication",
+    cats: ["NETWORK BASICS","NETWORK TYPES","HARDWARE & PROTOCOLS","THE INTERNET","REAL WORLD"],
+    questions: [
+      // 200 pts
+      [
+        { clue:"The set of rules that govern how data is transmitted between devices on a network.", ans:"Protocol", dd:false },
+        { clue:"A network that spans a small area like a single office, floor, or building.", ans:"LAN — Local Area Network", dd:false },
+        { clue:"A device that connects multiple devices on a LOCAL network and forwards data only to the correct destination.", ans:"Switch", dd:false },
+        { clue:"The system that translates human-readable domain names like google.com into numeric IP addresses.", ans:"DNS — Domain Name System", dd:false },
+        { clue:"Your company connects its Miami and Chicago offices securely over the public internet using this.", ans:"VPN — Virtual Private Network", dd:false }
+      ],
+      // 400 pts
+      [
+        { clue:"This measures how much data can be transmitted over a network connection in a given time — measured in Mbps or Gbps.", ans:"Bandwidth", dd:false },
+        { clue:"A network that spans cities, countries, or continents — like the internet itself.", ans:"WAN — Wide Area Network", dd:false },
+        { clue:"A device that connects DIFFERENT networks together and routes traffic between them using IP addresses.", ans:"Router", dd:false },
+        { clue:"This OSI layer is where SSL/TLS encryption operates — between the Application and Transport layers.", ans:"Layer 6 — Presentation Layer", dd:false },
+        { clue:"The short-range wireless network connecting your Bluetooth earbuds to your phone — maximum range about 10 meters.", ans:"PAN — Personal Area Network", dd:false }
+      ],
+      // 600 pts
+      [
+        { clue:"Data travels across networks broken into small units called ___.", ans:"Packets", dd:false },
+        { clue:"FIU's internal HR and payroll system — accessible only to FIU employees, using the same TCP/IP technology as the internet.", ans:"Intranet", dd:false },
+        { clue:"This protocol automatically assigns IP addresses to devices when they join a network.", ans:"DHCP — Dynamic Host Configuration Protocol", dd:true },
+        { clue:"Netflix uses this type of global network to deliver video from servers physically close to the viewer — reducing buffering.", ans:"CDN — Content Delivery Network", dd:false },
+        { clue:"A hospital connects all medical devices and computers within the building using this type of network.", ans:"LAN — Local Area Network", dd:false }
+      ],
+      // 800 pts
+      [
+        { clue:"The unique hardware identifier burned into every network interface card — formatted as 6 pairs of hexadecimal digits.", ans:"MAC Address", dd:false },
+        { clue:"A private encrypted tunnel over the public internet used to let remote employees securely connect to the company network.", ans:"VPN — Virtual Private Network", dd:false },
+        { clue:"HTTP stands for this — and adding an S makes it secure by adding encryption via SSL/TLS.", ans:"HyperText Transfer Protocol / HTTPS", dd:false },
+        { clue:"This technology allows an entire home or office to share a single public IP address — all devices appear as one address to the outside world.", ans:"NAT — Network Address Translation", dd:true },
+        { clue:"EDI — Electronic Data Interchange — this decades-old technology still processes more dollar value than Amazon and PayPal combined. What is it used for?", ans:"Automated B2B data exchange in standardized formats between companies", dd:false }
+      ],
+      // 1000 pts
+      [
+        { clue:"This layered model divides network communication into 7 layers — and the mnemonic for all 7 layers from Layer 7 down to Layer 1.", ans:"OSI Model — All People Seem To Need Data Processing", dd:false },
+        { clue:"The wireless standard used in offices and homes — based on IEEE 802.11 — commonly called this.", ans:"Wi-Fi", dd:false },
+        { clue:"The foundation of the internet — two protocols that together define how data is addressed, routed, and delivered between networks.", ans:"TCP/IP", dd:false },
+        { clue:"This wireless generation promises speeds up to 20 Gbps, ultra-low latency, and supports millions of IoT devices per square kilometer.", ans:"5G", dd:false },
+        { clue:"The service that connects your home or office network to the global internet — provided by companies like Comcast, AT&T, and Verizon.", ans:"ISP — Internet Service Provider", dd:false }
+      ]
+    ]
+  },
+
+  ch7: {
+    title: "Chapter 7 — E-Commerce & Digital Markets",
+    cats: ["E-COMMERCE MODELS","DIGITAL MARKETS","ONLINE PAYMENTS","MARKETING & DATA","REAL WORLD"],
+    questions: [
+      // 200 pts
+      [
+        { clue:"Amazon selling a product directly to you — the end consumer — is this type of e-commerce.", ans:"B2C — Business to Consumer", dd:false },
+        { clue:"The ability for customers to instantly compare prices across dozens of sellers online is called price ___.", ans:"Transparency", dd:false },
+        { clue:"PayPal, Venmo, and Apple Pay are all examples of this type of online payment method.", ans:"Digital Wallet / E-Payment", dd:false },
+        { clue:"Showing ads to users who previously visited your website but did not buy — sometimes called 'following' the customer around the web.", ans:"Retargeting", dd:false },
+        { clue:"Shopify allows small businesses without technical expertise to do this.", ans:"Set up and run an online store", dd:false }
+      ],
+      // 400 pts
+      [
+        { clue:"A business buying bulk office supplies from a vendor's website is this e-commerce model.", ans:"B2B — Business to Business", dd:false },
+        { clue:"When a manufacturer sells directly to consumers online, cutting out the middleman retailer entirely.", ans:"Disintermediation", dd:false },
+        { clue:"70% of online shopping carts end this way — the #1 cause is unexpected shipping costs appearing at checkout.", ans:"Abandoned", dd:false },
+        { clue:"Optimizing your website's content and structure so it ranks higher in Google search results — without paying for ads.", ans:"SEO — Search Engine Optimization", dd:false },
+        { clue:"Amazon Prime's free shipping plus streaming bundle increases this key metric by making customers reluctant to switch.", ans:"Customer Retention / Switching Cost / CLV", dd:false }
+      ],
+      // 600 pts
+      [
+        { clue:"eBay and Craigslist allow individuals to buy and sell to each other — this e-commerce model.", ans:"C2C — Consumer to Consumer", dd:false },
+        { clue:"Amazon recommending products based on your past purchases and what similar customers bought uses this technology.", ans:"Collaborative Filtering / Recommendation Engine", dd:false },
+        { clue:"This security standard protects cardholder data during online transactions — any business that accepts cards must comply.", ans:"PCI DSS", dd:true },
+        { clue:"The percentage of website visitors who complete a desired action — like making a purchase or signing up.", ans:"Conversion Rate", dd:false },
+        { clue:"Warby Parker started as online-only and then opened physical showrooms. This hybrid approach is called ___.", ans:"Omnichannel / Clicks-and-Bricks", dd:false }
+      ],
+      // 800 pts
+      [
+        { clue:"The government offering online tax filing and permit applications to citizens is this e-commerce model.", ans:"G2C — Government to Consumer", dd:false },
+        { clue:"Network effects mean a platform becomes more valuable as more ___ join it — why Facebook and Uber are so hard to displace.", ans:"Users", dd:false },
+        { clue:"This technology replaces your real card number with a one-time-use token during online or mobile transactions.", ans:"Tokenization", dd:false },
+        { clue:"A company finds that customers who buy Product A and B are 8x more likely to buy Product C. This data mining technique.", ans:"Market Basket Analysis / Association Rules", dd:true },
+        { clue:"Nike cut out Foot Locker and sells directly on Nike.com — keeping the margin and collecting direct customer data. This e-commerce concept.", ans:"Disintermediation", dd:false }
+      ],
+      // 1000 pts
+      [
+        { clue:"All e-commerce is e-business — but not all e-business is e-commerce. Explain the difference.", ans:"E-business includes ALL digital processes (internal systems, supply chain, HR). E-commerce specifically requires a commercial transaction.", dd:false },
+        { clue:"The total revenue a customer generates over their entire relationship with a company — used to decide how much to spend acquiring them.", ans:"CLV — Customer Lifetime Value", dd:false },
+        { clue:"Bitcoin and Ethereum are examples of this type of decentralized digital currency.", ans:"Cryptocurrency", dd:false },
+        { clue:"Sending personalized emails and product recommendations based on a customer's browsing history is called ___ marketing.", ans:"Targeted / Personalized Marketing", dd:false },
+        { clue:"In 2021, Facebook rebranded to Meta, betting billions that the next e-commerce frontier would be this immersive digital world.", ans:"Metaverse", dd:false }
+      ]
+    ]
+  }
+};
+
+// ── GAME STATE ────────────────────────────────────────────────────────────────
+
+const state = {
+  board: 'w1',
+  used: { w1: {}, w2: {}, ch4: {}, ch6: {}, ch7: {} },
+  teams: [
+    { name: 'Team 1', score: 0 },
+    { name: 'Team 2', score: 0 },
+    { name: 'Team 3', score: 0 }
+  ],
+  activeQ: null   // { boardId, row, col, pts }
+};
+
+const POINTS = [200, 400, 600, 800, 1000];
+
+// ── BUILD UI ──────────────────────────────────────────────────────────────────
+
+function buildScoreboard() {
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
+  state.teams.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = `team-card t${i+1}`;
+    card.id = `team-card-${i}`;
+    card.innerHTML = `
+      <input class="team-name" id="tname-${i}" value="${t.name}" maxlength="16"
+             onchange="state.teams[${i}].name=this.value; refreshAwardBtns()">
+      <div class="team-score" id="tscore-${i}">${fmtScore(t.score)}</div>
+      <div class="score-btns" id="tbtns-${i}"></div>`;
+    sb.appendChild(card);
+  });
+}
+
+function refreshScoreBtns(pts) {
+  POINTS.forEach((p, ri) => {
+    state.teams.forEach((_, ti) => {
+      const el = document.getElementById(`sbtn-${ti}-${p}`);
+      if (el) el.textContent = `+${p}`;
+    });
+  });
+  // Rebuild all score-btn containers with current pts context
+  state.teams.forEach((_, ti) => {
+    const container = document.getElementById(`tbtns-${ti}`);
+    if (!container) return;
+    const ptsArr = pts ? [pts] : [];
+    container.innerHTML = '';
+    if (ptsArr.length) {
+      const pa = document.createElement('button');
+      pa.className = 'sbtn p'; pa.textContent = `+${ptsArr[0]}`;
+      pa.onclick = () => adjustScore(ti, ptsArr[0]);
+      const ma = document.createElement('button');
+      ma.className = 'sbtn m'; ma.textContent = `-${ptsArr[0]}`;
+      ma.onclick = () => adjustScore(ti, -ptsArr[0]);
+      container.append(pa, ma);
+    }
+  });
+}
+
+function buildBoard(boardId) {
+  const bd = BOARDS[boardId];
+  const el = document.getElementById(`board-${boardId}`);
+  el.innerHTML = '';
+  el.style.gridTemplateColumns = `repeat(${bd.cats.length}, 1fr)`;
+
+  // Category headers
+  bd.cats.forEach(c => {
+    const h = document.createElement('div');
+    h.className = 'cat-hdr';
+    h.textContent = c;
+    el.appendChild(h);
+  });
+
+  // Tiles
+  POINTS.forEach((pts, row) => {
+    bd.cats.forEach((_, col) => {
+      const q = bd.questions[row][col];
+      const tile = document.createElement('div');
+      const usedKey = `${row}-${col}`;
+      const isUsed = !!state.used[boardId][usedKey];
+      tile.className = 'tile' + (isUsed ? ' used' : '') + (q.dd && !isUsed ? ' dd' : '');
+      tile.id = `tile-${boardId}-${row}-${col}`;
+      tile.innerHTML = `<span class="pts">${pts}</span>`;
+      if (!isUsed) {
+        tile.addEventListener('click', () => openQuestion(boardId, row, col, pts));
+      }
+      el.appendChild(tile);
+    });
+  });
+}
+
+// ── QUESTION FLOW ─────────────────────────────────────────────────────────────
+
+function openQuestion(boardId, row, col, pts) {
+  const q = BOARDS[boardId].questions[row][col];
+  state.activeQ = { boardId, row, col, pts };
+
+  if (q.dd) {
+    // Show Daily Double screen first
+    document.getElementById('dd-overlay').classList.remove('hidden');
+  } else {
+    showQuestionOverlay();
+  }
+}
+
+function showDDQuestion() {
+  document.getElementById('dd-overlay').classList.add('hidden');
+  showQuestionOverlay();
+}
+
+function showQuestionOverlay() {
+  const { boardId, row, col, pts } = state.activeQ;
+  const bd = BOARDS[boardId];
+  const q = bd.questions[row][col];
+
+  document.getElementById('q-meta').textContent = `$${pts}${q.dd ? '  ★ DAILY DOUBLE' : ''}`;
+  document.getElementById('q-cat').textContent = bd.cats[col];
+  document.getElementById('q-clue').textContent = q.clue;
+  document.getElementById('q-answer').textContent = q.ans;
+  document.getElementById('q-answer').classList.add('hidden');
+  document.getElementById('reveal-btn').classList.remove('hidden');
+  document.getElementById('award-row').classList.add('hidden');
+  refreshAwardBtns();
+
+  document.getElementById('q-overlay').classList.remove('hidden');
+}
+
+function revealAnswer() {
+  document.getElementById('q-answer').classList.remove('hidden');
+  document.getElementById('reveal-btn').classList.add('hidden');
+  document.getElementById('award-row').classList.remove('hidden');
+  // Also update score buttons in header with current pts
+  refreshScoreBtns(state.activeQ ? state.activeQ.pts : null);
+}
+
+function refreshAwardBtns() {
+  const ab = document.getElementById('award-btns');
+  if (!ab) return;
+  const pts = state.activeQ ? state.activeQ.pts : 0;
+  ab.innerHTML = '';
+  state.teams.forEach((t, i) => {
+    const btn = document.createElement('button');
+    btn.className = `abtn t${i+1}`;
+    btn.textContent = `${t.name} (+${pts})`;
+    btn.onclick = () => { adjustScore(i, pts); markUsed(); closeOverlay(); };
+    ab.appendChild(btn);
+  });
+  // No award button
+  const none = document.createElement('button');
+  none.className = 'btn btn-close';
+  none.style.fontSize = '.72rem';
+  none.style.padding = '.4rem .9rem';
+  none.textContent = 'No Award';
+  none.onclick = () => { markUsed(); closeOverlay(); };
+  ab.appendChild(none);
+}
+
+function markUsed() {
+  if (!state.activeQ) return;
+  const { boardId, row, col } = state.activeQ;
+  const key = `${row}-${col}`;
+  state.used[boardId][key] = true;
+  const tile = document.getElementById(`tile-${boardId}-${row}-${col}`);
+  if (tile) {
+    tile.classList.add('used');
+    tile.classList.remove('dd');
+    tile.replaceWith(tile.cloneNode(true)); // remove event listeners
+    const fresh = document.getElementById(`tile-${boardId}-${row}-${col}`);
+    if (fresh) fresh.classList.add('used');
+  }
+}
+
+function closeOverlay() {
+  document.getElementById('q-overlay').classList.add('hidden');
+  document.getElementById('dd-overlay').classList.add('hidden');
+  state.activeQ = null;
+  state.teams.forEach((_, ti) => {
+    const c = document.getElementById(`tbtns-${ti}`);
+    if (c) c.innerHTML = '';
+  });
+}
+
+// ── SCORE ─────────────────────────────────────────────────────────────────────
+
+function adjustScore(teamIdx, delta) {
+  state.teams[teamIdx].score += delta;
+  const el = document.getElementById(`tscore-${teamIdx}`);
+  if (el) el.textContent = fmtScore(state.teams[teamIdx].score);
+}
+
+function fmtScore(n) {
+  if (n < 0) return `-$${Math.abs(n).toLocaleString()}`;
+  return `$${n.toLocaleString()}`;
+}
+
+// ── BOARD SWITCH ──────────────────────────────────────────────────────────────
+
+function switchBoard(id, btn) {
+  ['w1','w2','ch4','ch6','ch7'].forEach(b => {
+    document.getElementById(`board-${b}`).classList.toggle('hidden', b !== id);
+  });
+  document.querySelectorAll('.btab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  state.board = id;
+  document.getElementById('board-sub').textContent = BOARDS[id].title;
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+
+function resetTiles() {
+  if (!confirm(`Reset all tiles on ${BOARDS[state.board].title}?`)) return;
+  state.used[state.board] = {};
+  buildBoard(state.board);
+}
+
+function resetAll() {
+  if (!confirm('Reset ALL boards AND all team scores?')) return;
+  state.used = { w1:{}, w2:{}, ch4:{}, ch6:{}, ch7:{} };
+  state.teams.forEach((t,i) => { t.score = 0; });
+  ['w1','w2','ch4','ch6','ch7'].forEach(b => buildBoard(b));
+  buildScoreboard();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+buildScoreboard();
+['w1','w2','ch4','ch6','ch7'].forEach(b => buildBoard(b));
+document.getElementById('board-sub').textContent = BOARDS['w1'].title;
+
+// Deep-link: ?board=ch4 auto-switches to that board
+const _bp = new URLSearchParams(window.location.search).get('board');
+if (_bp && BOARDS[_bp]) {
+  const _btn = document.querySelector(`[onclick="switchBoard('${_bp}',this)"]`);
+  if (_btn) switchBoard(_bp, _btn);
+}
+</script>
+</body>
+</html>

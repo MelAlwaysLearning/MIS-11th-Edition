@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 3 Printables — Student Handout &amp; Bingo | ISM3011</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: #f0fdf4; color: #1E293B;
+    }
+    .screen-nav {
+      background: #1E293B; color: white;
+      padding: 1rem 2rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .screen-nav h1 { font-size: 1rem; font-weight: 700; }
+    .screen-nav p  { font-size: 0.8rem; color: #94A3B8; margin-top: 2px; }
+    .nav-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-print { background: #059669; color: white; }
+    .btn-print:hover { background: #047857; }
+    .btn-back { background: transparent; border: 1px solid #475569; color: #94A3B8; }
+    .btn-back:hover { background: #334155; color: white; }
+
+    .print-preview { max-width: 860px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .page-label {
+      font-family: -apple-system, sans-serif; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #64748B;
+      margin: 2rem 0 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .page-label::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+    .print-page {
+      background: white; width: 100%; max-width: 780px; margin: 0 auto 1rem;
+      padding: 0.7in 0.75in; border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      min-height: 10.5in;
+    }
+
+    .handout-header {
+      border-bottom: 3px solid #1E293B; padding-bottom: 10px; margin-bottom: 18px;
+    }
+    .handout-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .handout-header .meta { font-size: 0.78rem; color: #475569; margin-top: 3px; }
+    .student-info { display: flex; gap: 2rem; margin-bottom: 18px; }
+    .info-field { flex: 1; }
+    .info-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; display: block; margin-bottom: 3px; }
+    .info-field .line { border-bottom: 1px solid #1E293B; height: 22px; }
+
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #065F46; margin: 18px 0 8px;
+      border-left: 3px solid #059669; padding-left: 8px;
+    }
+    p, li { font-size: 0.82rem; line-height: 1.55; }
+    .fill-blank {
+      display: inline-block; border-bottom: 1px solid #1E293B;
+      min-width: 120px; height: 16px; margin: 0 3px;
+    }
+    .fill-blank-lg {
+      display: block; border-bottom: 1px solid #1E293B;
+      min-width: 100%; height: 16px; margin: 6px 0;
+    }
+
+    /* LAW BOXES */
+    .law-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0;
+    }
+    .law-box {
+      border: 1.5px solid #059669; border-radius: 6px; padding: 8px;
+    }
+    .law-box .law-name { font-weight: 800; font-size: 0.9rem; color: #065F46; }
+    .law-box .law-stand { font-size: 0.7rem; color: #475569; margin: 2px 0; }
+    .law-box .law-covers { font-size: 0.72rem; font-weight: 700; color: #059669; }
+    .law-box .law-blank { border-bottom: 1px solid #CBD5E1; margin-top: 4px; height: 14px; }
+
+    /* PII SORT */
+    .pii-sort-row {
+      display: flex; gap: 8px; margin: 8px 0;
+    }
+    .pii-col {
+      flex: 1; border: 1.5px solid #059669; border-radius: 6px; padding: 6px 8px;
+    }
+    .pii-col h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+    .pii-col.yes-col { border-color: #EF4444; }
+    .pii-col.yes-col h4 { color: #B91C1C; }
+    .pii-col.no-col { border-color: #059669; }
+    .pii-col.no-col h4 { color: #065F46; }
+    .sort-line { border-bottom: 1px solid #E2E8F0; height: 16px; margin: 4px 0; }
+
+    /* SCENARIO TABLE */
+    table.law-match {
+      width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0;
+    }
+    .law-match th {
+      background: #1E293B; color: white; padding: 5px 8px; text-align: left;
+    }
+    .law-match td {
+      border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top;
+    }
+    .law-match tr:nth-child(even) td { background: #F0FDF4; }
+
+    /* KEY TERMS */
+    .terms-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 8px 0;
+    }
+    .term-entry .term-name { font-weight: 700; font-size: 0.8rem; color: #065F46; }
+    .term-entry .term-line { border-bottom: 1px solid #CBD5E1; height: 14px; margin: 3px 0; }
+
+    /* EXIT TICKET */
+    .exit-ticket {
+      border: 2px dashed #059669; border-radius: 10px;
+      padding: 12px 14px; margin-top: 18px;
+    }
+    .exit-ticket .et-title {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #065F46; margin-bottom: 8px;
+    }
+    .et-line { border-bottom: 1px solid #CBD5E1; height: 16px; margin: 6px 0; }
+
+    /* ETHICS CHECK */
+    .ethics-row { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+    .ethics-item {
+      border: 1px solid #CBD5E1; border-radius: 6px; padding: 6px 10px;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .verdict-box {
+      border: 1px solid #059669; border-radius: 4px;
+      min-width: 80px; font-size: 0.68rem; text-align: center;
+      padding: 3px 6px; color: #065F46; font-weight: 700;
+      text-transform: uppercase; flex-shrink: 0;
+    }
+    .ethics-item p { font-size: 0.76rem; line-height: 1.35; }
+
+    /* BINGO */
+    .bingo-header { text-align: center; margin-bottom: 10px; }
+    .bingo-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .bingo-header .card-num { font-size: 0.8rem; color: #64748B; }
+    .bingo-table {
+      width: 100%; border-collapse: collapse; table-layout: fixed;
+    }
+    .bingo-table th {
+      background: #059669; color: white; text-align: center;
+      padding: 10px 4px; font-size: 1.2rem; font-weight: 800;
+      border: 2px solid white;
+    }
+    .bingo-table td {
+      border: 2px solid #059669; text-align: center;
+      padding: 5px 3px; font-size: 0.62rem; font-weight: 700;
+      height: 1.3in; vertical-align: middle; line-height: 1.2;
+    }
+    .bingo-table td.free {
+      background: #D1FAE5; color: #065F46; font-size: 0.75rem; font-weight: 800;
+    }
+    .bingo-table tr:nth-child(odd) td { background: #F0FDF4; }
+    .bingo-table tr:nth-child(even) td { background: #ECFDF5; }
+    .bingo-table td.free { background: #D1FAE5 !important; }
+
+    /* CALL LIST */
+    .call-list { columns: 2; column-gap: 1.5rem; margin: 8px 0; }
+    .call-item { font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #E2E8F0; break-inside: avoid; }
+    .call-item .ci-term { font-weight: 700; color: #065F46; }
+    .how-to-box {
+      border: 1.5px solid #059669; border-radius: 8px;
+      padding: 10px 12px; margin: 10px 0; font-size: 0.78rem; background: #F0FDF4;
+    }
+    .how-to-box h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #065F46; }
+    .how-to-box ol { padding-left: 1.2rem; }
+    .how-to-box li { margin-bottom: 4px; }
+
+    @media print {
+      .screen-nav { display: none; }
+      .print-preview { margin: 0; padding: 0; }
+      .page-label { display: none; }
+      .print-page {
+        box-shadow: none; border: none;
+        padding: 0.6in 0.7in;
+        page-break-after: always;
+        min-height: 0; margin: 0;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="screen-nav" aria-label="Page navigation">
+  <div>
+    <h1>Chapter 3 Printables — Ethics &amp; Privacy</h1>
+    <p>ISM3011 | Print-ready student handout, key terms page, call list &amp; 4 Bingo cards</p>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn btn-print" onclick="window.print()">🖨 Print All Pages</button>
+    <button class="nav-btn btn-back" onclick="window.location='index.html'">← Back to MIS Journey</button>
+  </div>
+</nav>
+
+<div class="print-preview">
+
+  <!-- ══ PAGE 1 — STUDENT HANDOUT ══ -->
+  <div class="page-label">Page 1 of 6 — Student Handout</div>
+  <div class="print-page" id="page1">
+
+    <div class="handout-header">
+      <h2>Chapter 3 Study Guide — Ethics &amp; Privacy in Information Systems</h2>
+      <div class="meta">ISM3011 | Introduction to Management of Information Systems | 10th Edition</div>
+    </div>
+
+    <div class="student-info">
+      <div class="info-field"><label>Name</label><div class="line"></div></div>
+      <div class="info-field"><label>Date</label><div class="line"></div></div>
+      <div class="info-field"><label>Section</label><div class="line"></div></div>
+    </div>
+
+    <div class="section-title">Part 1 — Four Pillars of IT Ethics</div>
+    <p>Match each pillar to its definition. Write the letter in the blank.</p>
+    <p style="margin-top:6px;">Pillars: &nbsp;<strong>A) Privacy &nbsp; B) Intellectual Property &nbsp; C) Accuracy &nbsp; D) Accessibility</strong></p>
+    <p style="margin-top:8px;">____ The right to control who sees and uses your personal information.</p>
+    <p style="margin-top:4px;">____ Creative and original digital work (code, music, text) protected from unauthorized use.</p>
+    <p style="margin-top:4px;">____ Data must be correct, complete, and kept up-to-date.</p>
+    <p style="margin-top:4px;">____ Not all people have equal access to technology; systems must consider who is excluded.</p>
+
+    <div class="section-title">Part 2 — PII Sort</div>
+    <p>Sort each item into the correct column below. Write each item under either "IS PII" or "NOT PII."</p>
+    <p style="margin-top:6px; font-style:italic; font-size:0.78rem;">Items: Social Security Number · Weather forecast · Home address · Stock market price · Medical record · Fingerprint · Public news article · Email address</p>
+    <div class="pii-sort-row">
+      <div class="pii-col yes-col">
+        <h4>⚠️ IS PII</h4>
+        <div class="sort-line"></div>
+        <div class="sort-line"></div>
+        <div class="sort-line"></div>
+        <div class="sort-line"></div>
+      </div>
+      <div class="pii-col no-col">
+        <h4>✓ NOT PII</h4>
+        <div class="sort-line"></div>
+        <div class="sort-line"></div>
+        <div class="sort-line"></div>
+        <div class="sort-line"></div>
+      </div>
+    </div>
+    <p style="margin-top:8px;">Why can't a stolen password be permanently dangerous like a stolen fingerprint? <span class="fill-blank" style="min-width:250px;"></span></p>
+
+    <div class="section-title">Part 3 — US Privacy Laws</div>
+    <p>Fill in the blank for each law. What sector does each one protect?</p>
+    <div class="law-grid">
+      <div class="law-box">
+        <div class="law-name">HIPAA</div>
+        <div class="law-stand">Health Insurance Portability &amp; Accountability Act</div>
+        <div class="law-covers">Protects: <span style="font-weight:400;">_________________________ information</span></div>
+        <div class="law-blank"></div>
+      </div>
+      <div class="law-box">
+        <div class="law-name">FERPA</div>
+        <div class="law-stand">Family Educational Rights &amp; Privacy Act</div>
+        <div class="law-covers">Protects: <span style="font-weight:400;">_________________________ records</span></div>
+        <div class="law-blank"></div>
+      </div>
+      <div class="law-box">
+        <div class="law-name">COPPA</div>
+        <div class="law-stand">Children's Online Privacy Protection Act</div>
+        <div class="law-covers">Applies to: <span style="font-weight:400;">children under _______ years old</span></div>
+        <div class="law-blank"></div>
+      </div>
+      <div class="law-box">
+        <div class="law-name">GDPR</div>
+        <div class="law-stand">General Data Protection Regulation</div>
+        <div class="law-covers">Jurisdiction: <span style="font-weight:400;">_________________________</span></div>
+        <div class="law-blank"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Part 4 — Law Match</div>
+    <table class="law-match">
+      <thead>
+        <tr><th>Scenario</th><th>Which law applies? (write the name)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A doctor emails your blood test results to the wrong person</td><td></td></tr>
+        <tr><td>A university posts your GPA on a public board without asking</td><td></td></tr>
+        <tr><td>A website collects your 11-year-old cousin's location data without parent consent</td><td></td></tr>
+        <tr><td>A EU citizen asks a company to delete all data it holds about them</td><td></td></tr>
+      </tbody>
+    </table>
+
+  </div><!-- /page1 -->
+
+  <!-- ══ PAGE 2 — KEY TERMS + REFLECTION ══ -->
+  <div class="page-label">Page 2 of 6 — Key Terms &amp; Reflection</div>
+  <div class="print-page" id="page2">
+
+    <div class="handout-header">
+      <h2>Chapter 3 — Key Terms &amp; Ethics Reflection</h2>
+      <div class="meta">ISM3011 | Define each term in your own words</div>
+    </div>
+
+    <div class="section-title">Key Terms</div>
+    <div class="terms-grid">
+      <div class="term-entry">
+        <div class="term-name">IT Ethics</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">PII (Personally Identifiable Information)</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">GDPR</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">HIPAA</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Right to be Forgotten</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Informed Consent</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Digital Divide</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Intellectual Property</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Software Piracy</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Data Accuracy</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Is This Ethical?</div>
+    <p style="font-size:0.78rem;margin-bottom:6px;">For each situation, circle <strong>ETHICAL / UNETHICAL / GRAY AREA</strong> and write a one-sentence reason.</p>
+    <div class="ethics-row">
+      <div class="ethics-item">
+        <div>
+          <p><strong>1.</strong> A company sells your browsing history to advertisers after you agreed to a 50-page terms of service you didn't read.</p>
+          <p style="margin-top:4px;">Circle: &nbsp; ETHICAL &nbsp;/&nbsp; UNETHICAL &nbsp;/&nbsp; GRAY AREA &nbsp;&nbsp; Reason: <span class="fill-blank" style="min-width:200px;"></span></p>
+        </div>
+      </div>
+      <div class="ethics-item">
+        <div>
+          <p><strong>2.</strong> An employer monitors which websites employees visit on company computers during work hours and has a written policy saying so.</p>
+          <p style="margin-top:4px;">Circle: &nbsp; ETHICAL &nbsp;/&nbsp; UNETHICAL &nbsp;/&nbsp; GRAY AREA &nbsp;&nbsp; Reason: <span class="fill-blank" style="min-width:200px;"></span></p>
+        </div>
+      </div>
+      <div class="ethics-item">
+        <div>
+          <p><strong>3.</strong> A student copies open-source code from GitHub, removes the attribution, and submits it as their own project.</p>
+          <p style="margin-top:4px;">Circle: &nbsp; ETHICAL &nbsp;/&nbsp; UNETHICAL &nbsp;/&nbsp; GRAY AREA &nbsp;&nbsp; Reason: <span class="fill-blank" style="min-width:200px;"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="exit-ticket">
+      <div class="et-title">🎟 Exit Ticket — Your Data, Your Rules?</div>
+      <p style="font-size:0.78rem;margin-bottom:6px;">Should users be required to opt-IN to data collection (like GDPR), or should companies be able to collect data by default unless you opt-OUT (like most US apps now)? Take a position and defend it in 2–3 sentences.</p>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+    </div>
+
+  </div><!-- /page2 -->
+
+  <!-- ══ PAGE 3 — BINGO CALL LIST ══ -->
+  <div class="page-label">Page 3 of 6 — Bingo Call List (Professor Use)</div>
+  <div class="print-page" id="page3">
+
+    <div class="handout-header">
+      <h2>Chapter 3 Bingo — Call List &amp; Instructions</h2>
+      <div class="meta">ISM3011 | Read the CLUE aloud — students must identify the term on their card</div>
+    </div>
+
+    <div class="how-to-box">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Distribute one Bingo card (pages 4–7) to each student. Cards 1–4 have different layouts.</li>
+        <li>Read the <strong>clue</strong> aloud. Do NOT read the term in parentheses.</li>
+        <li>Students mark the matching term on their card using a pen, marker, or coin.</li>
+        <li>First student to get 5-in-a-row calls "BINGO!" Verify and award a prize.</li>
+      </ol>
+    </div>
+
+    <p style="font-size:0.78rem;margin-bottom:6px;"><em>Prize suggestions: extra credit point, candy, attendance waiver, front-row seating choice.</em></p>
+
+    <div class="section-title">Call List</div>
+    <div class="call-list">
+      <div class="call-item"><span class="ci-term">IT Ethics</span> — "Standards of right and wrong for collecting, using, and sharing information"</div>
+      <div class="call-item"><span class="ci-term">PII</span> — "Data that can uniquely identify a specific individual — like your SSN or fingerprint"</div>
+      <div class="call-item"><span class="ci-term">GDPR</span> — "Europe's privacy regulation that requires informed consent and allows deletion requests"</div>
+      <div class="call-item"><span class="ci-term">HIPAA</span> — "The US law protecting your personal health information at hospitals and clinics"</div>
+      <div class="call-item"><span class="ci-term">FERPA</span> — "The law that prevents your university from sharing your grades without permission"</div>
+      <div class="call-item"><span class="ci-term">COPPA</span> — "Requires parental consent before collecting data from children under 13"</div>
+      <div class="call-item"><span class="ci-term">CCPA</span> — "California's state-level privacy law — the closest US equivalent to GDPR"</div>
+      <div class="call-item"><span class="ci-term">Right to be Forgotten</span> — "The ability to demand a company permanently erase all data it holds about you"</div>
+      <div class="call-item"><span class="ci-term">Informed Consent</span> — "Users must clearly agree to data collection — buried fine print doesn't count"</div>
+      <div class="call-item"><span class="ci-term">Privacy</span> — "Your right to control who can see and use your personal information"</div>
+      <div class="call-item"><span class="ci-term">Intellectual Property</span> — "Creative works like software, music, and code that are legally protected from copying"</div>
+      <div class="call-item"><span class="ci-term">Software Piracy</span> — "Using software without a valid license — costs the industry billions each year"</div>
+      <div class="call-item"><span class="ci-term">Copyright</span> — "Legal protection that gives the creator exclusive rights over their digital work"</div>
+      <div class="call-item"><span class="ci-term">Data Accuracy</span> — "The ethical obligation to keep data correct and up-to-date — wrong data harms people"</div>
+      <div class="call-item"><span class="ci-term">Digital Divide</span> — "The gap between those who have access to technology and those who don't"</div>
+      <div class="call-item"><span class="ci-term">Biometrics</span> — "Physical identifiers like fingerprints or face scans — permanent PII that can never be changed"</div>
+      <div class="call-item"><span class="ci-term">Data Breach</span> — "When unauthorized parties gain access to protected personal data"</div>
+      <div class="call-item"><span class="ci-term">Opt-In</span> — "Data collection is OFF by default — users must actively choose to allow it (GDPR model)"</div>
+      <div class="call-item"><span class="ci-term">Opt-Out</span> — "Data collection is ON by default — users must actively choose to stop it (common US model)"</div>
+      <div class="call-item"><span class="ci-term">Algorithmic Bias</span> — "When an automated system produces discriminatory outcomes, even without intentional programming"</div>
+      <div class="call-item"><span class="ci-term">Phishing</span> — "Tricking users via fake emails or sites into revealing passwords or sensitive data"</div>
+      <div class="call-item"><span class="ci-term">Encryption</span> — "Scrambling data so only authorized parties can read it — a key privacy protection tool"</div>
+      <div class="call-item"><span class="ci-term">Plagiarism</span> — "Presenting someone else's digital work — code, text, or ideas — as your own"</div>
+      <div class="call-item"><span class="ci-term">Ethics vs. Legal</span> — "Something can be legal but still unethical — and vice versa"</div>
+      <div class="call-item"><span class="ci-term">FREE SPACE</span> — "Everyone marks the center square!"</div>
+    </div>
+
+  </div><!-- /page3 -->
+
+  <!-- ══ PAGE 4 — BINGO CARD 1 ══ -->
+  <div class="page-label">Page 4 of 6 — Bingo Card 1</div>
+  <div class="print-page" id="page4">
+    <div class="bingo-header">
+      <h2>Chapter 3 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 1</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 1">
+      <thead>
+        <tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>IT Ethics</td>
+          <td>GDPR</td>
+          <td>HIPAA</td>
+          <td>PII</td>
+          <td>FERPA</td>
+        </tr>
+        <tr>
+          <td>Informed Consent</td>
+          <td>Software Piracy</td>
+          <td>Data Accuracy</td>
+          <td>Right to be Forgotten</td>
+          <td>COPPA</td>
+        </tr>
+        <tr>
+          <td>Digital Divide</td>
+          <td>Opt-In</td>
+          <td class="free">★<br>FREE<br>SPACE</td>
+          <td>Biometrics</td>
+          <td>Privacy</td>
+        </tr>
+        <tr>
+          <td>Data Breach</td>
+          <td>Copyright</td>
+          <td>CCPA</td>
+          <td>Phishing</td>
+          <td>Opt-Out</td>
+        </tr>
+        <tr>
+          <td>Algorithmic Bias</td>
+          <td>Intellectual Property</td>
+          <td>Ethics vs. Legal</td>
+          <td>Encryption</td>
+          <td>Plagiarism</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 5 — BINGO CARD 2 ══ -->
+  <div class="page-label">Page 5 of 6 — Bingo Card 2</div>
+  <div class="print-page" id="page5">
+    <div class="bingo-header">
+      <h2>Chapter 3 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 2</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 2">
+      <thead>
+        <tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Privacy</td>
+          <td>COPPA</td>
+          <td>Encryption</td>
+          <td>IT Ethics</td>
+          <td>Algorithmic Bias</td>
+        </tr>
+        <tr>
+          <td>Copyright</td>
+          <td>Biometrics</td>
+          <td>FERPA</td>
+          <td>Informed Consent</td>
+          <td>Data Breach</td>
+        </tr>
+        <tr>
+          <td>Opt-Out</td>
+          <td>GDPR</td>
+          <td class="free">★<br>FREE<br>SPACE</td>
+          <td>Software Piracy</td>
+          <td>PII</td>
+        </tr>
+        <tr>
+          <td>CCPA</td>
+          <td>Digital Divide</td>
+          <td>Right to be Forgotten</td>
+          <td>Ethics vs. Legal</td>
+          <td>HIPAA</td>
+        </tr>
+        <tr>
+          <td>Plagiarism</td>
+          <td>Opt-In</td>
+          <td>Phishing</td>
+          <td>Data Accuracy</td>
+          <td>Intellectual Property</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 6 — BINGO CARDS 3 & 4 ══ -->
+  <div class="page-label">Page 6 of 6 — Bingo Cards 3 &amp; 4</div>
+  <div class="print-page" id="page6">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3in;">
+
+      <!-- Card 3 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 3 Bingo | ISM3011</h2>
+          <div class="card-num">Card 3</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 3" style="font-size:0.55rem;">
+          <thead>
+            <tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Phishing</td><td>HIPAA</td><td>Privacy</td><td>Opt-In</td><td>GDPR</td>
+            </tr>
+            <tr>
+              <td>Plagiarism</td><td>Data Accuracy</td><td>COPPA</td><td>IT Ethics</td><td>Copyright</td>
+            </tr>
+            <tr>
+              <td>Right to be Forgotten</td><td>Encryption</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Intellectual Property</td><td>Biometrics</td>
+            </tr>
+            <tr>
+              <td>Opt-Out</td><td>Data Breach</td><td>CCPA</td><td>FERPA</td><td>Informed Consent</td>
+            </tr>
+            <tr>
+              <td>Ethics vs. Legal</td><td>Algorithmic Bias</td><td>PII</td><td>Software Piracy</td><td>Digital Divide</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card 4 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 3 Bingo | ISM3011</h2>
+          <div class="card-num">Card 4</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 4" style="font-size:0.55rem;">
+          <thead>
+            <tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CCPA</td><td>PII</td><td>Algorithmic Bias</td><td>FERPA</td><td>Data Accuracy</td>
+            </tr>
+            <tr>
+              <td>Digital Divide</td><td>Copyright</td><td>GDPR</td><td>Biometrics</td><td>Opt-In</td>
+            </tr>
+            <tr>
+              <td>IT Ethics</td><td>HIPAA</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Encryption</td><td>Ethics vs. Legal</td>
+            </tr>
+            <tr>
+              <td>Informed Consent</td><td>Phishing</td><td>Opt-Out</td><td>Right to be Forgotten</td><td>Software Piracy</td>
+            </tr>
+            <tr>
+              <td>Plagiarism</td><td>Privacy</td><td>Data Breach</td><td>COPPA</td><td>Intellectual Property</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /page6 -->
+
+</div><!-- /print-preview -->
+</body>
+</html>

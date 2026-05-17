@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 7: E-Business &amp; E-Commerce — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #0284C7;
+      --accent2: #0369A1;
+      --accent3: #F0F9FF;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #7DD3FC; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* COMPARE TABLE */
+    .compare-wrap { width: 100%; max-width: 820px; margin-top: 1rem; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .compare-table th { background: var(--accent); color: white; padding: 8px 14px; text-align: left; }
+    .compare-table td { border-bottom: 1px solid #334155; padding: 8px 14px; vertical-align: top; }
+    .compare-table tr:nth-child(odd) td { background: rgba(2,132,199,0.08); }
+
+    /* REVENUE MODEL CARDS */
+    .rev-cards {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 1000px; width: 100%;
+    }
+    .rev-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 14px; padding: 1rem; flex: 1; min-width: 150px; max-width: 185px;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .rev-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .rev-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .rev-card .rv-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .rev-card .rv-name { font-size: 0.82rem; font-weight: 800; }
+    .rev-card .rv-def { font-size: 0.77rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .rev-card.revealed .rv-def { display: block; color: var(--white); }
+    .rev-card .rv-example { font-size: 0.72rem; color: #7DD3FC; display: none; margin-top: 5px; font-style: italic; }
+    .rev-card.revealed .rv-example { display: block; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-sky   { background: rgba(2,132,199,0.2); color: #7DD3FC; }
+    .badge-green { background: rgba(34,197,94,0.2); color: #86EFAC; }
+    .badge-amber { background: rgba(217,119,6,0.2); color: #FCD34D; }
+    .badge-red   { background: rgba(220,38,38,0.2); color: #FCA5A5; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px); transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 — HOOK -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Hook</div>
+    <div class="slide-title">E-Commerce by the Numbers</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">In 2023, global e-commerce hit $5.8 trillion. By 2027, it's projected to exceed $8 trillion. Every one of you is part of this economy every single day.</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">$5.8T</div>
+        <div class="stat-label">Global e-commerce sales in 2023 — roughly 20% of all retail worldwide</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">$35B</div>
+        <div class="stat-label">Amazon's revenue on Prime Day 2023 — in 48 hours</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">2.6B</div>
+        <div class="stat-label">People worldwide who made an online purchase in 2023</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">$9B/min</div>
+        <div class="stat-label">B2B e-commerce transaction volume — 5× larger than B2C</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: Name every company you spent money with online in the last 7 days. Count them.</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing shopping cart made of neon sky-blue lines — dollar signs and delivery trucks orbiting it — dark background, e-commerce scale infographic style</div>
+  </section>
+
+  <!-- SLIDE 2 — E-COMMERCE vs E-BUSINESS -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Definitions</div>
+    <div class="slide-title">E-Commerce vs. E-Business</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">These terms are often used interchangeably — but they are <strong>not the same thing</strong>. Click each to see the distinction.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="max-width:320px;">
+        <div class="card-icon">🛒</div>
+        <div class="card-label">E-Commerce</div>
+        <div class="card-body"><strong>Buying and selling goods or services over the internet.</strong> The transaction itself — placing an order, processing payment, receiving a digital product. <br><br><strong>Examples:</strong> Buying shoes on Nike.com. Streaming a movie on Amazon Prime. Paying for Spotify. — Any commercial transaction online.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="max-width:320px;">
+        <div class="card-icon">🏢</div>
+        <div class="card-label">E-Business</div>
+        <div class="card-body"><strong>The broader use of internet technology to run ALL business processes.</strong> Not just transactions — includes operations, supply chain, HR, customer service, internal communication, everything. <br><br>E-commerce is a <em>subset</em> of e-business. All e-commerce is e-business — but not all e-business involves a sale.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="max-width:260px;">
+        <div class="card-icon">🔑</div>
+        <div class="card-label">Key Distinction</div>
+        <div class="card-body"><strong>E-commerce = transaction.</strong> <strong>E-business = all digital operations.</strong><br><br>FIU's online tuition payment = e-commerce. FIU's entire online portal (registration, grades, email, payroll, HR) = e-business. The payment is part of a much bigger digital operation.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-red">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">E-commerce ⊂ E-business. E-commerce is just the buying/selling part. E-business is the whole digital enterprise. This is one of the most common Ch 7 exam mistakes.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Two overlapping circles — small "E-Commerce" circle inside a larger "E-Business" circle — sky blue — dark background, Venn diagram style</div>
+  </section>
+
+  <!-- SLIDE 3 — BUSINESS MODELS -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Business Models</div>
+    <div class="slide-title">E-Commerce Business Models</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Who is selling to whom? Click each model to see how it works and real examples.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏬→👤</div>
+        <div class="card-label">B2C</div>
+        <div class="card-body"><strong>Business-to-Consumer</strong> — companies selling directly to individual customers. The most familiar model. <br><strong>Examples:</strong> Amazon, Netflix, Target.com, Airbnb, Uber. Revenue comes from millions of small individual transactions.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏬→🏬</div>
+        <div class="card-label">B2B</div>
+        <div class="card-body"><strong>Business-to-Business</strong> — companies selling to other companies. Larger transaction values, fewer customers, long-term relationships. <br><strong>Examples:</strong> Salesforce (CRM software to companies), Intel (chips to Dell), Alibaba (manufacturers to retailers). B2B is 5× larger than B2C.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">👤→👤</div>
+        <div class="card-label">C2C</div>
+        <div class="card-body"><strong>Consumer-to-Consumer</strong> — individuals selling to other individuals, facilitated by a platform. <br><strong>Examples:</strong> eBay, Craigslist, Facebook Marketplace, Poshmark, Depop. The platform earns fees/commissions; the users do the transacting.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏛️→👤</div>
+        <div class="card-label">G2C</div>
+        <div class="card-body"><strong>Government-to-Consumer</strong> — government agencies serving citizens online. <br><strong>Examples:</strong> IRS e-filing taxes, DMV online license renewal, FAFSA, benefits portals, paying parking tickets online. Goal is efficiency and accessibility, not profit.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Also Know</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;"><strong>B2G</strong> (Business-to-Government) — companies selling to the government. Defense contractors, IT vendors, construction firms bidding on government contracts.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four transaction arrows labeled B2C, B2B, C2C, G2C — building, government, consumer icons connected by sky-blue arrows — dark background, business model diagram style</div>
+  </section>
+
+  <!-- SLIDE 4 — BUSINESS MODEL CHALLENGE -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Team Competition</div>
+    <div class="slide-title">Business Model Challenge</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2 points per correct answer. Identify the e-commerce model for each scenario.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">You download TurboTax, fill out your 1040, and electronically submit it to the IRS through their official portal. Which two e-commerce models are involved in this one transaction?</div>
+        <div class="sc-a">B2C (TurboTax, a business, selling the software to you, a consumer) + G2C (the IRS, a government agency, receiving and processing your return through their citizen portal). Both models operate in this single workflow.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">Walmart buys $2 billion worth of packaged goods from Procter &amp; Gamble using an automated ordering system connected to P&amp;G's website. What model is this, and why is B2B typically larger than B2C?</div>
+        <div class="sc-a">B2B (Business-to-Business) — Walmart and P&amp;G are both companies. B2B is 5× larger than B2C because businesses buy in bulk, have long-term contracts, and each transaction can be worth millions. Fewer deals, much bigger money per deal.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">You sell your old iPhone on Facebook Marketplace to a stranger across town. Facebook charges you nothing, but shows the buyer ads. What model is this? Who earns money from this transaction and how?</div>
+        <div class="sc-a">C2C (Consumer-to-Consumer) — you and the buyer are both consumers; Facebook is the platform. Facebook earns revenue through the advertising model — it shows targeted ads to buyers and sellers browsing the Marketplace. The platform facilitates but doesn't own the product.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">Netflix charges $15.49/month. Spotify charges $10.99/month. Duolingo is free but has a $6.99 "Super" upgrade. Name the revenue model for each. What distinguishes them?</div>
+        <div class="sc-a">Netflix = Subscription model (pay monthly, access all content). Spotify = also Subscription (free tier is advertising-supported). Duolingo = Freemium (free basic tier + paid premium tier removes ads and adds features). Key difference: Freemium has a functional free tier; pure subscription requires payment for any access.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four scenario cards with B2C, B2B, C2C, G2C labels — company logos and transaction arrows — sky blue glow on dark background, e-commerce quiz style</div>
+  </section>
+
+  <!-- SLIDE 5 — REVENUE MODELS -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Revenue Models</div>
+    <div class="slide-title">How Online Businesses Make Money</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Every digital company earns money differently. Click each model to see how it works and who uses it.</div>
+    <div class="rev-cards">
+      <div class="rev-card" onclick="revealRev(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealRev(this)">
+        <div class="rv-icon">📅</div>
+        <div class="rv-name">Subscription</div>
+        <div class="rv-def">Recurring fee for continued access. Predictable revenue for the company; unlimited use for the customer.</div>
+        <div class="rv-example">Netflix, Spotify Premium, Microsoft 365, NYT digital</div>
+      </div>
+      <div class="rev-card" onclick="revealRev(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealRev(this)">
+        <div class="rv-icon">🆓</div>
+        <div class="rv-name">Freemium</div>
+        <div class="rv-def">Free basic version + paid premium upgrade. Acquire users free; convert the most engaged ones to paying.</div>
+        <div class="rv-example">Duolingo, LinkedIn, Dropbox, Zoom (free 40-min limit)</div>
+      </div>
+      <div class="rev-card" onclick="revealRev(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealRev(this)">
+        <div class="rv-icon">📢</div>
+        <div class="rv-name">Advertising</div>
+        <div class="rv-def">Free service to users; advertisers pay to reach them. Revenue from ad impressions and clicks.</div>
+        <div class="rv-example">Google Search, YouTube (free), Facebook, Instagram, TikTok</div>
+      </div>
+      <div class="rev-card" onclick="revealRev(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealRev(this)">
+        <div class="rv-icon">🔢</div>
+        <div class="rv-name">Pay-Per-Use</div>
+        <div class="rv-def">Pay only for what you use — no subscription required. Scales with usage; low entry barrier.</div>
+        <div class="rv-example">AWS (cloud compute), Apple Pay per song, Uber per ride, iCloud storage</div>
+      </div>
+      <div class="rev-card" onclick="revealRev(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealRev(this)">
+        <div class="rv-icon">🔗</div>
+        <div class="rv-name">Affiliate</div>
+        <div class="rv-def">Earn a commission for referring customers to another company's product or service.</div>
+        <div class="rv-example">Amazon Associates, travel bloggers, credit card comparison sites, Wirecutter</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Know all five models and be able to identify them from a scenario. Most companies use a mix — Google uses advertising + pay-per-use (Google Cloud) + subscriptions (YouTube Premium).</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Five revenue model icons in sky-blue cards — calendar, free badge, megaphone, meter, chain link — with logo examples below each — dark background, digital business diagram</div>
+  </section>
+
+  <!-- SLIDE 6 — EDI -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 7 · EDI</div>
+    <div class="slide-title">Electronic Data Interchange (EDI)</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">The original B2B e-commerce — developed in the 1960s, still processing trillions in transactions today. The backbone of global supply chains.</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>📄 Traditional B2B (Paper)</th>
+            <th>⚡ EDI (Electronic)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Process</strong></td>
+            <td>Print purchase order → mail or fax → manually re-enter at supplier → print invoice → mail back</td>
+            <td>Automated computer-to-computer exchange in standardized format. No human re-entry required.</td>
+          </tr>
+          <tr>
+            <td><strong>Speed</strong></td>
+            <td>Days to weeks</td>
+            <td>Seconds to minutes</td>
+          </tr>
+          <tr>
+            <td><strong>Error rate</strong></td>
+            <td>High — manual re-entry creates mistakes</td>
+            <td>Near-zero — machines read standardized formats exactly</td>
+          </tr>
+          <tr>
+            <td><strong>Cost</strong></td>
+            <td>~$50–100 per paper transaction (labor, printing, postage)</td>
+            <td>~$1 per EDI transaction</td>
+          </tr>
+          <tr>
+            <td><strong>Example</strong></td>
+            <td>Small retailer faxing an order form to a vendor</td>
+            <td>Walmart's system automatically orders from P&amp;G when shelf inventory drops below threshold</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Key Point</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">EDI isn't new — it pre-dates the web by 30 years. But it remains critical because it eliminates human error in high-volume B2B ordering. Walmart, Target, and almost every major retailer still runs on EDI.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Side-by-side: paper invoice with envelope on left vs two computer systems connected by automated data arrows on right — sky blue glow — B2B efficiency comparison visual</div>
+  </section>
+
+  <!-- SLIDE 7 — DIGITAL WALLETS & PAYMENT -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Payments</div>
+    <div class="slide-title">Digital Wallets &amp; Online Payments</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">The payment layer is what makes e-commerce possible. Click each payment technology to see how it works.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📱</div>
+        <div class="card-label">Digital Wallet</div>
+        <div class="card-body">A software-based system that securely stores payment information. Eliminates re-entering card details for every purchase. <br><strong>Examples:</strong> Apple Pay, Google Pay, Samsung Pay, PayPal, Venmo. Linked to credit cards, debit cards, or bank accounts. Also stores loyalty cards, tickets, boarding passes.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔒</div>
+        <div class="card-label">SSL/HTTPS</div>
+        <div class="card-body"><strong>Secure Sockets Layer / HTTPS</strong> — encrypts data in transit between your browser and a web server. The padlock in your browser = SSL active. <br><strong>Never enter a credit card</strong> on a site without HTTPS. SSL certificates are required by law for any site handling payment data (PCI-DSS compliance).</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💳</div>
+        <div class="card-label">Payment Gateways</div>
+        <div class="card-body">Third-party services that process card transactions for merchants. <br><strong>Examples:</strong> Stripe, Square, PayPal, Authorize.net. When you click "Pay Now," a gateway encrypts your card data, contacts the card network, gets approval/decline, and returns the result — all in ~2 seconds.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">₿</div>
+        <div class="card-label">Cryptocurrency</div>
+        <div class="card-body">Decentralized digital currency using blockchain technology. No bank or government controls it. <br><strong>Bitcoin, Ethereum</strong> are most common. Still limited in e-commerce use due to volatility, but growing. Some retailers (Overstock, Newegg) accept Bitcoin. Primarily used for investment and speculation currently.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A smartphone with Apple Pay, SSL padlock, Stripe gateway logo, and Bitcoin symbol arranged around it — sky blue encryption lines connecting them — dark background, fintech visual</div>
+  </section>
+
+  <!-- SLIDE 8 — SUCCESS FACTORS -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Strategy</div>
+    <div class="slide-title">E-Commerce Success Factors</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Why do some e-commerce sites thrive while others fail? Click each factor to see why it matters.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏪</div>
+        <div class="card-label">Digital Storefront</div>
+        <div class="card-body">Your website IS your store. Load speed, mobile optimization, clear navigation, and search functionality directly impact conversion rates. <strong>53% of mobile users abandon a page that takes more than 3 seconds to load.</strong> Amazon A/B tests every button color.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🛒</div>
+        <div class="card-label">Shopping Cart & Checkout</div>
+        <div class="card-body">Friction kills conversions. <strong>70% of shopping carts are abandoned</strong> — usually because checkout is too long or forces account creation. Best practice: one-page checkout, guest option, auto-fill, multiple payment methods. Amazon's 1-Click patent was worth billions.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔗</div>
+        <div class="card-label">Supply Chain Integration</div>
+        <div class="card-body">E-commerce only works if the back-end works. Real-time inventory, warehouse management, and shipping integration must sync with the front-end store. When you see "In Stock," that's supply chain data flowing in real-time. Amazon built its logistics network to own this layer.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⭐</div>
+        <div class="card-label">Trust & Personalization</div>
+        <div class="card-body">Customers buy from sites they trust. Reviews, ratings, secure checkout badges, clear return policies build trust. Personalization — recommendations based on browsing history — increases average order value by 15–25%. "Customers also bought..." = data-driven selling.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> An e-commerce funnel — storefront → shopping cart → checkout → delivery — sky blue flow chart with conversion rates — dark background, digital retail success metrics visual</div>
+  </section>
+
+  <!-- SLIDE 9 — CHALLENGES -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Challenges</div>
+    <div class="slide-title">E-Commerce Challenges</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Every opportunity creates risks. Click each challenge to understand why e-commerce is harder than it looks.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔐</div>
+        <div class="card-label">Security &amp; Fraud</div>
+        <div class="card-body">Credit card fraud, identity theft, data breaches, phishing. <strong>$41B in e-commerce fraud losses in 2022.</strong> Businesses must invest in encryption, fraud detection algorithms, and PCI-DSS compliance. Every hack erodes customer trust permanently.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">👁️</div>
+        <div class="card-label">Privacy Concerns</div>
+        <div class="card-body">E-commerce companies collect massive amounts of behavioral data. Customers are increasingly aware — and uncomfortable. GDPR (EU), CCPA (California) require consent and data transparency. <strong>"If the product is free, you are the product"</strong> — behavioral data has enormous monetary value.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⚖️</div>
+        <div class="card-label">Legal &amp; Tax Issues</div>
+        <div class="card-body">Which laws apply when a Florida company sells to a customer in France? Jurisdiction is complex. Sales tax collection varies by state — the Supreme Court's 2018 <em>South Dakota v. Wayfair</em> ruling now requires most online retailers to collect state sales tax. Intellectual property, contracts, and disputes all vary by jurisdiction.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌍</div>
+        <div class="card-label">Global Competition</div>
+        <div class="card-body">E-commerce removes geographic barriers — but so does it for your competitors. A small Miami boutique now competes with Shein (China), ASOS (UK), and Amazon simultaneously. <strong>Disintermediation</strong> — cutting out middlemen — lets manufacturers sell direct to consumers, disrupting traditional retail entirely.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four challenge cards — lock with crack, eye with data streams, legal scales, globe with competitor arrows — sky blue warning glow — dark background, e-commerce risk visual</div>
+  </section>
+
+  <!-- SLIDE 10 — FUTURE: M-COMMERCE, SOCIAL, AR -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Future</div>
+    <div class="slide-title">The Next Wave of E-Commerce</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">E-commerce is still evolving. Click each trend to see where the industry is heading.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📱</div>
+        <div class="card-label">M-Commerce</div>
+        <div class="card-body"><strong>Mobile Commerce</strong> — buying and selling via smartphones and tablets. In 2023, 73% of all e-commerce traffic came from mobile devices. Mobile payment apps, one-tap checkout, and mobile-first design have made m-commerce the dominant channel. <strong>Mobile-first is now the baseline, not a feature.</strong></div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📲</div>
+        <div class="card-label">Social Commerce</div>
+        <div class="card-body">Buying directly within social media platforms. Instagram Shopping, TikTok Shop, Pinterest Buy, Facebook Marketplace. Discovery + purchase happen without leaving the app. <strong>TikTok Shop generated $20B+ in GMV in 2023.</strong> Social proof (likes, shares, influencer recommendations) drives purchase decisions.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🥽</div>
+        <div class="card-label">AR Commerce</div>
+        <div class="card-body"><strong>Augmented Reality</strong> shopping — try before you buy, digitally. IKEA's app lets you place furniture in your room. Warby Parker lets you try glasses on your face. Sephora's virtual makeup try-on. AR reduces returns by ~25% because customers know what they're getting before buying.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤖</div>
+        <div class="card-label">AI in E-Commerce</div>
+        <div class="card-body">AI drives personalization (recommendations), dynamic pricing (prices change based on demand), chatbot customer service, and fraud detection. Amazon's recommendation engine drives <strong>35% of total revenue.</strong> AI-powered search understands intent, not just keywords. The next frontier is fully AI-managed storefronts.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four future e-commerce cards — smartphone, social media icons, AR glasses, robot — sky blue glow — dark background, next-generation retail visual</div>
+  </section>
+
+  <!-- SLIDE 11 — KEY TAKEAWAYS -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>E-Commerce = buying/selling online (the transaction). E-Business = all digital business operations (broader). Every e-commerce transaction is part of an e-business — but not all e-business involves a sale.</li>
+      <li>Business models: B2C (business → consumer), B2B (business → business, 5× larger), C2C (consumer → consumer via platform), G2C (government → citizen). Also B2G (business → government).</li>
+      <li>Revenue models: Subscription (recurring fee), Freemium (free + paid tier), Advertising (ad-supported free service), Pay-Per-Use (metered billing), Affiliate (commission for referrals). Most companies mix models.</li>
+      <li>EDI (Electronic Data Interchange) = computer-to-computer B2B transactions in standardized format. Pre-dates the web. Eliminates human error, cuts transaction costs from ~$75 to ~$1. Still runs most major supply chains.</li>
+      <li>Digital wallets store payment info securely (Apple Pay, PayPal). SSL/HTTPS encrypts transactions. Payment gateways (Stripe, Square) process cards in ~2 seconds. Never transact on a non-HTTPS site.</li>
+      <li>E-commerce challenges: security/fraud, privacy laws (GDPR/CCPA), complex tax jurisdiction, global competition, disintermediation. Future: m-commerce (73% of traffic), social commerce, AR shopping, AI personalization.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet point panels — e-commerce icons, business model arrows, revenue model icons, EDI diagram, payment lock, trend icons — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 12 — GAME TIME -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 7 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 7 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: business models, revenue models, EDI, digital wallets, e-commerce challenges</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips pre-loaded in the app</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — e-commerce models appear on every IS exam</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-sky" style="font-size:0.85rem;padding:8px 20px;">Remember: E-Commerce ⊂ E-Business · B2B is 5× larger than B2C · EDI = automated B2B ordering</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with shopping cart and digital payment overlay — sky blue neon celebration style on dark background</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) { items[takeawayIdx].classList.add('show'); takeawayIdx++; return; }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    document.getElementById('s' + current).classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = (current / TOTAL * 100).toFixed(2) + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)    { card.classList.toggle('revealed'); }
+  function revealSc(card)  { card.classList.toggle('revealed'); }
+  function revealRev(card) { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]); el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

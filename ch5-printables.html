@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 5 Printables — Student Handout &amp; Bingo | ISM3011</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: Georgia, "Times New Roman", serif; background: #EEF2FF; color: #1E293B; }
+
+    .screen-nav {
+      background: #1E293B; color: white;
+      padding: 1rem 2rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .screen-nav h1 { font-size: 1rem; font-weight: 700; }
+    .screen-nav p  { font-size: 0.8rem; color: #94A3B8; margin-top: 2px; }
+    .nav-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-print { background: #4F46E5; color: white; }
+    .btn-print:hover { background: #4338CA; }
+    .btn-back { background: transparent; border: 1px solid #475569; color: #94A3B8; }
+    .btn-back:hover { background: #334155; color: white; }
+
+    .print-preview { max-width: 860px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .page-label {
+      font-family: -apple-system, sans-serif; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #64748B;
+      margin: 2rem 0 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .page-label::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+    .print-page {
+      background: white; width: 100%; max-width: 780px; margin: 0 auto 1rem;
+      padding: 0.7in 0.75in; border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); min-height: 10.5in;
+    }
+
+    .handout-header { border-bottom: 3px solid #1E293B; padding-bottom: 10px; margin-bottom: 18px; }
+    .handout-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .handout-header .meta { font-size: 0.78rem; color: #475569; margin-top: 3px; }
+    .student-info { display: flex; gap: 2rem; margin-bottom: 18px; }
+    .info-field { flex: 1; }
+    .info-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; display: block; margin-bottom: 3px; }
+    .info-field .line { border-bottom: 1px solid #1E293B; height: 22px; }
+
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #3730A3; margin: 18px 0 8px;
+      border-left: 3px solid #4F46E5; padding-left: 8px;
+    }
+    p, li { font-size: 0.82rem; line-height: 1.55; }
+    .fill-blank { display: inline-block; border-bottom: 1px solid #1E293B; min-width: 120px; height: 16px; margin: 0 3px; }
+
+    /* DB TABLE EXERCISE */
+    .db-exercise { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .db-exercise th { background: #4F46E5; color: white; padding: 5px 8px; text-align: left; font-weight: 700; }
+    .db-exercise td { border: 1px solid #CBD5E1; padding: 5px 8px; height: 28px; }
+    .db-exercise tr:nth-child(even) td { background: #EEF2FF; }
+    .label-cell { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: #4F46E5; font-weight: 700; }
+
+    /* SQL FILL-IN */
+    .sql-fill {
+      background: #F8FAFC; border: 1.5px solid #4F46E5; border-radius: 8px;
+      padding: 10px 14px; font-family: "Courier New", monospace;
+      font-size: 0.8rem; margin: 8px 0; line-height: 2;
+    }
+    .sql-blank { display: inline-block; border-bottom: 2px solid #4F46E5; min-width: 80px; }
+
+    /* BIG DATA TABLE */
+    table.bigdata-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .bigdata-table th { background: #1E293B; color: white; padding: 5px 8px; text-align: left; }
+    .bigdata-table td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .bigdata-table tr:nth-child(even) td { background: #EEF2FF; }
+
+    /* COMPARE TABLE */
+    table.compare-t { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .compare-t th { background: #1E293B; color: white; padding: 5px 8px; }
+    .compare-t td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .compare-t tr:nth-child(even) td { background: #EEF2FF; }
+
+    /* KEY TERMS */
+    .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 8px 0; }
+    .term-entry .term-name { font-weight: 700; font-size: 0.8rem; color: #3730A3; }
+    .term-entry .term-line { border-bottom: 1px solid #CBD5E1; height: 14px; margin: 3px 0; }
+
+    /* EXIT TICKET */
+    .exit-ticket { border: 2px dashed #4F46E5; border-radius: 10px; padding: 12px 14px; margin-top: 18px; }
+    .exit-ticket .et-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #3730A3; margin-bottom: 8px; }
+    .et-line { border-bottom: 1px solid #CBD5E1; height: 16px; margin: 6px 0; }
+
+    /* BINGO */
+    .bingo-header { text-align: center; margin-bottom: 10px; }
+    .bingo-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .bingo-header .card-num { font-size: 0.8rem; color: #64748B; }
+    .bingo-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .bingo-table th {
+      background: #4F46E5; color: white; text-align: center;
+      padding: 10px 4px; font-size: 1.2rem; font-weight: 800; border: 2px solid white;
+    }
+    .bingo-table td {
+      border: 2px solid #4F46E5; text-align: center;
+      padding: 5px 3px; font-size: 0.62rem; font-weight: 700;
+      height: 1.3in; vertical-align: middle; line-height: 1.2;
+    }
+    .bingo-table td.free { background: #E0E7FF; color: #3730A3; font-size: 0.75rem; font-weight: 800; }
+    .bingo-table tr:nth-child(odd) td  { background: #F5F3FF; }
+    .bingo-table tr:nth-child(even) td { background: #EEF2FF; }
+    .bingo-table td.free { background: #E0E7FF !important; }
+
+    /* CALL LIST */
+    .call-list { columns: 2; column-gap: 1.5rem; margin: 8px 0; }
+    .call-item { font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #E2E8F0; break-inside: avoid; }
+    .call-item .ci-term { font-weight: 700; color: #3730A3; }
+    .how-to-box { border: 1.5px solid #4F46E5; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-size: 0.78rem; background: #EEF2FF; }
+    .how-to-box h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #3730A3; }
+    .how-to-box ol { padding-left: 1.2rem; }
+    .how-to-box li { margin-bottom: 4px; }
+
+    @media print {
+      .screen-nav { display: none; }
+      .print-preview { margin: 0; padding: 0; }
+      .page-label { display: none; }
+      .print-page {
+        box-shadow: none; border: none; padding: 0.6in 0.7in;
+        page-break-after: always; min-height: 0; margin: 0;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="screen-nav" aria-label="Page navigation">
+  <div>
+    <h1>Chapter 5 Printables — Data &amp; Knowledge Management</h1>
+    <p>ISM3011 | Print-ready student handout, key terms, call list &amp; 4 Bingo cards</p>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn btn-print" onclick="window.print()">🖨 Print All Pages</button>
+    <button class="nav-btn btn-back" onclick="window.location='index.html'">← Back to MIS Journey</button>
+  </div>
+</nav>
+
+<div class="print-preview">
+
+  <!-- ══ PAGE 1 — STUDENT HANDOUT ══ -->
+  <div class="page-label">Page 1 of 6 — Student Handout</div>
+  <div class="print-page" id="page1">
+
+    <div class="handout-header">
+      <h2>Chapter 5 Study Guide — Data &amp; Knowledge Management</h2>
+      <div class="meta">ISM3011 | Introduction to Management of Information Systems | 10th Edition</div>
+    </div>
+
+    <div class="student-info">
+      <div class="info-field"><label>Name</label><div class="line"></div></div>
+      <div class="info-field"><label>Date</label><div class="line"></div></div>
+      <div class="info-field"><label>Section</label><div class="line"></div></div>
+    </div>
+
+    <div class="section-title">Part 1 — Data → Information → Knowledge</div>
+    <p>Put the following items in order from rawest to most useful by writing 1 (rawest) through 4 (most useful):</p>
+    <p style="margin-top:6px;">____ A sales manager decides to increase inventory in Florida stores before hurricane season based on 5 years of data.</p>
+    <p style="margin-top:4px;">____ Numbers: 45, 82, 31, 77, 60, 99</p>
+    <p style="margin-top:4px;">____ After 10 years, a professor knows mid-semester scores always dip and plans an early review session.</p>
+    <p style="margin-top:4px;">____ A report showing average sales per region for Q3, ranked highest to lowest.</p>
+
+    <div class="section-title">Part 2 — Relational Database</div>
+    <p>Label each column header for the ORDERS table below. Use the word bank.</p>
+    <p style="font-size:0.78rem;font-style:italic;margin-top:4px;">Word bank: OrderID (Primary Key) &nbsp;·&nbsp; CustomerID (Foreign Key) &nbsp;·&nbsp; Product &nbsp;·&nbsp; Amount &nbsp;·&nbsp; OrderDate</p>
+    <table class="db-exercise" style="margin-top:8px;">
+      <thead>
+        <tr>
+          <th><div class="fill-blank" style="min-width:100px;border-color:white;"></div></th>
+          <th><div class="fill-blank" style="min-width:100px;border-color:white;"></div></th>
+          <th><div class="fill-blank" style="min-width:80px;border-color:white;"></div></th>
+          <th><div class="fill-blank" style="min-width:70px;border-color:white;"></div></th>
+          <th><div class="fill-blank" style="min-width:80px;border-color:white;"></div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>O201</td><td>C005</td><td>Laptop</td><td>$999</td><td>2024-01-15</td></tr>
+        <tr><td>O202</td><td>C003</td><td>Keyboard</td><td>$79</td><td>2024-01-16</td></tr>
+        <tr><td>O203</td><td>C005</td><td>Monitor</td><td>$349</td><td>2024-01-18</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px;">Why can two rows both have CustomerID = C005? <span class="fill-blank" style="min-width:260px;"></span></p>
+    <p style="margin-top:6px;">What is OrderID called in this table? <span class="fill-blank" style="min-width:140px;"></span> &nbsp; What is CustomerID called? <span class="fill-blank" style="min-width:100px;"></span></p>
+
+    <div class="section-title">Part 3 — SQL Fill-In</div>
+    <p>Complete the SQL query to find all orders over $200, sorted by amount (highest first):</p>
+    <div class="sql-fill">
+      <span class="sql-blank"></span> OrderID, CustomerID, Product, Amount<br>
+      <span class="sql-blank"></span> Orders<br>
+      <span class="sql-blank"></span> Amount <span class="sql-blank" style="min-width:40px;"></span> 200<br>
+      <span class="sql-blank"></span> Amount <span class="sql-blank" style="min-width:40px;"></span>;
+    </div>
+    <p style="font-size:0.72rem;font-style:italic;color:#64748B;">Keywords to use: SELECT · FROM · WHERE · ORDER BY · DESC · &gt;</p>
+
+    <div class="section-title">Part 4 — Big Data: The 3 Vs</div>
+    <table class="bigdata-table">
+      <thead><tr><th>V</th><th>Name</th><th>What it means</th><th>Your own real-world example</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:900;color:#4F46E5;font-size:1rem;">V</td><td></td><td></td><td></td></tr>
+        <tr><td style="font-weight:900;color:#4F46E5;font-size:1rem;">V</td><td></td><td></td><td></td></tr>
+        <tr><td style="font-weight:900;color:#4F46E5;font-size:1rem;">V</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+  </div><!-- /page1 -->
+
+  <!-- ══ PAGE 2 — KEY TERMS + REFLECTION ══ -->
+  <div class="page-label">Page 2 of 6 — Key Terms &amp; Reflection</div>
+  <div class="print-page" id="page2">
+
+    <div class="handout-header">
+      <h2>Chapter 5 — Key Terms &amp; Comparison</h2>
+      <div class="meta">ISM3011 | Define each term in your own words</div>
+    </div>
+
+    <div class="section-title">Key Terms</div>
+    <div class="terms-grid">
+      <div class="term-entry"><div class="term-name">Relational Database</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">SQL (Structured Query Language)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Primary Key</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Foreign Key</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">DBMS</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Big Data</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Data Warehouse</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Data Mining</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">OLTP</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">OLAP</div><div class="term-line"></div><div class="term-line"></div></div>
+    </div>
+
+    <div class="section-title">Database vs. Data Warehouse — Comparison</div>
+    <table class="compare-t">
+      <thead><tr><th>Feature</th><th>Operational Database</th><th>Data Warehouse</th></tr></thead>
+      <tbody>
+        <tr><td>Primary purpose</td><td></td><td></td></tr>
+        <tr><td>Type of data (current / historical)</td><td></td><td></td></tr>
+        <tr><td>Processing type (OLTP / OLAP)</td><td></td><td></td></tr>
+        <tr><td>Typical user</td><td></td><td></td></tr>
+        <tr><td>Example use case</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">Data Mining Type Matching</div>
+    <p>Match each data mining technique to the correct description. Write the letter.</p>
+    <p style="margin-top:6px;"><strong>Types: A) Association Rules &nbsp; B) Classification &nbsp; C) Clustering &nbsp; D) Forecasting</strong></p>
+    <p style="margin-top:6px;">____ A bank's system flags a transaction as "fraud" or "not fraud" based on historical patterns.</p>
+    <p style="margin-top:4px;">____ Netflix groups users with similar tastes to improve recommendations.</p>
+    <p style="margin-top:4px;">____ A retailer discovers that customers who buy umbrellas also buy rain boots in the same visit.</p>
+    <p style="margin-top:4px;">____ An airline predicts seat demand for spring break flights using 5 years of booking history.</p>
+
+    <div class="exit-ticket">
+      <div class="et-title">🎟 Exit Ticket — DB vs. Warehouse Decision</div>
+      <p style="font-size:0.78rem;margin-bottom:6px;">A retail chain wants to analyze 10 years of sales data to find which products sell best by region and season. Should they use an operational database or a data warehouse? Explain why in 2–3 sentences.</p>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+    </div>
+
+  </div><!-- /page2 -->
+
+  <!-- ══ PAGE 3 — BINGO CALL LIST ══ -->
+  <div class="page-label">Page 3 of 6 — Bingo Call List (Professor Use)</div>
+  <div class="print-page" id="page3">
+
+    <div class="handout-header">
+      <h2>Chapter 5 Bingo — Call List &amp; Instructions</h2>
+      <div class="meta">ISM3011 | Read the CLUE aloud — students identify the term on their card</div>
+    </div>
+
+    <div class="how-to-box">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Distribute one Bingo card (pages 4–7) per student. Cards 1–4 have different layouts.</li>
+        <li>Read the <strong>clue</strong> aloud. Do NOT say the term in parentheses.</li>
+        <li>Students mark the matching term on their card.</li>
+        <li>First to get 5-in-a-row calls "BINGO!" Verify and award a prize.</li>
+      </ol>
+    </div>
+
+    <p style="font-size:0.78rem;margin-bottom:6px;"><em>Prize suggestions: extra credit, snack, skip-one-homework pass, front-of-room seating.</em></p>
+
+    <div class="section-title">Call List</div>
+    <div class="call-list">
+      <div class="call-item"><span class="ci-term">Data</span> — "Raw, unprocessed facts with no context — numbers or text that means nothing alone"</div>
+      <div class="call-item"><span class="ci-term">Information</span> — "Data that has been processed and organized to give it meaning"</div>
+      <div class="call-item"><span class="ci-term">Knowledge</span> — "Information applied to make a decision or take action"</div>
+      <div class="call-item"><span class="ci-term">Relational Database</span> — "Stores data in related tables linked by keys"</div>
+      <div class="call-item"><span class="ci-term">Table</span> — "The basic storage unit in a relational database — like a spreadsheet grid"</div>
+      <div class="call-item"><span class="ci-term">Row / Record</span> — "One complete entry in a database table — represents one person, order, or event"</div>
+      <div class="call-item"><span class="ci-term">Column / Field</span> — "One attribute of every record in a table — like 'Last Name' or 'Amount'"</div>
+      <div class="call-item"><span class="ci-term">Primary Key</span> — "A unique identifier for every row in a table — can never be null or duplicate"</div>
+      <div class="call-item"><span class="ci-term">Foreign Key</span> — "A field in one table that links to the Primary Key of another table"</div>
+      <div class="call-item"><span class="ci-term">SQL</span> — "The standard language used to query and manipulate relational databases"</div>
+      <div class="call-item"><span class="ci-term">DBMS</span> — "Software that manages database creation, security, querying, and backup"</div>
+      <div class="call-item"><span class="ci-term">Big Data</span> — "Datasets too large, fast, or varied for traditional database tools"</div>
+      <div class="call-item"><span class="ci-term">Volume</span> — "The massive scale of Big Data — terabytes, petabytes, exabytes"</div>
+      <div class="call-item"><span class="ci-term">Velocity</span> — "The real-time speed at which Big Data is generated and must be processed"</div>
+      <div class="call-item"><span class="ci-term">Variety</span> — "The many types of Big Data: structured tables, unstructured text, images, video"</div>
+      <div class="call-item"><span class="ci-term">Veracity</span> — "The trustworthiness of Big Data — messy, incomplete data must be cleaned"</div>
+      <div class="call-item"><span class="ci-term">Data Warehouse</span> — "A centralized repository of historical data optimized for analysis, not transactions"</div>
+      <div class="call-item"><span class="ci-term">Data Mining</span> — "Discovering hidden patterns and insights in large datasets"</div>
+      <div class="call-item"><span class="ci-term">OLTP</span> — "Online Transaction Processing — operational databases handling live daily transactions"</div>
+      <div class="call-item"><span class="ci-term">OLAP</span> — "Online Analytical Processing — analyzing historical data in a data warehouse"</div>
+      <div class="call-item"><span class="ci-term">Structured Data</span> — "Organized data that fits neatly into rows and columns — like spreadsheets"</div>
+      <div class="call-item"><span class="ci-term">Unstructured Data</span> — "Data with no predefined format — emails, social posts, videos, images"</div>
+      <div class="call-item"><span class="ci-term">Data Lake</span> — "A massive raw-data repository that stores everything in its native format until needed"</div>
+      <div class="call-item"><span class="ci-term">ETL</span> — "Extract, Transform, Load — the process of moving data into a warehouse"</div>
+      <div class="call-item"><span class="ci-term">FREE SPACE</span> — "Everyone marks the center square!"</div>
+    </div>
+
+  </div><!-- /page3 -->
+
+  <!-- ══ PAGE 4 — BINGO CARD 1 ══ -->
+  <div class="page-label">Page 4 of 6 — Bingo Card 1</div>
+  <div class="print-page" id="page4">
+    <div class="bingo-header">
+      <h2>Chapter 5 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 1</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 1">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr><td>Relational Database</td><td>SQL</td><td>Big Data</td><td>Data Warehouse</td><td>Data Mining</td></tr>
+        <tr><td>Primary Key</td><td>DBMS</td><td>Volume</td><td>OLTP</td><td>Structured Data</td></tr>
+        <tr><td>Data</td><td>Velocity</td><td class="free">★<br>FREE<br>SPACE</td><td>Foreign Key</td><td>OLAP</td></tr>
+        <tr><td>Information</td><td>Variety</td><td>ETL</td><td>Row / Record</td><td>Data Lake</td></tr>
+        <tr><td>Knowledge</td><td>Veracity</td><td>Table</td><td>Column / Field</td><td>Unstructured Data</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 5 — BINGO CARD 2 ══ -->
+  <div class="page-label">Page 5 of 6 — Bingo Card 2</div>
+  <div class="print-page" id="page5">
+    <div class="bingo-header">
+      <h2>Chapter 5 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 2</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 2">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr><td>OLAP</td><td>Variety</td><td>Knowledge</td><td>SQL</td><td>ETL</td></tr>
+        <tr><td>Data Lake</td><td>Primary Key</td><td>Relational Database</td><td>Veracity</td><td>Data</td></tr>
+        <tr><td>Unstructured Data</td><td>OLTP</td><td class="free">★<br>FREE<br>SPACE</td><td>Data Mining</td><td>Volume</td></tr>
+        <tr><td>Column / Field</td><td>DBMS</td><td>Data Warehouse</td><td>Information</td><td>Velocity</td></tr>
+        <tr><td>Table</td><td>Foreign Key</td><td>Structured Data</td><td>Big Data</td><td>Row / Record</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 6 — BINGO CARDS 3 & 4 ══ -->
+  <div class="page-label">Page 6 of 6 — Bingo Cards 3 &amp; 4</div>
+  <div class="print-page" id="page6">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3in;">
+
+      <!-- Card 3 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 5 Bingo | ISM3011</h2>
+          <div class="card-num">Card 3</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 3" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>Structured Data</td><td>Data Warehouse</td><td>DBMS</td><td>Velocity</td><td>Information</td></tr>
+            <tr><td>ETL</td><td>Row / Record</td><td>Data Mining</td><td>Primary Key</td><td>OLAP</td></tr>
+            <tr><td>Big Data</td><td>Variety</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Knowledge</td><td>SQL</td></tr>
+            <tr><td>Foreign Key</td><td>Volume</td><td>Relational Database</td><td>Unstructured Data</td><td>Data Lake</td></tr>
+            <tr><td>OLTP</td><td>Table</td><td>Veracity</td><td>Data</td><td>Column / Field</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card 4 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 5 Bingo | ISM3011</h2>
+          <div class="card-num">Card 4</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 4" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>Column / Field</td><td>Knowledge</td><td>OLTP</td><td>Data Mining</td><td>Primary Key</td></tr>
+            <tr><td>Veracity</td><td>ETL</td><td>Big Data</td><td>Structured Data</td><td>Table</td></tr>
+            <tr><td>SQL</td><td>Velocity</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>DBMS</td><td>Data Lake</td></tr>
+            <tr><td>Data</td><td>Unstructured Data</td><td>OLAP</td><td>Relational Database</td><td>Volume</td></tr>
+            <tr><td>Row / Record</td><td>Data Warehouse</td><td>Information</td><td>Foreign Key</td><td>Variety</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /page6 -->
+
+</div><!-- /print-preview -->
+</body>
+</html>

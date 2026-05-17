@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 7 Printables — Student Handout &amp; Bingo | ISM3011</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: Georgia, "Times New Roman", serif; background: #F0F9FF; color: #1E293B; }
+
+    .screen-nav {
+      background: #1E293B; color: white;
+      padding: 1rem 2rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .screen-nav h1 { font-size: 1rem; font-weight: 700; }
+    .screen-nav p  { font-size: 0.8rem; color: #94A3B8; margin-top: 2px; }
+    .nav-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-print { background: #0284C7; color: white; }
+    .btn-print:hover { background: #0369A1; }
+    .btn-back { background: transparent; border: 1px solid #475569; color: #94A3B8; }
+    .btn-back:hover { background: #334155; color: white; }
+
+    .print-preview { max-width: 860px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .page-label {
+      font-family: -apple-system, sans-serif; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #64748B;
+      margin: 2rem 0 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .page-label::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+    .print-page {
+      background: white; width: 100%; max-width: 780px; margin: 0 auto 1rem;
+      padding: 0.7in 0.75in; border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); min-height: 10.5in;
+    }
+
+    .handout-header { border-bottom: 3px solid #1E293B; padding-bottom: 10px; margin-bottom: 18px; }
+    .handout-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .handout-header .meta { font-size: 0.78rem; color: #475569; margin-top: 3px; }
+    .student-info { display: flex; gap: 2rem; margin-bottom: 18px; }
+    .info-field { flex: 1; }
+    .info-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; display: block; margin-bottom: 3px; }
+    .info-field .line { border-bottom: 1px solid #1E293B; height: 22px; }
+
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #075985; margin: 18px 0 8px;
+      border-left: 3px solid #0284C7; padding-left: 8px;
+    }
+    p, li { font-size: 0.82rem; line-height: 1.55; }
+    .fill-blank { display: inline-block; border-bottom: 1px solid #1E293B; min-width: 120px; height: 16px; margin: 0 3px; }
+
+    /* DATA TABLES */
+    .ec-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .ec-table th { background: #0284C7; color: white; padding: 5px 8px; text-align: left; font-weight: 700; }
+    .ec-table td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .ec-table tr:nth-child(even) td { background: #F0F9FF; }
+
+    /* COMPARE TABLE */
+    table.compare-t { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .compare-t th { background: #1E293B; color: white; padding: 5px 8px; }
+    .compare-t td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .compare-t tr:nth-child(even) td { background: #F0F9FF; }
+
+    /* KEY TERMS */
+    .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 8px 0; }
+    .term-entry .term-name { font-weight: 700; font-size: 0.8rem; color: #075985; }
+    .term-entry .term-line { border-bottom: 1px solid #CBD5E1; height: 14px; margin: 3px 0; }
+
+    /* EXIT TICKET */
+    .exit-ticket { border: 2px dashed #0284C7; border-radius: 10px; padding: 12px 14px; margin-top: 18px; }
+    .exit-ticket .et-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #075985; margin-bottom: 8px; }
+    .et-line { border-bottom: 1px solid #CBD5E1; height: 16px; margin: 6px 0; }
+
+    /* BINGO */
+    .bingo-header { text-align: center; margin-bottom: 10px; }
+    .bingo-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .bingo-header .card-num { font-size: 0.8rem; color: #64748B; }
+    .bingo-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .bingo-table th {
+      background: #0284C7; color: white; text-align: center;
+      padding: 10px 4px; font-size: 1.2rem; font-weight: 800; border: 2px solid white;
+    }
+    .bingo-table td {
+      border: 2px solid #0284C7; text-align: center;
+      padding: 5px 3px; font-size: 0.62rem; font-weight: 700;
+      height: 1.3in; vertical-align: middle; line-height: 1.2;
+    }
+    .bingo-table td.free { background: #BAE6FD; color: #075985; font-size: 0.75rem; font-weight: 800; }
+    .bingo-table tr:nth-child(odd) td  { background: #F0F9FF; }
+    .bingo-table tr:nth-child(even) td { background: #E0F2FE; }
+    .bingo-table td.free { background: #BAE6FD !important; }
+
+    /* CALL LIST */
+    .call-list { columns: 2; column-gap: 1.5rem; margin: 8px 0; }
+    .call-item { font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #E2E8F0; break-inside: avoid; }
+    .call-item .ci-term { font-weight: 700; color: #075985; }
+    .how-to-box { border: 1.5px solid #0284C7; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-size: 0.78rem; background: #F0F9FF; }
+    .how-to-box h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #075985; }
+    .how-to-box ol { padding-left: 1.2rem; }
+    .how-to-box li { margin-bottom: 4px; }
+
+    @media print {
+      .screen-nav { display: none; }
+      .print-preview { margin: 0; padding: 0; }
+      .page-label { display: none; }
+      .print-page {
+        box-shadow: none; border: none; padding: 0.6in 0.7in;
+        page-break-after: always; min-height: 0; margin: 0;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="screen-nav" aria-label="Page navigation">
+  <div>
+    <h1>Chapter 7 Printables — E-Business &amp; E-Commerce</h1>
+    <p>ISM3011 | Print-ready student handout, key terms, call list &amp; 4 Bingo cards</p>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn btn-print" onclick="window.print()">🖨 Print All Pages</button>
+    <button class="nav-btn btn-back" onclick="window.location='index.html'">← Back to MIS Journey</button>
+  </div>
+</nav>
+
+<div class="print-preview">
+
+  <!-- ══ PAGE 1 — STUDENT HANDOUT ══ -->
+  <div class="page-label">Page 1 of 6 — Student Handout</div>
+  <div class="print-page" id="page1">
+
+    <div class="handout-header">
+      <h2>Chapter 7 Study Guide — E-Business &amp; E-Commerce</h2>
+      <div class="meta">ISM3011 | Introduction to Management of Information Systems | 10th Edition</div>
+    </div>
+
+    <div class="student-info">
+      <div class="info-field"><label>Name</label><div class="line"></div></div>
+      <div class="info-field"><label>Date</label><div class="line"></div></div>
+      <div class="info-field"><label>Section</label><div class="line"></div></div>
+    </div>
+
+    <div class="section-title">Part 1 — E-Commerce vs. E-Business</div>
+    <p>Classify each example. Write <strong>EC</strong> (e-commerce only) or <strong>EB</strong> (e-business, broader) in the blank.</p>
+    <p style="margin-top:6px;">____ You buy a textbook on Chegg.com by entering your credit card.</p>
+    <p style="margin-top:4px;">____ FIU uses an online system for employee payroll, HR management, and scheduling.</p>
+    <p style="margin-top:4px;">____ A student registers for classes using the MyFIU portal and pays tuition online.</p>
+    <p style="margin-top:4px;">____ Amazon coordinates its warehouse robots, inventory tracking, and delivery routing internally.</p>
+    <p style="margin-top:8px;">In one sentence, explain how e-commerce and e-business relate to each other:</p>
+    <div class="fill-blank" style="min-width:100%;display:block;margin-top:4px;"></div>
+    <div class="fill-blank" style="min-width:100%;display:block;margin-top:8px;"></div>
+
+    <div class="section-title">Part 2 — Business Models</div>
+    <p>Write the correct business model (B2C, B2B, C2C, G2C, or B2G) for each scenario.</p>
+    <table class="ec-table" style="margin-top:8px;">
+      <thead><tr><th>Scenario</th><th>Model</th></tr></thead>
+      <tbody>
+        <tr><td>You sell your old textbooks on Facebook Marketplace to another student</td><td></td></tr>
+        <tr><td>Pfizer sells 10 million vaccine doses to the U.S. Department of Defense</td><td></td></tr>
+        <tr><td>You renew your driver's license on the Florida DMV website</td><td></td></tr>
+        <tr><td>Microsoft sells Office 365 licenses to 50,000 businesses worldwide</td><td></td></tr>
+        <tr><td>You subscribe to Netflix for $15.49/month</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">Part 3 — Revenue Models</div>
+    <p>Match each company to its primary revenue model. Write the letter.</p>
+    <p style="margin-top:6px;"><strong>A) Subscription &nbsp; B) Freemium &nbsp; C) Advertising &nbsp; D) Pay-Per-Use &nbsp; E) Affiliate</strong></p>
+    <p style="margin-top:6px;">____ Google Search — free to users; earns billions from targeted ads</p>
+    <p style="margin-top:4px;">____ Netflix — $15.49/month for unlimited streaming access</p>
+    <p style="margin-top:4px;">____ Amazon Web Services — charges by compute hour and storage gigabyte</p>
+    <p style="margin-top:4px;">____ Duolingo — free basic app + $6.99/month Super tier</p>
+    <p style="margin-top:4px;">____ Wirecutter (product review site) — earns commission when readers click to buy</p>
+
+  </div><!-- /page1 -->
+
+  <!-- ══ PAGE 2 — KEY TERMS + REFLECTION ══ -->
+  <div class="page-label">Page 2 of 6 — Key Terms &amp; Reflection</div>
+  <div class="print-page" id="page2">
+
+    <div class="handout-header">
+      <h2>Chapter 7 — Key Terms &amp; EDI Comparison</h2>
+      <div class="meta">ISM3011 | Define each term in your own words</div>
+    </div>
+
+    <div class="section-title">Key Terms</div>
+    <div class="terms-grid">
+      <div class="term-entry"><div class="term-name">E-Commerce</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">E-Business</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">B2C</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">B2B</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">EDI (Electronic Data Interchange)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Digital Wallet</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Disintermediation</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Conversion Rate</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">M-Commerce</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Supply Chain</div><div class="term-line"></div><div class="term-line"></div></div>
+    </div>
+
+    <div class="section-title">EDI vs. Traditional B2B</div>
+    <table class="compare-t">
+      <thead><tr><th>Feature</th><th>Traditional (Paper)</th><th>EDI (Electronic)</th></tr></thead>
+      <tbody>
+        <tr><td>Processing speed</td><td></td><td></td></tr>
+        <tr><td>Error rate</td><td></td><td></td></tr>
+        <tr><td>Cost per transaction</td><td></td><td></td></tr>
+        <tr><td>Human involvement</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">E-Commerce Challenge Analysis</div>
+    <p>A Florida company sells custom T-shirts online. They recently had a data breach that exposed 10,000 customers' credit card numbers. Name <strong>two</strong> e-commerce challenges illustrated here and describe one step the company should take for each.</p>
+    <p style="margin-top:6px;"><strong>Challenge 1:</strong> <span class="fill-blank" style="min-width:200px;"></span></p>
+    <div class="fill-blank" style="min-width:100%;display:block;margin-top:6px;"></div>
+    <p style="margin-top:8px;"><strong>Challenge 2:</strong> <span class="fill-blank" style="min-width:200px;"></span></p>
+    <div class="fill-blank" style="min-width:100%;display:block;margin-top:6px;"></div>
+
+    <div class="exit-ticket">
+      <div class="et-title">🎟 Exit Ticket — Revenue Model Decision</div>
+      <p style="font-size:0.78rem;margin-bottom:6px;">You're launching a new fitness app. You have two options: charge $12.99/month (subscription) OR offer a free version with ads + a $6.99 premium tier (freemium). In 2–3 sentences, explain which you would choose and why, using the revenue model terms from today's class.</p>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+    </div>
+
+  </div><!-- /page2 -->
+
+  <!-- ══ PAGE 3 — BINGO CALL LIST ══ -->
+  <div class="page-label">Page 3 of 6 — Bingo Call List (Professor Use)</div>
+  <div class="print-page" id="page3">
+
+    <div class="handout-header">
+      <h2>Chapter 7 Bingo — Call List &amp; Instructions</h2>
+      <div class="meta">ISM3011 | Read the CLUE aloud — students identify the term on their card</div>
+    </div>
+
+    <div class="how-to-box">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Distribute one Bingo card (pages 4–6) per student. Cards 1–4 have different layouts.</li>
+        <li>Read the <strong>clue</strong> aloud. Do NOT say the term in parentheses.</li>
+        <li>Students mark the matching term on their card.</li>
+        <li>First to get 5-in-a-row calls "BINGO!" Verify and award a prize.</li>
+      </ol>
+    </div>
+
+    <p style="font-size:0.78rem;margin-bottom:6px;"><em>Prize suggestions: extra credit, snack, skip-one-homework pass, front-of-room seating.</em></p>
+
+    <div class="section-title">Call List</div>
+    <div class="call-list">
+      <div class="call-item"><span class="ci-term">E-Commerce</span> — "Buying and selling goods or services over the internet — the transaction itself"</div>
+      <div class="call-item"><span class="ci-term">E-Business</span> — "Broader use of internet technology to run ALL business processes — includes but goes beyond sales"</div>
+      <div class="call-item"><span class="ci-term">B2C</span> — "Business-to-Consumer: a company selling directly to individual customers — like Amazon or Netflix"</div>
+      <div class="call-item"><span class="ci-term">B2B</span> — "Business-to-Business: companies selling to other companies — 5× larger in volume than B2C"</div>
+      <div class="call-item"><span class="ci-term">C2C</span> — "Consumer-to-Consumer: individuals selling to each other through a platform — like eBay or Poshmark"</div>
+      <div class="call-item"><span class="ci-term">G2C</span> — "Government-to-Consumer: government agencies delivering services online — like the IRS portal or DMV"</div>
+      <div class="call-item"><span class="ci-term">EDI</span> — "Electronic Data Interchange: automated computer-to-computer B2B transactions in standardized format"</div>
+      <div class="call-item"><span class="ci-term">Digital Wallet</span> — "Software that securely stores payment info so you don't re-enter it — Apple Pay, PayPal, Google Pay"</div>
+      <div class="call-item"><span class="ci-term">Revenue Model</span> — "The strategy a company uses to earn money from its online product or service"</div>
+      <div class="call-item"><span class="ci-term">Subscription Model</span> — "Recurring fee for continued access — Netflix, Spotify Premium, Microsoft 365"</div>
+      <div class="call-item"><span class="ci-term">Freemium</span> — "Free basic version plus a paid premium tier that removes limits or adds features — Duolingo, Zoom"</div>
+      <div class="call-item"><span class="ci-term">Affiliate Model</span> — "Earning a commission by referring customers to another company's product — Amazon Associates"</div>
+      <div class="call-item"><span class="ci-term">Shopping Cart</span> — "The digital mechanism that holds selected items before checkout — abandonment rate is ~70%"</div>
+      <div class="call-item"><span class="ci-term">SSL/HTTPS</span> — "Encryption protocol for web transactions — the padlock in your browser — required for any site handling payments"</div>
+      <div class="call-item"><span class="ci-term">Supply Chain</span> — "The end-to-end process of producing and delivering a product from supplier to customer"</div>
+      <div class="call-item"><span class="ci-term">M-Commerce</span> — "Mobile commerce — buying and selling via smartphones; 73% of e-commerce traffic in 2023"</div>
+      <div class="call-item"><span class="ci-term">Social Commerce</span> — "Buying directly within social media platforms — Instagram Shopping, TikTok Shop"</div>
+      <div class="call-item"><span class="ci-term">Marketplace</span> — "An e-commerce platform where multiple sellers list products — Amazon Marketplace, Etsy, eBay"</div>
+      <div class="call-item"><span class="ci-term">Storefront</span> — "A company's own e-commerce website where they sell directly — Nike.com, Apple.com"</div>
+      <div class="call-item"><span class="ci-term">Conversion Rate</span> — "The percentage of website visitors who complete a purchase — industry average is 2–4%"</div>
+      <div class="call-item"><span class="ci-term">B2G</span> — "Business-to-Government: companies selling to government agencies — defense contractors, IT vendors"</div>
+      <div class="call-item"><span class="ci-term">Disintermediation</span> — "Removing the middleman — manufacturers selling direct to consumers, bypassing retailers"</div>
+      <div class="call-item"><span class="ci-term">Pay-Per-Use</span> — "Pay only for what you consume — AWS compute hours, Uber rides, iCloud storage"</div>
+      <div class="call-item"><span class="ci-term">Advertising Model</span> — "Free service to users; revenue comes from selling ad space to businesses — Google, YouTube, Facebook"</div>
+      <div class="call-item"><span class="ci-term">FREE SPACE</span> — "Everyone marks the center square!"</div>
+    </div>
+
+  </div><!-- /page3 -->
+
+  <!-- ══ PAGE 4 — BINGO CARD 1 ══ -->
+  <div class="page-label">Page 4 of 6 — Bingo Card 1</div>
+  <div class="print-page" id="page4">
+    <div class="bingo-header">
+      <h2>Chapter 7 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 1</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 1">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr><td>E-Commerce</td><td>B2B</td><td>EDI</td><td>Subscription Model</td><td>M-Commerce</td></tr>
+        <tr><td>E-Business</td><td>C2C</td><td>Digital Wallet</td><td>Freemium</td><td>Social Commerce</td></tr>
+        <tr><td>B2C</td><td>G2C</td><td class="free">★<br>FREE<br>SPACE</td><td>Affiliate Model</td><td>Marketplace</td></tr>
+        <tr><td>Revenue Model</td><td>SSL/HTTPS</td><td>Shopping Cart</td><td>Pay-Per-Use</td><td>Conversion Rate</td></tr>
+        <tr><td>Supply Chain</td><td>B2G</td><td>Advertising Model</td><td>Disintermediation</td><td>Storefront</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 5 — BINGO CARD 2 ══ -->
+  <div class="page-label">Page 5 of 6 — Bingo Card 2</div>
+  <div class="print-page" id="page5">
+    <div class="bingo-header">
+      <h2>Chapter 7 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 2</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 2">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr><td>Storefront</td><td>Freemium</td><td>B2C</td><td>EDI</td><td>Pay-Per-Use</td></tr>
+        <tr><td>Conversion Rate</td><td>Affiliate Model</td><td>E-Business</td><td>Digital Wallet</td><td>B2G</td></tr>
+        <tr><td>Social Commerce</td><td>Shopping Cart</td><td class="free">★<br>FREE<br>SPACE</td><td>E-Commerce</td><td>Supply Chain</td></tr>
+        <tr><td>Marketplace</td><td>G2C</td><td>Subscription Model</td><td>B2B</td><td>Advertising Model</td></tr>
+        <tr><td>Disintermediation</td><td>Revenue Model</td><td>M-Commerce</td><td>C2C</td><td>SSL/HTTPS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 6 — BINGO CARDS 3 & 4 ══ -->
+  <div class="page-label">Page 6 of 6 — Bingo Cards 3 &amp; 4</div>
+  <div class="print-page" id="page6">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3in;">
+
+      <!-- Card 3 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 7 Bingo | ISM3011</h2>
+          <div class="card-num">Card 3</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 3" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>Advertising Model</td><td>G2C</td><td>E-Commerce</td><td>Pay-Per-Use</td><td>B2B</td></tr>
+            <tr><td>Conversion Rate</td><td>Storefront</td><td>Freemium</td><td>Digital Wallet</td><td>C2C</td></tr>
+            <tr><td>Shopping Cart</td><td>M-Commerce</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>B2G</td><td>SSL/HTTPS</td></tr>
+            <tr><td>B2C</td><td>EDI</td><td>Supply Chain</td><td>Social Commerce</td><td>Revenue Model</td></tr>
+            <tr><td>Disintermediation</td><td>Subscription Model</td><td>Marketplace</td><td>Affiliate Model</td><td>E-Business</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card 4 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 7 Bingo | ISM3011</h2>
+          <div class="card-num">Card 4</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 4" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>SSL/HTTPS</td><td>EDI</td><td>Advertising Model</td><td>B2C</td><td>Conversion Rate</td></tr>
+            <tr><td>M-Commerce</td><td>Revenue Model</td><td>C2C</td><td>Storefront</td><td>Disintermediation</td></tr>
+            <tr><td>Affiliate Model</td><td>B2G</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>E-Business</td><td>G2C</td></tr>
+            <tr><td>Supply Chain</td><td>Social Commerce</td><td>Digital Wallet</td><td>Freemium</td><td>Shopping Cart</td></tr>
+            <tr><td>B2B</td><td>Pay-Per-Use</td><td>Marketplace</td><td>Subscription Model</td><td>E-Commerce</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /page6 -->
+
+</div><!-- /print-preview -->
+</body>
+</html>

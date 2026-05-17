@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 6: Telecommunications &amp; Networking — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #EA580C;
+      --accent2: #C2410C;
+      --accent3: #FFF7ED;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(234,88,12,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #FDBA74; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* OSI LAYERS */
+    .osi-stack {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      width: 100%; max-width: 760px; margin-top: 1rem;
+    }
+    .osi-layer {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 10px; padding: 0.65rem 1rem; cursor: pointer; transition: all 0.22s;
+    }
+    .osi-layer:hover { border-color: var(--accent); transform: translateX(4px); }
+    .osi-layer.revealed { border-color: var(--accent); background: rgba(234,88,12,0.1); }
+    .osi-layer .osi-num { font-size: 1.1rem; font-weight: 900; color: var(--accent); min-width: 28px; text-align: center; }
+    .osi-layer .osi-name { font-size: 0.88rem; font-weight: 800; min-width: 130px; }
+    .osi-layer .osi-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.35; display: none; }
+    .osi-layer.revealed .osi-desc { display: block; color: var(--white); }
+    .osi-layer .osi-hint { font-size: 0.68rem; color: var(--muted); margin-left: auto; }
+    .osi-layer.revealed .osi-hint { display: none; }
+
+    /* COMPARE TABLE */
+    .compare-wrap { width: 100%; max-width: 820px; margin-top: 1rem; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .compare-table th { background: var(--accent); color: white; padding: 8px 14px; text-align: left; }
+    .compare-table td { border-bottom: 1px solid #334155; padding: 8px 14px; vertical-align: top; }
+    .compare-table tr:nth-child(odd) td { background: rgba(234,88,12,0.08); }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-orange { background: rgba(234,88,12,0.2); color: #FDBA74; }
+    .badge-green  { background: rgba(34,197,94,0.2);  color: #86EFAC; }
+    .badge-amber  { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+    .badge-red    { background: rgba(220,38,38,0.2);  color: #FCA5A5; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px); transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 — HOOK -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Hook</div>
+    <div class="slide-title">How Did This Slide Get to Your Screen?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Right now your device is connected to a global network carrying 5 quintillion bytes per day. Let's trace the path.</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">5B+</div>
+        <div class="stat-label">People connected to the internet worldwide — over 60% of humanity</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">0.2 sec</div>
+        <div class="stat-label">Time for data to travel across the Atlantic Ocean via fiber-optic cable</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">1.3M</div>
+        <div class="stat-label">Miles of undersea cables carrying 99% of international internet traffic</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">400 Gbps</div>
+        <div class="stat-label">Speed of modern fiber-optic cables — enough for 100,000 HD streams at once</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: List every device in this room that is currently connected to a network.</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing globe wrapped in orange fiber-optic cables and underwater network lines — data packets streaming across continents — dark background, tech infrastructure visual</div>
+  </section>
+
+  <!-- SLIDE 2 — NETWORK TYPES -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Network Types</div>
+    <div class="slide-title">PAN · LAN · MAN · WAN</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Networks are defined by their <strong>geographic scope</strong>. Click each type to see its scale and examples.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📱</div>
+        <div class="card-label">PAN</div>
+        <div class="card-body"><strong>Personal Area Network</strong> — within ~10 meters of one person. <br><strong>Examples:</strong> Bluetooth connecting your phone to earbuds; smartwatch syncing to your phone; wireless keyboard/mouse.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏢</div>
+        <div class="card-label">LAN</div>
+        <div class="card-body"><strong>Local Area Network</strong> — single building or campus. <br><strong>Examples:</strong> FIU's campus Wi-Fi; your home network; this classroom's wired computers. Uses Ethernet cables or Wi-Fi.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏙️</div>
+        <div class="card-label">MAN</div>
+        <div class="card-body"><strong>Metropolitan Area Network</strong> — across a city or region. <br><strong>Examples:</strong> Miami city-wide Wi-Fi; cable TV networks serving a metro area; connecting multiple campus buildings city-wide.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌍</div>
+        <div class="card-label">WAN</div>
+        <div class="card-body"><strong>Wide Area Network</strong> — across countries or the globe. <br><strong>The Internet is the largest WAN.</strong> Also: corporate networks linking offices in NY, London, and Tokyo. Uses leased lines, satellites, fiber.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-orange">Memory Trick</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Personal → Local → Metropolitan → Wide. Think of it as zoom levels on a map — from your pocket to the planet.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four concentric rings labeled PAN, LAN, MAN, WAN from inside out — phone at center, then building, then city skyline, then globe — orange glow, dark background</div>
+  </section>
+
+  <!-- SLIDE 3 — NETWORK HARDWARE -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Hardware</div>
+    <div class="slide-title">Network Hardware</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">The physical devices that connect, direct, and amplify data across a network. Click each device to learn its job.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔀</div>
+        <div class="card-label">Router</div>
+        <div class="card-body">Directs data packets between <strong>different networks</strong> — like a traffic cop deciding which road each packet takes. Your home router connects your LAN to the internet (WAN). Uses IP addresses for routing.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔌</div>
+        <div class="card-label">Switch</div>
+        <div class="card-body">Connects devices <strong>within the same network</strong> (LAN). Smarter than an old hub — it sends data only to the specific device it's meant for, not to everyone. Used in offices to connect computers.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📡</div>
+        <div class="card-label">Modem</div>
+        <div class="card-body">Translates digital signals from your devices into signals that travel over cable/phone/fiber lines — and back. <strong>MOdulator-DEModulator.</strong> Connects your network to your ISP (internet service provider).</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📶</div>
+        <div class="card-label">Access Point</div>
+        <div class="card-body">Creates a <strong>wireless LAN</strong> by broadcasting a Wi-Fi signal. In a large building, multiple APs are placed in different areas so every room gets coverage. Different from a router — an AP extends an existing wired network wirelessly.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Router ≠ Switch. A router connects different networks. A switch connects devices within the same network. Students confuse these every exam.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four glowing network devices labeled Router, Switch, Modem, Access Point — arrows showing data flow between them — orange neon on dark background, hardware diagram style</div>
+  </section>
+
+  <!-- SLIDE 4 — NETWORK CHALLENGE -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Team Competition</div>
+    <div class="slide-title">Network Challenge</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2 points per correct answer. Apply your network knowledge to real business scenarios.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">A law firm wants to connect 30 computers within their single office building so employees can share files. What type of network is this, and what hardware connects the computers?</div>
+        <div class="sc-a">LAN (Local Area Network) — covers one building. The device connecting all computers internally is a Switch. If they also want internet access, a Router connects the LAN to the internet.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">Your Bluetooth headphones are paired to your phone. Your phone is on FIU's Wi-Fi. The Wi-Fi connects to the internet. Name the network type for each: headphone-to-phone, phone-to-FIU, FIU-to-internet.</div>
+        <div class="sc-a">Headphone ↔ Phone = PAN (Personal Area Network, Bluetooth, &lt;10m). Phone ↔ FIU = LAN (campus Wi-Fi). FIU ↔ Internet = WAN (Wide Area Network). Three different network types working together!</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">A Comcast technician installs a box in your apartment that translates the cable signal into a signal your router can use. What device is this? What does its name stand for?</div>
+        <div class="sc-a">Modem — MOdulator/DEModulator. It converts (modulates) your router's digital signals into analog signals that travel over the cable line, and converts incoming signals back (demodulates). It bridges your home network to Comcast's network.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">A hospital has offices in Miami, Tampa, and Orlando. Each office has its own LAN. The hospital connects all three offices so staff can share patient data securely. What type of network is this?</div>
+        <div class="sc-a">WAN (Wide Area Network) — spans multiple cities. The individual offices each have LANs, and a WAN connects them. Many organizations use a VPN (Virtual Private Network) over the internet to build a secure WAN between locations.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four network scenario cards — office building, smartphone icons, cable modem, hospital map with connecting lines — orange glow, dark background quiz show style</div>
+  </section>
+
+  <!-- SLIDE 5 — TCP/IP & PROTOCOLS -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Protocols</div>
+    <div class="slide-title">TCP/IP — The Internet's Common Language</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Without agreed-upon rules, devices can't communicate. <strong>Protocols</strong> are those rules. Click each to learn its role.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📦</div>
+        <div class="card-label">IP Address</div>
+        <div class="card-body">A unique numerical address assigned to every device on a network — like a street address for data. IPv4: 192.168.1.1 · IPv6: expanded to handle billions more devices as internet grew.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">✉️</div>
+        <div class="card-label">TCP</div>
+        <div class="card-body"><strong>Transmission Control Protocol</strong> — breaks data into packets, sends them, and ensures all packets arrive and are reassembled in order. Guarantees delivery. Used for email, web pages, file transfers where accuracy matters.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌐</div>
+        <div class="card-label">HTTP/HTTPS</div>
+        <div class="card-body"><strong>HyperText Transfer Protocol</strong> — governs how web browsers and servers exchange web pages. HTTPS adds encryption (SSL/TLS). The "S" is why your browser shows a padlock — data is encrypted in transit.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📁</div>
+        <div class="card-label">Other Protocols</div>
+        <div class="card-body"><strong>FTP</strong> — File Transfer Protocol (moving files). <strong>SMTP/POP3/IMAP</strong> — email sending/receiving. <strong>DNS</strong> — converts "google.com" into an IP address. Each protocol = a specific set of rules for a specific job.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;max-width:700px;">
+      <span class="badge badge-orange">Key Concept</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">TCP/IP is not one protocol — it's a <em>suite</em> of protocols. Think of it as a rule book for the internet. Every device from phones to servers follows the same rules, allowing them to communicate regardless of manufacturer.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A data packet labeled with IP address traveling across glowing orange network nodes — protocol labels floating alongside — dark background, internet infrastructure diagram style</div>
+  </section>
+
+  <!-- SLIDE 6 — OSI MODEL -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 6 · OSI Model</div>
+    <div class="slide-title">The OSI Model — 7 Layers of Networking</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">A conceptual framework showing how data travels from one device to another. Click each layer to reveal what it does.</div>
+    <div class="osi-stack">
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">7</div>
+        <div class="osi-name">Application</div>
+        <div class="osi-desc">Where users interact with the network. Browsers, email clients, apps. Protocols: HTTP, SMTP, FTP, DNS.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">6</div>
+        <div class="osi-name">Presentation</div>
+        <div class="osi-desc">Translates, encrypts, and compresses data so both sides understand the format. SSL/TLS encryption happens here.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">5</div>
+        <div class="osi-name">Session</div>
+        <div class="osi-desc">Establishes, manages, and terminates connections between applications. Controls when a session starts/ends.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">4</div>
+        <div class="osi-name">Transport</div>
+        <div class="osi-desc">Breaks data into segments, ensures reliable delivery. TCP (guaranteed) and UDP (fast, no guarantee) live here.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">3</div>
+        <div class="osi-name">Network</div>
+        <div class="osi-desc">Handles IP addressing and routing — decides the path data takes across multiple networks. Routers operate here.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">2</div>
+        <div class="osi-name">Data Link</div>
+        <div class="osi-desc">Node-to-node data transfer on the same network. Handles MAC addresses. Switches and Wi-Fi operate here.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+      <div class="osi-layer" onclick="revealOSI(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealOSI(this)">
+        <div class="osi-num">1</div>
+        <div class="osi-name">Physical</div>
+        <div class="osi-desc">The actual cables, fiber, radio waves. Converts data to electrical/optical/wireless signals. Ethernet cables, Wi-Fi radio signals live here.</div>
+        <div class="osi-hint">Click →</div>
+      </div>
+    </div>
+    <div style="margin-top:0.6rem;text-align:center;">
+      <span class="badge badge-amber">Memory Trick</span>
+      <span style="font-size:0.8rem;color:var(--muted);margin-left:6px;"><strong>A</strong>ll <strong>P</strong>eople <strong>S</strong>eem <strong>T</strong>o <strong>N</strong>eed <strong>D</strong>ata <strong>P</strong>rocessing (7→1)</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Seven horizontal glowing layers stacked like a cake — each labeled with OSI layer number and name — orange gradient top to bottom — dark background, network architecture diagram</div>
+  </section>
+
+  <!-- SLIDE 7 — INTERNET vs INTRANET vs EXTRANET -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Network Access</div>
+    <div class="slide-title">Internet · Intranet · Extranet</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Same underlying technology — completely different access rules. This distinction is a guaranteed exam topic.</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>🌍 Internet</th>
+            <th>🏢 Intranet</th>
+            <th>🤝 Extranet</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Who can access</strong></td>
+            <td>Anyone, worldwide</td>
+            <td>Only internal employees</td>
+            <td>Internal + selected partners</td>
+          </tr>
+          <tr>
+            <td><strong>Purpose</strong></td>
+            <td>Global communication and commerce</td>
+            <td>Internal collaboration and resources</td>
+            <td>Collaboration with trusted outsiders</td>
+          </tr>
+          <tr>
+            <td><strong>Security</strong></td>
+            <td>Open — public access</td>
+            <td>Firewalled — private to org</td>
+            <td>Controlled — selected access</td>
+          </tr>
+          <tr>
+            <td><strong>Example</strong></td>
+            <td>FIU's public website (fiu.edu)</td>
+            <td>FIU's internal staff portal (HR, payroll, internal docs)</td>
+            <td>FIU sharing grade data with a government scholarship database</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-red">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">An intranet uses the same internet technology (TCP/IP, web browsers) — but it's private. It's NOT a separate physical network. The difference is access control, not technology.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Three nested circles — Internet (largest, public), Extranet (middle, partner access), Intranet (smallest, employees only) — orange concentric rings with locks and icons — dark background</div>
+  </section>
+
+  <!-- SLIDE 8 — BANDWIDTH & TRANSMISSION MEDIA -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Transmission</div>
+    <div class="slide-title">Bandwidth &amp; Transmission Media</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Bandwidth = how much data travels per second. Transmission media = what carries it. Click each to compare speeds and trade-offs.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌊</div>
+        <div class="card-label">Bandwidth</div>
+        <div class="card-body">The capacity of a network connection — measured in <strong>bits per second (bps)</strong>. Think of it as a pipe: wider pipe = more data flows. Mbps = megabits/sec. Gbps = gigabits/sec. More bandwidth = faster network.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔵</div>
+        <div class="card-label">Fiber Optic</div>
+        <div class="card-body"><strong>Fastest &amp; most expensive.</strong> Glass fibers carry pulses of light. Speeds up to 400 Gbps. Immune to electromagnetic interference. Used for undersea cables, ISP backbone, and enterprise networks.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🟡</div>
+        <div class="card-label">Coaxial / Ethernet</div>
+        <div class="card-body"><strong>Common wired options.</strong> Ethernet (twisted-pair copper) is in most offices — up to 10 Gbps. Coaxial cable is used for cable TV and internet (your Xfinity/Spectrum connection). Reliable, affordable, widely deployed.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📡</div>
+        <div class="card-label">Wireless</div>
+        <div class="card-body"><strong>Wi-Fi, cellular (4G/5G), satellite.</strong> No cables — uses radio waves. Wi-Fi: up to ~9.6 Gbps (Wi-Fi 6). 5G: up to 10 Gbps. Satellite (Starlink): useful for remote areas. Trade-off: wireless can be slower and less secure than wired.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-green">Real World</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">When Netflix buffers, it's usually a bandwidth problem — not enough capacity for your connection at that moment (too many users, too much data).</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four transmission media comparison cards — fiber optic cable glowing blue, ethernet cable, coaxial cable, wireless signal tower — speed labels above each — orange accent, dark background</div>
+  </section>
+
+  <!-- SLIDE 9 — WIRELESS -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Wireless</div>
+    <div class="slide-title">Wireless Networking Standards</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">No wires — but very specific rules govern how devices communicate wirelessly. Click each standard to see what it does.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📶</div>
+        <div class="card-label">Wi-Fi (802.11)</div>
+        <div class="card-body">The standard for wireless LAN. 802.11 is the technical name; Wi-Fi is the brand. <strong>Wi-Fi 6 (802.11ax)</strong> reaches ~9.6 Gbps. Uses radio waves in 2.4 GHz (longer range, slower) and 5 GHz (shorter range, faster) bands. Range: ~100–300 feet indoors.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🦷</div>
+        <div class="card-label">Bluetooth</div>
+        <div class="card-body">Short-range wireless PAN technology. Range: ~30 feet. Low power. Used for: earbuds, keyboards, speakers, medical devices, car audio. Not for internet — for direct device-to-device pairing. Named after a Viking king who united tribes.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📲</div>
+        <div class="card-label">5G Cellular</div>
+        <div class="card-body">5th generation cellular network. Speeds up to 10 Gbps — 100x faster than 4G. Ultra-low latency (1ms). Enables: autonomous vehicles, remote surgery, smart cities, IoT at massive scale. Coverage still expanding (2024–2030 buildout).</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💳</div>
+        <div class="card-label">NFC</div>
+        <div class="card-body"><strong>Near Field Communication</strong> — range: ~4 cm. Used for: contactless payments (Apple Pay, Google Pay, tap credit cards), door access cards, transit passes. Very short range is a security feature — you must physically tap to transmit.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-orange">Today in Class</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">How many of these wireless standards are active on your phone right now? Wi-Fi + Bluetooth + 5G + NFC = 4 different radios operating simultaneously.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A smartphone surrounded by four wireless signal indicators — Wi-Fi waves, Bluetooth symbol, 5G tower, NFC tap wave — each labeled and color-coded — orange glow, dark background</div>
+  </section>
+
+  <!-- SLIDE 10 — VPN & NETWORK SECURITY -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Security</div>
+    <div class="slide-title">VPN, Firewall &amp; Network Security</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Networks create convenience — and create attack surfaces. Click each security concept to see how it protects the network.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔒</div>
+        <div class="card-label">VPN</div>
+        <div class="card-body"><strong>Virtual Private Network</strong> — creates an encrypted "tunnel" through the public internet. Your data is encrypted before leaving your device and decrypted at the destination. Used by: remote workers, businesses linking offices, users protecting privacy on public Wi-Fi.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧱</div>
+        <div class="card-label">Firewall</div>
+        <div class="card-body">Hardware or software that monitors and filters incoming/outgoing network traffic based on security rules. Acts as a gatekeeper — allows trusted traffic, blocks suspicious traffic. Every corporate network (and your home router) has a firewall.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎣</div>
+        <div class="card-label">Network Threats</div>
+        <div class="card-body"><strong>Packet sniffing:</strong> intercepting data on a network. <strong>Man-in-the-middle:</strong> attacker inserts themselves between sender and receiver. <strong>DoS/DDoS:</strong> flooding a network to crash it. <strong>Rogue Wi-Fi:</strong> fake hotspots that steal credentials. Why HTTPS matters everywhere.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌐</div>
+        <div class="card-label">ISP &amp; DNS</div>
+        <div class="card-body"><strong>ISP (Internet Service Provider)</strong> — Comcast, AT&amp;T — provides your internet connection. <strong>DNS (Domain Name System)</strong> — translates "fiu.edu" into an IP address. DNS is the internet's phone book. Without DNS, you'd need to memorize IP addresses for every website.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing orange tunnel representing VPN cutting through a dark internet cloud — firewall brick wall on one side — dark background, cybersecurity visual style</div>
+  </section>
+
+  <!-- SLIDE 11 — KEY TAKEAWAYS -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>Network scope: PAN (personal, ~10m) → LAN (building) → MAN (city) → WAN (global). The internet is the largest WAN. Know the scale and an example for each.</li>
+      <li>Hardware roles: Router = connects different networks using IP addresses. Switch = connects devices within the same LAN. Modem = translates signals between your network and ISP. These are three different devices with three different jobs.</li>
+      <li>TCP/IP is a suite of protocols — the universal language of the internet. TCP guarantees delivery (breaks data into packets, reassembles them). IP handles addressing and routing.</li>
+      <li>OSI Model — 7 layers (Physical, Data Link, Network, Transport, Session, Presentation, Application). Know the order and the mnemonic: All People Seem To Need Data Processing (7→1).</li>
+      <li>Internet = public, anyone can access. Intranet = private, employees only (same technology, different access). Extranet = extends intranet to selected partners. The technology is the same — access control differs.</li>
+      <li>VPN encrypts your data through the public internet — used for remote work and privacy. Firewall filters traffic to block attacks. Bandwidth = network capacity measured in bps.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet point panels — each with a small network icon — router, OSI layers, VPN tunnel, PAN-WAN scale map — orange accent on dark background, clean summary slide</div>
+  </section>
+
+  <!-- SLIDE 12 — GAME TIME -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 6 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 6 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: network types, hardware, protocols, OSI, VPN</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips pre-loaded in the app</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — networks appear on every IS exam</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-orange" style="font-size:0.85rem;padding:8px 20px;">Remember: Router connects networks · Switch connects devices · Modem connects to ISP</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with network node diagram overlay — orange neon celebration style on dark background</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) { items[takeawayIdx].classList.add('show'); takeawayIdx++; return; }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    document.getElementById('s' + current).classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = (current / TOTAL * 100).toFixed(2) + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)    { card.classList.toggle('revealed'); }
+  function revealSc(card)  { card.classList.toggle('revealed'); }
+  function revealOSI(card) { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]); el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

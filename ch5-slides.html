@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 5: Data &amp; Knowledge Management — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #4F46E5;
+      --accent2: #4338CA;
+      --accent3: #EEF2FF;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    /* FLIP CARDS */
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(79,70,229,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    /* STAT BOXES */
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    /* SCENARIO CARDS */
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #A5B4FC; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* DATABASE VISUAL */
+    .db-visual {
+      display: flex; flex-direction: column; align-items: center;
+      margin-top: 1rem; width: 100%; max-width: 820px;
+    }
+    .db-table {
+      width: 100%; border-collapse: collapse; font-size: 0.82rem;
+      border-radius: 10px; overflow: hidden;
+    }
+    .db-table th {
+      background: var(--accent); color: white; padding: 8px 12px; text-align: left;
+      font-size: 0.78rem; font-weight: 700;
+    }
+    .db-table td {
+      padding: 8px 12px; border-bottom: 1px solid #334155;
+    }
+    .db-table tr:nth-child(odd) td { background: rgba(79,70,229,0.1); }
+    .db-table tr:nth-child(even) td { background: rgba(30,41,59,0.5); }
+    .db-label {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent); font-weight: 700; margin: 0.8rem 0 0.3rem; align-self: flex-start;
+    }
+    .pk-cell { color: #A5B4FC; font-weight: 700; }
+    .fk-cell { color: #FCD34D; font-weight: 700; }
+
+    /* SQL BLOCK */
+    .sql-block {
+      background: #0F172A; border: 1px solid #334155; border-radius: 10px;
+      padding: 1rem 1.4rem; font-family: "Courier New", monospace;
+      font-size: clamp(0.78rem, 1.5vw, 0.95rem); margin-top: 1rem;
+      width: 100%; max-width: 700px; line-height: 1.7;
+    }
+    .sql-kw  { color: #818CF8; font-weight: 700; }
+    .sql-val { color: #86EFAC; }
+    .sql-com { color: var(--muted); font-style: italic; }
+
+    /* BIG DATA V CARDS */
+    .v-cards {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 1000px; width: 100%;
+    }
+    .v-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 14px; padding: 1.2rem; flex: 1; min-width: 150px; max-width: 190px;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .v-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .v-card.revealed { border-color: var(--accent); background: rgba(79,70,229,0.12); }
+    .v-card .vc-letter { font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1; }
+    .v-card .vc-word { font-size: 0.85rem; font-weight: 700; margin: 4px 0; }
+    .v-card .vc-def { font-size: 0.78rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .v-card.revealed .vc-def { display: block; color: var(--white); }
+    .v-card .vc-example { font-size: 0.72rem; color: #A5B4FC; display: none; margin-top: 5px; font-style: italic; }
+    .v-card.revealed .vc-example { display: block; }
+
+    /* COMPARISON TABLE */
+    .compare-wrap { width: 100%; max-width: 820px; margin-top: 1rem; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .compare-table th { background: var(--accent); color: white; padding: 8px 14px; text-align: left; }
+    .compare-table td { border-bottom: 1px solid #334155; padding: 8px 14px; vertical-align: top; }
+    .compare-table tr:nth-child(odd) td { background: rgba(79,70,229,0.08); }
+
+    /* DATA MINING CARDS */
+    .mining-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .mining-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 12px; padding: 1.1rem 1.3rem; flex: 1; min-width: 180px; max-width: 220px;
+      cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .mining-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .mining-card.revealed { border-color: var(--accent); background: rgba(79,70,229,0.1); }
+    .mining-card .mc-icon { font-size: 1.6rem; margin-bottom: 6px; }
+    .mining-card .mc-name { font-size: 0.82rem; font-weight: 800; }
+    .mining-card .mc-body { font-size: 0.77rem; color: var(--muted); margin-top: 5px; line-height: 1.4; display: none; }
+    .mining-card.revealed .mc-body { display: block; color: var(--white); }
+    .mining-card .mc-hint { font-size: 0.68rem; color: var(--muted); margin-top: 4px; }
+    .mining-card.revealed .mc-hint { display: none; }
+
+    /* REAL-WORLD EXAMPLES */
+    .example-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .example-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem; flex: 1; min-width: 200px; max-width: 250px;
+      cursor: pointer; transition: all 0.25s; text-align: center;
+    }
+    .example-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .example-card.revealed { border-color: var(--accent); }
+    .example-card .ec-brand { font-size: 1.1rem; margin-bottom: 4px; }
+    .example-card .ec-what { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+    .example-card .ec-how { font-size: 0.8rem; color: #A5B4FC; margin-top: 6px; display: none; line-height: 1.4; }
+    .example-card .ec-vs { font-size: 0.72rem; color: #FCD34D; margin-top: 4px; display: none; font-weight: 700; }
+    .example-card.revealed .ec-how, .example-card.revealed .ec-vs { display: block; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-indigo { background: rgba(79,70,229,0.2); color: #A5B4FC; }
+    .badge-green  { background: rgba(34,197,94,0.2);  color: #86EFAC; }
+    .badge-amber  { background: rgba(217,119,6,0.2);  color: #FCD34D; }
+    .badge-red    { background: rgba(220,38,38,0.2);  color: #FCA5A5; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px); transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 — HOOK -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Hook</div>
+    <div class="slide-title">The World Creates 2.5 Quintillion Bytes Every Day</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">That's 2,500,000,000,000,000,000 bytes. The question is no longer "do we have data?" — it's "what do we do with it?"</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">5M</div>
+        <div class="stat-label">Google searches happen every single minute</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">500 hrs</div>
+        <div class="stat-label">Of video uploaded to YouTube every minute</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">4.6B</div>
+        <div class="stat-label">Facebook data points collected per user per day</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">90%</div>
+        <div class="stat-label">Of all data in the world was created in the last two years</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: What does your phone know about you that no other person does?</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A globe surrounded by floating data streams and glowing numbers — 2.5 quintillion in large text — dark indigo background, digital universe visual style</div>
+  </section>
+
+  <!-- SLIDE 2 — DATA → INFORMATION → KNOWLEDGE -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Foundation</div>
+    <div class="slide-title">Data → Information → Knowledge</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Raw facts become decisions. Click each level to see the transformation.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔢</div>
+        <div class="card-label">Data</div>
+        <div class="card-body">Raw, unprocessed facts with no context. <strong>Example:</strong> "85, 72, 91, 68, 77" — these numbers mean nothing alone. Data is the input.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📊</div>
+        <div class="card-label">Information</div>
+        <div class="card-body">Data processed and organized to give it meaning. <strong>Example:</strong> "Student exam scores: avg 78.6, highest 91, lowest 68." Context makes it information.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧠</div>
+        <div class="card-label">Knowledge</div>
+        <div class="card-body">Information applied to make decisions or take action. <strong>Example:</strong> "Class average is 78.6 and trending down — I should add a review session before the final." Actionable insight.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💡</div>
+        <div class="card-label">Wisdom</div>
+        <div class="card-body">Applying knowledge over time to develop judgment. <strong>Example:</strong> "After 10 years teaching, I know that scores drop in week 8 — I always schedule a review then." Experience-backed foresight.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;max-width:700px;">
+      <span class="badge badge-indigo">Why It Matters</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">IS transforms data into information. Managers turn information into knowledge. Leaders apply knowledge as wisdom. That's the entire purpose of data management.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A pyramid with four glowing tiers labeled Data, Information, Knowledge, Wisdom — each tier brighter than the last — indigo gradient, clean infographic style</div>
+  </section>
+
+  <!-- SLIDE 3 — RELATIONAL DATABASES -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Databases</div>
+    <div class="slide-title">Relational Databases</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Data lives in <strong>tables</strong>. Tables connect through <strong>keys</strong>. Together they answer any business question.</div>
+    <div class="db-visual">
+      <div class="db-label">📋 CUSTOMERS table</div>
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>CustomerID <span style="font-size:0.68rem;opacity:0.7;">(Primary Key 🔑)</span></th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>City</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="pk-cell">C001</td><td>Maria Lopez</td><td>maria@email.com</td><td>Miami</td></tr>
+          <tr><td class="pk-cell">C002</td><td>James Chen</td><td>james@email.com</td><td>Orlando</td></tr>
+          <tr><td class="pk-cell">C003</td><td>Aisha Patel</td><td>aisha@email.com</td><td>Tampa</td></tr>
+        </tbody>
+      </table>
+      <div class="db-label" style="margin-top:0.8rem;">🛒 ORDERS table (linked by CustomerID)</div>
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>OrderID <span style="font-size:0.68rem;opacity:0.7;">(Primary Key 🔑)</span></th>
+            <th>CustomerID <span style="font-size:0.68rem;opacity:0.7;">(Foreign Key 🔗)</span></th>
+            <th>Product</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="pk-cell">O101</td><td class="fk-cell">C001</td><td>Laptop</td><td>$999</td></tr>
+          <tr><td class="pk-cell">O102</td><td class="fk-cell">C001</td><td>Mouse</td><td>$29</td></tr>
+          <tr><td class="pk-cell">O103</td><td class="fk-cell">C003</td><td>Monitor</td><td>$349</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:0.8rem;text-align:center;font-size:0.8rem;color:var(--muted);">
+      <span style="color:#A5B4FC;font-weight:700;">🔑 Primary Key</span> = unique ID for each row &nbsp;·&nbsp;
+      <span style="color:#FCD34D;font-weight:700;">🔗 Foreign Key</span> = links to another table's Primary Key
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Two glowing database tables connected by an arrow through matching CustomerID fields — indigo color scheme, clean database diagram style on dark background</div>
+  </section>
+
+  <!-- SLIDE 4 — SQL -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 5 · SQL</div>
+    <div class="slide-title">SQL — Talking to a Database</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub"><strong>Structured Query Language</strong> — the universal language for asking questions of relational databases</div>
+    <div class="sql-block">
+      <span class="sql-com">-- Find all customers from Miami who spent over $500</span><br>
+      <span class="sql-kw">SELECT</span> c.Name, c.Email, o.Product, o.Amount<br>
+      <span class="sql-kw">FROM</span> Customers c<br>
+      <span class="sql-kw">JOIN</span> Orders o <span class="sql-kw">ON</span> c.CustomerID = o.CustomerID<br>
+      <span class="sql-kw">WHERE</span> c.City = <span class="sql-val">'Miami'</span><br>
+      &nbsp;&nbsp;<span class="sql-kw">AND</span> o.Amount > <span class="sql-val">500</span><br>
+      <span class="sql-kw">ORDER BY</span> o.Amount <span class="sql-kw">DESC</span>;
+    </div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="min-width:130px;max-width:160px;">
+        <div class="card-label">SELECT</div>
+        <div class="card-body">Choose which columns to return. "SELECT *" means all columns.</div>
+        <div class="card-hint">Click</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="min-width:130px;max-width:160px;">
+        <div class="card-label">FROM</div>
+        <div class="card-body">Specify which table to pull data from.</div>
+        <div class="card-hint">Click</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="min-width:130px;max-width:160px;">
+        <div class="card-label">JOIN</div>
+        <div class="card-body">Combine rows from two tables using a matching key column.</div>
+        <div class="card-hint">Click</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="min-width:130px;max-width:160px;">
+        <div class="card-label">WHERE</div>
+        <div class="card-body">Filter rows — only include rows that meet the condition.</div>
+        <div class="card-hint">Click</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)" style="min-width:130px;max-width:160px;">
+        <div class="card-label">ORDER BY</div>
+        <div class="card-body">Sort results — ASC (low to high) or DESC (high to low).</div>
+        <div class="card-hint">Click</div>
+      </div>
+    </div>
+    <div style="margin-top:0.8rem;text-align:center;">
+      <span class="badge badge-green">Key Point</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">You don't need to write SQL as a business student — but you need to know what it does and when it's used.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing SQL code block on a dark terminal with each keyword highlighted in indigo — results table appearing on the right side — developer dark mode aesthetic</div>
+  </section>
+
+  <!-- SLIDE 5 — DATABASE CHALLENGE -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Team Competition</div>
+    <div class="slide-title">Database Challenge</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2 points per correct answer. Apply your database knowledge to real business scenarios.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">A store needs to find all customers who live in Florida AND bought a product in the last 30 days. What SQL keyword filters the results?</div>
+        <div class="sc-a">WHERE — filters rows based on conditions. The query would include: WHERE State = 'Florida' AND PurchaseDate >= [30 days ago]. AND combines multiple conditions.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">A hospital stores patients in one table and appointments in another. The same PatientID appears in both. What is PatientID called in the appointments table?</div>
+        <div class="sc-a">Foreign Key — it references the Primary Key in the Patients table. This relationship allows the database to connect a patient's profile to all their appointments without duplicating patient data.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">A manager asks: "Which of our products has generated the most revenue this quarter?" What type of system manages the underlying data and handles this query?</div>
+        <div class="sc-a">DBMS (Database Management System) — software like Oracle, MySQL, or SQL Server that manages the database, handles queries, enforces security, and ensures data integrity. The manager's question is answered via a SQL SELECT query.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">In a STUDENTS table, two students have the same name "Michael Smith." How does the database tell them apart?</div>
+        <div class="sc-a">Primary Key — a unique identifier (like StudentID: S001 vs S002) that distinguishes every row. A Primary Key can NEVER be null or duplicate. This is why we don't use names as primary keys.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four database scenario cards with glowing SQL query fragments and table diagrams — indigo neon on dark background, tech quiz show visual style</div>
+  </section>
+
+  <!-- SLIDE 6 — DBMS -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 5 · DBMS</div>
+    <div class="slide-title">The DBMS — Database Management System</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">The software that creates, manages, secures, and provides access to databases</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏗️</div>
+        <div class="card-label">Create &amp; Structure</div>
+        <div class="card-body">Defines tables, columns, data types, and relationships. You design the blueprint; the DBMS builds and enforces it.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔍</div>
+        <div class="card-label">Query &amp; Retrieve</div>
+        <div class="card-body">Processes SQL queries and returns results. Optimizes how queries run so that searching millions of rows takes milliseconds, not hours.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔒</div>
+        <div class="card-label">Security &amp; Access</div>
+        <div class="card-body">Controls who can see, add, edit, or delete data. An HR manager can see salaries; a sales rep cannot. Role-based access enforced by the DBMS.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">✅</div>
+        <div class="card-label">Integrity &amp; Backup</div>
+        <div class="card-body">Ensures data accuracy — prevents invalid entries, handles crashes without corrupting data, and manages automated backups.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="cards-row" style="margin-top:0.8rem;">
+      <div style="background:var(--card-bg);border:1px solid #334155;border-radius:10px;padding:0.8rem 1.2rem;text-align:center;flex:1;max-width:600px;">
+        <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;">Major DBMS Platforms</div>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;font-size:0.85rem;font-weight:700;">
+          <span style="color:#A5B4FC;">Oracle</span>
+          <span>·</span>
+          <span style="color:#A5B4FC;">MySQL</span>
+          <span>·</span>
+          <span style="color:#A5B4FC;">Microsoft SQL Server</span>
+          <span>·</span>
+          <span style="color:#A5B4FC;">PostgreSQL</span>
+          <span>·</span>
+          <span style="color:#A5B4FC;">SQLite</span>
+        </div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A central database cylinder with four glowing arrows pointing outward labeled Create, Query, Security, Integrity — logos of Oracle/MySQL/PostgreSQL floating around it — indigo tech style</div>
+  </section>
+
+  <!-- SLIDE 7 — BIG DATA -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Big Data</div>
+    <div class="slide-title">Big Data: The 5 Vs</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Traditional databases can't handle it. Click each V to see what makes Big Data different.</div>
+    <div class="v-cards">
+      <div class="v-card" onclick="revealV(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealV(this)">
+        <div class="vc-letter">V</div>
+        <div class="vc-word">Volume</div>
+        <div class="vc-def">Massive scale — terabytes, petabytes, exabytes. Too large for traditional systems.</div>
+        <div class="vc-example">Facebook stores 100+ petabytes of photos. Walmart processes 1M+ transactions/hour.</div>
+      </div>
+      <div class="v-card" onclick="revealV(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealV(this)">
+        <div class="vc-letter">V</div>
+        <div class="vc-word">Velocity</div>
+        <div class="vc-def">Real-time or near-real-time data streams. Must be processed instantly as it arrives.</div>
+        <div class="vc-example">Twitter processes 500M+ tweets/day. Stock exchanges process millions of trades/second.</div>
+      </div>
+      <div class="v-card" onclick="revealV(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealV(this)">
+        <div class="vc-letter">V</div>
+        <div class="vc-word">Variety</div>
+        <div class="vc-def">Many data types: structured (tables), unstructured (text, video, audio, images, sensor data).</div>
+        <div class="vc-example">A hospital collects lab results (structured), MRI scans (images), and doctors' notes (unstructured text).</div>
+      </div>
+      <div class="v-card" onclick="revealV(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealV(this)">
+        <div class="vc-letter">V</div>
+        <div class="vc-word">Veracity</div>
+        <div class="vc-def">Trustworthiness and accuracy of the data. Big data is often messy, incomplete, or contradictory.</div>
+        <div class="vc-example">Social media data is noisy — bots, duplicates, sarcasm — cleaning it is a major challenge.</div>
+      </div>
+      <div class="v-card" onclick="revealV(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealV(this)">
+        <div class="vc-letter">V</div>
+        <div class="vc-word">Value</div>
+        <div class="vc-def">The ultimate goal — extracting business value from the data. Big data is worthless without analysis.</div>
+        <div class="vc-example">Netflix's recommendation engine (built on Big Data) is estimated to save $1B/year in subscriber retention.</div>
+      </div>
+    </div>
+    <div style="margin-top:0.8rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">The exam most commonly tests the original 3 Vs: Volume, Velocity, Variety. Know all five but prioritize those three.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Five V-shaped cards in a row each labeled with a V word — glowing indigo letters — data streams flowing between them — dark background, Big Data infographic poster style</div>
+  </section>
+
+  <!-- SLIDE 8 — BIG DATA IN THE WILD -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Real World</div>
+    <div class="slide-title">Big Data in Action</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each company to see how they turn massive data into competitive advantage</div>
+    <div class="example-cards" style="margin-top:1.2rem;">
+      <div class="example-card" onclick="revealEx(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEx(this)">
+        <div class="ec-brand">🎬 Netflix</div>
+        <div class="ec-what">Processes 500 billion events per day from 270M subscribers</div>
+        <div class="ec-how">Recommendation engine analyzes every pause, rewind, rating, and time of day to predict what you'll watch next. 80% of viewing comes from recommendations.</div>
+        <div class="ec-vs">3 Vs: Volume (500B events) · Velocity (real-time) · Variety (viewing + search + ratings)</div>
+      </div>
+      <div class="example-card" onclick="revealEx(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEx(this)">
+        <div class="ec-brand">🛒 Amazon</div>
+        <div class="ec-what">Tracks every click, view, cart add, and purchase for 300M+ customers</div>
+        <div class="ec-how">"Customers who bought this also bought..." — anticipatory shipping sends products to regional warehouses before you order, based on predicted demand patterns.</div>
+        <div class="ec-vs">3 Vs: Volume (billions of events) · Velocity (real-time inventory) · Variety (browsing + purchases + reviews + returns)</div>
+      </div>
+      <div class="example-card" onclick="revealEx(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEx(this)">
+        <div class="ec-brand">🎵 Spotify</div>
+        <div class="ec-what">Analyzes 100 billion data events daily from 600M users</div>
+        <div class="ec-how">Discover Weekly creates a personalized 30-song playlist every Monday. Knows your mood by time of day. Can predict a breakup based on your listening patterns before you tell anyone.</div>
+        <div class="ec-vs">3 Vs: Volume (100B events) · Velocity (live streaming) · Variety (songs + podcasts + playlists + listening context)</div>
+      </div>
+      <div class="example-card" onclick="revealEx(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealEx(this)">
+        <div class="ec-brand">🏪 Target</div>
+        <div class="ec-what">Assigns a "pregnancy prediction score" using 25 data signals</div>
+        <div class="ec-how">Detected a teenager's pregnancy from her shopping pattern before her father found out — changed buying of unscented lotion, certain vitamins, cotton balls. Sent her baby coupons. Father complained. Target was right.</div>
+        <div class="ec-vs">3 Vs: Volume + Veracity (behavioral patterns) + Value (personalized coupons = increased spend)</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four company logos (Netflix, Amazon, Spotify, Target) each surrounded by flowing data streams — click to reveal insights appearing on cards — dark indigo background, data visualization style</div>
+  </section>
+
+  <!-- SLIDE 9 — DATA WAREHOUSE vs DATABASE -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Data Architecture</div>
+    <div class="slide-title">Database vs. Data Warehouse</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">They store data — but for completely different purposes. This distinction is a guaranteed exam topic.</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>📋 Operational Database</th>
+            <th>🏛️ Data Warehouse</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Purpose</strong></td>
+            <td>Run the business day-to-day (OLTP)</td>
+            <td>Analyze the business over time (OLAP)</td>
+          </tr>
+          <tr>
+            <td><strong>Data Age</strong></td>
+            <td>Current — updated in real time</td>
+            <td>Historical — weeks, months, years of data</td>
+          </tr>
+          <tr>
+            <td><strong>Query Type</strong></td>
+            <td>Simple — find one order, update one record</td>
+            <td>Complex — "revenue by region for last 3 years"</td>
+          </tr>
+          <tr>
+            <td><strong>Users</strong></td>
+            <td>Clerks, cashiers, customer service reps</td>
+            <td>Analysts, executives, data scientists</td>
+          </tr>
+          <tr>
+            <td><strong>Example</strong></td>
+            <td>Your bank processing a $20 ATM withdrawal</td>
+            <td>Bank analyzing fraud patterns across all ATMs nationwide</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">A data warehouse is NOT for real-time transactions. It's for historical analysis. Confusing these two is the most common Ch 5 exam mistake.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Side-by-side comparison: a fast-moving transaction system on the left vs a large analytical warehouse with historical timelines on the right — indigo and gold color coding, clean infographic style</div>
+  </section>
+
+  <!-- SLIDE 10 — DATA MINING -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Data Mining</div>
+    <div class="slide-title">Data Mining — Finding Hidden Gold</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Discovering patterns and insights in large datasets that humans couldn't find manually</div>
+    <div class="mining-cards" style="margin-top:1.2rem;">
+      <div class="mining-card" onclick="revealMine(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealMine(this)">
+        <div class="mc-icon">🔗</div>
+        <div class="mc-name">Association Rules</div>
+        <div class="mc-body">Finding items that frequently appear together. Classic example: "Beer and diapers are bought together on Friday evenings." Drives product placement and bundle offers.</div>
+        <div class="mc-hint">Click</div>
+      </div>
+      <div class="mining-card" onclick="revealMine(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealMine(this)">
+        <div class="mc-icon">🏷️</div>
+        <div class="mc-name">Classification</div>
+        <div class="mc-body">Assigning data to categories. Your bank flags a transaction as "fraud" or "not fraud" based on patterns in millions of past transactions.</div>
+        <div class="mc-hint">Click</div>
+      </div>
+      <div class="mining-card" onclick="revealMine(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealMine(this)">
+        <div class="mc-icon">👥</div>
+        <div class="mc-name">Clustering</div>
+        <div class="mc-body">Grouping similar records together without pre-defined categories. Netflix clusters users with similar tastes to build recommendation groups.</div>
+        <div class="mc-hint">Click</div>
+      </div>
+      <div class="mining-card" onclick="revealMine(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealMine(this)">
+        <div class="mc-icon">📈</div>
+        <div class="mc-name">Forecasting</div>
+        <div class="mc-body">Predicting future values from historical patterns. Retailers forecast inventory needs before a hurricane. Airlines predict seat demand weeks ahead.</div>
+        <div class="mc-hint">Click</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;max-width:700px;">
+      <span class="badge badge-red">Exam Trap</span>
+      <p style="font-size:0.82rem;color:var(--muted);margin-top:6px;">Data mining = <em>discovering patterns</em> in existing data. It is NOT: collecting data, deleting duplicates, or entering data into a system. Students frequently confuse it with "mining" in a literal sense.</p>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A pickaxe striking a mountain of data points and revealing golden insight gems — four technique labels floating around the explosion — indigo and gold, data science poster style</div>
+  </section>
+
+  <!-- SLIDE 11 — KEY TAKEAWAYS -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>Data → Information → Knowledge → Wisdom: IS transforms raw facts into actionable decisions. Data alone has no value.</li>
+      <li>Relational database: data in tables (rows = records, columns = fields), linked by Primary Keys (unique row ID) and Foreign Keys (link to another table).</li>
+      <li>SQL = Structured Query Language — SELECT, FROM, WHERE, JOIN are the core commands. You don't write it, but you must understand what it does.</li>
+      <li>DBMS (Oracle, MySQL, SQL Server) manages database creation, querying, security, and integrity. It's the software layer above the data.</li>
+      <li>Big Data 3 Vs (exam priority): Volume (massive scale) · Velocity (real-time speed) · Variety (structured + unstructured). Also: Veracity, Value.</li>
+      <li>Data Warehouse ≠ Database: warehouses are for historical analysis (OLAP), not live transactions (OLTP). Data mining discovers hidden patterns in large datasets.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet points on dark indigo panels, each with a small matching icon — database cylinder, SQL tag, Big Data V, warehouse building — clean summary slide style</div>
+  </section>
+
+  <!-- SLIDE 12 — GAME TIME -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 5 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 5 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: relational DB, SQL, Big Data, data mining, data warehouse</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips pre-loaded in the app</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — databases appear on every IS exam</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-indigo" style="font-size:0.85rem;padding:8px 20px;">Remember: Data Warehouse = Analysis · Database = Transactions · Data Mining = Finding Patterns</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with a database cylinder and data stream overlay — indigo neon celebration style on dark background</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) { items[takeawayIdx].classList.add('show'); takeawayIdx++; return; }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    document.getElementById('s' + current).classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = (current / TOTAL * 100).toFixed(2) + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)      { card.classList.toggle('revealed'); }
+  function revealSc(card)    { card.classList.toggle('revealed'); }
+  function revealV(card)     { card.classList.toggle('revealed'); }
+  function revealEx(card)    { card.classList.toggle('revealed'); }
+  function revealMine(card)  { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]); el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

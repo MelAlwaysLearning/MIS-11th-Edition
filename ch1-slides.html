@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 1: Intro to IS — Class Slides | MIS Journey</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0F0E17; }
+
+    /* ── PROGRESS BAR ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 5px;
+      background: rgba(255,255,255,0.08); z-index: 200;
+    }
+    #progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7C3AED, #EF4444, #F59E0B);
+      transition: width 0.4s ease;
+    }
+
+    /* ── SLIDE COUNTER ── */
+    #slide-counter {
+      position: fixed; top: 14px; right: 18px;
+      color: rgba(255,255,255,0.35); font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.1em; z-index: 200;
+    }
+
+    /* ── NAVIGATION ── */
+    #slide-nav {
+      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px; z-index: 200;
+    }
+    #slide-nav button {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+      color: white; padding: 9px 22px; border-radius: 50px;
+      cursor: pointer; font-size: 0.88rem; font-weight: 700;
+      transition: background 0.2s, transform 0.15s; backdrop-filter: blur(8px);
+    }
+    #slide-nav button:hover:not(:disabled) { background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+    #slide-nav button:disabled { opacity: 0.25; cursor: default; transform: none; }
+    #kbd-hint {
+      position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.2); font-size: 0.72rem; letter-spacing: 0.08em;
+      white-space: nowrap; z-index: 200;
+    }
+
+    /* ── SCOREBOARD ── */
+    #scoreboard {
+      position: fixed; top: 44px; right: 16px;
+      background: rgba(10,10,20,0.85); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px; padding: 14px 18px; z-index: 199;
+      min-width: 190px; backdrop-filter: blur(12px); display: none;
+    }
+    #scoreboard.visible { display: block; }
+    .sb-title { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+    .sb-row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0; gap: 8px; }
+    .sb-name { font-size: 0.88rem; color: white; font-weight: 600; flex: 1; }
+    .sb-score { font-size: 1.1rem; font-weight: 900; color: #FCD34D; min-width: 24px; text-align: center; }
+    .sb-btns { display: flex; gap: 4px; }
+    .sb-btns button {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: white; width: 26px; height: 26px; border-radius: 6px;
+      cursor: pointer; font-size: 0.9rem; transition: background 0.15s;
+    }
+    .sb-btns button:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── SLIDES ── */
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 56px 72px 100px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease;
+      text-align: center; overflow: hidden;
+    }
+    .slide.active { opacity: 1; pointer-events: all; }
+
+    /* Slide themes */
+    .slide-hook     { background: linear-gradient(150deg, #3B0764 0%, #1E1B4B 50%, #0F0E17 100%); }
+    .slide-learn    { background: linear-gradient(150deg, #0C1A3A 0%, #0F172A 100%); }
+    .slide-activity { background: linear-gradient(150deg, #450A0A 0%, #1A0000 100%); }
+    .slide-discuss  { background: linear-gradient(150deg, #022C22 0%, #0F1A14 100%); }
+    .slide-wrap     { background: linear-gradient(150deg, #291008 0%, #15080A 100%); }
+    .slide-game     { background: linear-gradient(150deg, #1E1B4B 0%, #0F0E17 100%); }
+
+    /* Type badge */
+    .slide-badge {
+      position: absolute; top: 22px; left: 24px;
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 4px 13px; border-radius: 20px; opacity: 0.9;
+    }
+    .badge-hook     { background: #7C3AED; color: white; }
+    .badge-learn    { background: #1D4ED8; color: white; }
+    .badge-activity { background: #DC2626; color: white; }
+    .badge-discuss  { background: #059669; color: white; }
+    .badge-wrap     { background: #D97706; color: white; }
+    .badge-game     { background: #6D28D9; color: white; }
+
+    /* Back to app link */
+    .back-link {
+      position: absolute; top: 22px; right: 140px;
+      color: rgba(255,255,255,0.25); font-size: 0.75rem; text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: rgba(255,255,255,0.6); }
+
+    /* Typography */
+    .slide h1 {
+      font-size: clamp(1.9rem, 3.8vw, 3.2rem); font-weight: 900;
+      color: white; line-height: 1.15; margin-bottom: 1.2rem;
+    }
+    .slide h2 {
+      font-size: clamp(1.4rem, 2.6vw, 2.1rem); font-weight: 800;
+      color: white; line-height: 1.2; margin-bottom: 0.9rem;
+    }
+    .slide p { font-size: clamp(0.95rem, 1.4vw, 1.2rem); color: rgba(255,255,255,0.72); line-height: 1.65; }
+    .accent { color: #FCD34D; }
+    .purple { color: #A78BFA; }
+    .teal   { color: #34D399; }
+    .coral  { color: #F87171; }
+
+    /* Activity box */
+    .activity-box {
+      background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.18);
+      border-radius: 16px; padding: 1.4rem 2rem;
+      font-size: clamp(0.95rem, 1.35vw, 1.15rem); color: white;
+      line-height: 1.75; max-width: 720px; margin-top: 1rem;
+    }
+    .activity-box strong { color: #FCD34D; }
+
+    /* Timer button */
+    .timer-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,158,11,0.15); border: 2px solid #F59E0B;
+      color: #FCD34D; padding: 10px 22px; border-radius: 50px;
+      font-size: 1.05rem; font-weight: 800; cursor: pointer;
+      transition: all 0.2s; margin-top: 1.1rem; letter-spacing: 0.04em;
+    }
+    .timer-btn:hover { background: rgba(245,158,11,0.28); }
+    .timer-btn.running { animation: timer-pulse 1.2s infinite; }
+    @keyframes timer-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(245,158,11,0); }
+    }
+
+    /* Stats row */
+    .stats-row { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-top: 1.6rem; }
+    .stat-box { text-align: center; min-width: 110px; }
+    .big-stat { font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900; color: #FCD34D; line-height: 1;
+      text-shadow: 0 0 30px rgba(252,211,77,0.35); }
+    .stat-label { font-size: clamp(0.78rem, 1.1vw, 0.95rem); color: rgba(255,255,255,0.5); margin-top: 0.4rem; line-height: 1.4; }
+
+    /* Components grid */
+    .comp-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 14px; margin-top: 1.2rem; width: 100%; max-width: 860px;
+    }
+    .comp-card {
+      background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 1.1rem 0.7rem;
+      cursor: pointer; transition: all 0.3s; user-select: none;
+    }
+    .comp-card:hover, .comp-card.revealed {
+      background: rgba(124,58,237,0.3); border-color: #7C3AED; transform: translateY(-4px);
+    }
+    .comp-card:focus { outline: 3px solid #7C3AED; outline-offset: 2px; }
+    .comp-icon { font-size: 1.9rem; display: block; margin-bottom: 7px; }
+    .comp-name { font-size: 0.82rem; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.06em; }
+    .comp-ex { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 6px; line-height: 1.35; display: none; }
+    .comp-card.revealed .comp-ex { display: block; color: #A78BFA; }
+    .comp-hint { font-size: 0.82rem; color: rgba(255,255,255,0.3); margin-bottom: 0.5rem; }
+
+    /* IS Pyramid */
+    .pyramid { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 0.8rem; width: 100%; max-width: 580px; }
+    .pyr-lvl {
+      border-radius: 9px; padding: 13px 1.5rem; color: white; font-weight: 700;
+      font-size: clamp(0.78rem, 1.15vw, 0.95rem); cursor: pointer; transition: all 0.3s;
+      width: var(--w);
+    }
+    .pyr-lvl:hover, .pyr-lvl:focus { filter: brightness(1.2); outline: 2px solid rgba(255,255,255,0.4); }
+    .pyr-sub { font-size: 0.68rem; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.07em; }
+    .pyr-ex { display: none; font-size: 0.82rem; opacity: 0.85; margin-top: 5px; font-weight: 400; line-height: 1.4; }
+    .pyr-lvl.open .pyr-ex { display: block; }
+    .pyr-eis { --w: 34%; background: linear-gradient(135deg, #7C3AED, #5B21B6); }
+    .pyr-dss { --w: 55%; background: linear-gradient(135deg, #2563EB, #1D4ED8); }
+    .pyr-mis { --w: 74%; background: linear-gradient(135deg, #0891B2, #0E7490); }
+    .pyr-tps { --w: 94%; background: linear-gradient(135deg, #059669, #047857); }
+
+    /* Scenario grid */
+    .sc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 800px; margin-top: 0.9rem; text-align: left; }
+    .sc-card {
+      background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 1rem 1.1rem; cursor: pointer; transition: all 0.3s;
+    }
+    .sc-card:hover { background: rgba(255,255,255,0.1); }
+    .sc-card:focus { outline: 3px solid #EF4444; outline-offset: 2px; }
+    .sc-card.revealed { border-color: #22C55E; background: rgba(34,197,94,0.12); }
+    .sc-q { font-size: 0.88rem; color: rgba(255,255,255,0.82); line-height: 1.55; }
+    .sc-a { display: none; font-size: 0.84rem; color: #4ADE80; font-weight: 800; margin-top: 8px; }
+    .sc-card.revealed .sc-a { display: block; }
+
+    /* Reveal bullet list */
+    .reveal-list { text-align: left; max-width: 700px; width: 100%; list-style: none; }
+    .reveal-list li {
+      padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.2); font-size: clamp(0.92rem, 1.3vw, 1.1rem);
+      transition: color 0.5s, transform 0.35s;
+      display: flex; align-items: flex-start; gap: 12px; line-height: 1.55;
+    }
+    .reveal-list li.shown { color: white; transform: translateX(5px); }
+    .bullet { color: #7C3AED; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .reveal-hint { font-size: 0.8rem; color: rgba(255,255,255,0.25); margin-top: 0.8rem; }
+
+    /* Comparison columns */
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 720px; margin-top: 1rem; }
+    .compare-col { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 1.2rem; text-align: left; }
+    .compare-col h3 { font-size: 1rem; color: white; margin-bottom: 0.7rem; font-weight: 800; }
+    .compare-col ul { list-style: none; }
+    .compare-col li { font-size: 0.88rem; color: rgba(255,255,255,0.7); padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1.5; }
+    .compare-col li::before { content: "→ "; color: #7C3AED; font-weight: 800; }
+
+    /* Highlight callout */
+    .callout {
+      background: rgba(124,58,237,0.18); border-left: 4px solid #7C3AED;
+      border-radius: 0 10px 10px 0; padding: 1rem 1.4rem;
+      text-align: left; max-width: 680px; font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+      color: white; line-height: 1.65; margin-top: 1rem;
+    }
+
+    /* Game launch */
+    .game-card {
+      display: inline-block; text-decoration: none;
+      background: linear-gradient(135deg, #7C3AED, #4F46E5);
+      border-radius: 20px; padding: 1.8rem 3.2rem; margin-top: 1.4rem;
+      box-shadow: 0 8px 32px rgba(124,58,237,0.45);
+      transition: all 0.3s;
+    }
+    .game-card:hover { transform: translateY(-5px); box-shadow: 0 14px 44px rgba(124,58,237,0.65); }
+    .game-card:focus { outline: 3px solid #FCD34D; outline-offset: 4px; }
+    .gc-emoji { font-size: 2.8rem; display: block; margin-bottom: 0.5rem; }
+    .gc-label { font-size: 1.15rem; font-weight: 800; color: white; }
+    .gc-sub { font-size: 0.88rem; color: rgba(255,255,255,0.65); margin-top: 4px; }
+
+    /* AI image prompt (shown on slides, for professor reference) */
+    .img-prompt {
+      position: absolute; bottom: 76px; left: 18px;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(252,211,77,0.25);
+      border-radius: 8px; padding: 6px 12px;
+      font-size: 0.68rem; color: rgba(252,211,77,0.55);
+      max-width: 300px; line-height: 1.5; backdrop-filter: blur(6px);
+    }
+    .img-prompt strong { color: #FCD34D; }
+
+    /* Print — show all slides as pages */
+    @media print {
+      html, body { overflow: visible; height: auto; }
+      #slide-nav, #scoreboard, #kbd-hint, #progress-bar, #slide-counter, .back-link, .img-prompt { display: none !important; }
+      .slide {
+        position: relative !important; opacity: 1 !important;
+        pointer-events: all !important; page-break-after: always;
+        height: 100vh; background: white !important;
+        padding: 40px 60px 60px;
+      }
+      .slide h1, .slide h2, .slide p, .slide li { color: black !important; }
+      .slide-badge { color: white !important; }
+      .activity-box { border-color: #999; background: #f5f5f5; color: black; }
+      .comp-card { border-color: #999; background: #f5f5f5; }
+      .comp-name, .pyr-lvl { color: white !important; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#s1" class="skip-link" style="position:absolute;top:-100%;left:1rem;background:#7C3AED;color:white;padding:6px 14px;border-radius:0 0 8px 8px;font-weight:700;text-decoration:none;z-index:9999;" onfocus="this.style.top='0'" onblur="this.style.top='-100%'">Skip to slide content</a>
+
+  <!-- Progress -->
+  <div id="progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="12" aria-valuenow="1" aria-label="Presentation progress">
+    <div id="progress-fill" style="width:8.33%"></div>
+  </div>
+
+  <!-- Counter -->
+  <div id="slide-counter" aria-live="polite" aria-atomic="true">1 / 12</div>
+
+  <!-- Back link -->
+  <a href="index.html" class="back-link" aria-label="Back to MIS Journey app">← App</a>
+
+  <!-- Scoreboard -->
+  <aside id="scoreboard" aria-label="Team scoreboard" aria-hidden="true">
+    <div class="sb-title">🏆 Team Scores</div>
+    <div class="sb-row"><span class="sb-name">🔴 Team Red</span><span class="sb-score" id="sc-a">0</span><div class="sb-btns"><button onclick="adj('a',1)" aria-label="Add point Team Red">+</button><button onclick="adj('a',-1)" aria-label="Remove point Team Red">−</button></div></div>
+    <div class="sb-row"><span class="sb-name">🔵 Team Blue</span><span class="sb-score" id="sc-b">0</span><div class="sb-btns"><button onclick="adj('b',1)" aria-label="Add point Team Blue">+</button><button onclick="adj('b',-1)" aria-label="Remove point Team Blue">−</button></div></div>
+    <div class="sb-row"><span class="sb-name">🟢 Team Green</span><span class="sb-score" id="sc-c">0</span><div class="sb-btns"><button onclick="adj('c',1)" aria-label="Add point Team Green">+</button><button onclick="adj('c',-1)" aria-label="Remove point Team Green">−</button></div></div>
+  </aside>
+
+  <!-- Nav -->
+  <nav id="slide-nav" aria-label="Slide navigation">
+    <button id="prev-btn" onclick="go(-1)" disabled aria-label="Previous slide">◀ Prev</button>
+    <button onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+    <button onclick="window.print()" aria-label="Print slides">🖨️</button>
+    <button id="next-btn" onclick="go(1)" aria-label="Next slide">Next ▶</button>
+  </nav>
+  <div id="kbd-hint" aria-hidden="true">← → Arrow Keys · Space to Advance</div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 1 — HOOK                                 -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-hook active" id="s1" role="region" aria-label="Slide 1 of 12: Hook">
+    <span class="slide-badge badge-hook">🎣 Hook</span>
+    <h1>You're Already Living Inside<br>an Information System</h1>
+    <div class="activity-box">
+      📱 <strong>Quick Activity — 2 Minutes:</strong><br><br>
+      Open your most-used app right now.<br>
+      What does it know about you? Location? Purchases? What you stare at longest?<br><br>
+      Turn to the person next to you — share <em>one thing</em> it knows. Go! ⏩
+    </div>
+    <button class="timer-btn" onclick="startTimer(this,120)" aria-label="Start 2-minute timer">⏱ Start Timer: 2:00</button>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Glowing network of smartphones connected by light streams, data flowing between devices, cyberpunk style, deep purple and electric blue tones, dark background, cinematic"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 2 — REALITY CHECK                        -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-learn" id="s2" role="region" aria-label="Slide 2 of 12: The Reality Check">
+    <span class="slide-badge badge-learn">📊 Reality Check</span>
+    <h1>Every Job That Pays Well<br><span class="accent">Runs on Information Systems</span></h1>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="big-stat">85%</div>
+        <div class="stat-label">of 2030 jobs<br>don't exist yet</div>
+      </div>
+      <div class="stat-box">
+        <div class="big-stat">$94K</div>
+        <div class="stat-label">avg IS analyst<br>starting salary</div>
+      </div>
+      <div class="stat-box">
+        <div class="big-stat">#3</div>
+        <div class="stat-label">fastest-growing<br>career field</div>
+      </div>
+    </div>
+    <p style="margin-top:1.5rem;">Business · Healthcare · Education · Law · Entertainment — <strong style="color:white;">IS is the foundation of all of it.</strong></p>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Diverse young professionals in a modern open office, multiple holographic screens with data visualizations, bright natural light pouring in, aspirational mood, wide-angle photo"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 3 — WHAT IS AN IS?                       -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-learn" id="s3" role="region" aria-label="Slide 3 of 12: What is an Information System">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h1>So… What IS an<br>Information System?</h1>
+    <div class="callout">
+      <p style="font-size:1.15rem;font-weight:700;color:white;">"An organized system that <span class="purple">collects</span>, <span class="teal">processes</span>, <span class="accent">stores</span>, and <span class="coral">distributes</span> information to support decision-making."</p>
+    </div>
+    <p style="margin-top:1rem;">Think of it as the <strong style="color:white;">nervous system</strong> of any organization 🧠</p>
+    <div class="compare" style="margin-top:1.2rem;">
+      <div class="compare-col" style="border-top:3px solid #7C3AED;">
+        <h3 style="color:#A78BFA;">⚙️ Technical Side (IT)</h3>
+        <ul><li>Servers &amp; computers</li><li>Software &amp; apps</li><li>Networks &amp; internet</li></ul>
+      </div>
+      <div class="compare-col" style="border-top:3px solid #059669;">
+        <h3 style="color:#34D399;">👥 Human Side</h3>
+        <ul><li>The people who use it</li><li>Data that gets collected</li><li>Rules for how it's used</li></ul>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Human brain made of glowing digital circuits connected to business icons (charts, buildings, people), floating in dark space, blue and purple neon light, digital art"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 4 — THE 5 COMPONENTS                     -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-learn" id="s4" role="region" aria-label="Slide 4 of 12: The 5 Components">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>Every IS Has These 5 Components</h2>
+    <p class="comp-hint">Click each card to reveal a real-world example ↓</p>
+    <div class="comp-grid" role="list">
+      <div class="comp-card" onclick="toggleComp(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Hardware - click to reveal example">
+        <span class="comp-icon" aria-hidden="true">💻</span>
+        <div class="comp-name">Hardware</div>
+        <div class="comp-ex">Phones, laptops, Amazon's warehouse robots</div>
+      </div>
+      <div class="comp-card" onclick="toggleComp(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Software - click to reveal example">
+        <span class="comp-icon" aria-hidden="true">⚙️</span>
+        <div class="comp-name">Software</div>
+        <div class="comp-ex">TikTok's algorithm, Zoom, your bank's app</div>
+      </div>
+      <div class="comp-card" onclick="toggleComp(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Data - click to reveal example">
+        <span class="comp-icon" aria-hidden="true">📊</span>
+        <div class="comp-name">Data</div>
+        <div class="comp-ex">Your likes, location history, purchase records</div>
+      </div>
+      <div class="comp-card" onclick="toggleComp(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="People - click to reveal example">
+        <span class="comp-icon" aria-hidden="true">👤</span>
+        <div class="comp-name">People</div>
+        <div class="comp-ex">Users, IT admins, data analysts — and YOU</div>
+      </div>
+      <div class="comp-card" onclick="toggleComp(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="Procedures - click to reveal example">
+        <span class="comp-icon" aria-hidden="true">📋</span>
+        <div class="comp-name">Procedures</div>
+        <div class="comp-ex">Login policies, backup rules, data privacy laws</div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Five interconnected glowing puzzle pieces floating in space, each with a unique color and icon (laptop, gear, database cylinder, person silhouette, checklist), digital art, dark background"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 5 — COMPONENT CHALLENGE                  -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-activity" id="s5" role="region" aria-label="Slide 5 of 12: Component Challenge Activity">
+    <span class="slide-badge badge-activity">⚡ Team Activity</span>
+    <h2>⚡ Component Challenge!</h2>
+    <p style="color:rgba(255,255,255,0.6);margin-bottom:0.8rem;">Which component? First team to answer correctly wins a point! 🏆</p>
+    <div class="sc-grid">
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🎵 Spotify's <strong style="color:white;">data centers in Sweden</strong> store 100 million songs.</div>
+        <div class="sc-a">✅ HARDWARE — physical servers &amp; infrastructure</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">📱 <strong style="color:white;">TikTok's algorithm</strong> decides what video you see next.</div>
+        <div class="sc-a">✅ SOFTWARE — the code and algorithm</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🏢 Amazon <strong style="color:white;">requires all employees</strong> to use 2FA before accessing customer info.</div>
+        <div class="sc-a">✅ PROCEDURES — security policies and rules</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">📊 Netflix knows you <strong style="color:white;">paused a show at 47 minutes</strong> and never came back.</div>
+        <div class="sc-a">✅ DATA — behavioral and usage tracking</div>
+      </div>
+    </div>
+    <button class="timer-btn" onclick="startTimer(this,300)" aria-label="Start 5-minute timer">⏱ Start Timer: 5:00</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 6 — IS TYPES: THE PYRAMID               -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-learn" id="s6" role="region" aria-label="Slide 6 of 12: IS Types Pyramid">
+    <span class="slide-badge badge-learn">📚 Core Concept</span>
+    <h2>The IS Hierarchy — Who Uses What?</h2>
+    <p style="color:rgba(255,255,255,0.4);margin-bottom:0.5rem;">Click each level for a real company example ↓</p>
+    <div class="pyramid" role="list">
+      <div class="pyr-lvl pyr-eis" onclick="togglePyr(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="EIS - Executive Information System">
+        <div class="pyr-sub">Top Executives (CEO, CFO)</div>
+        <strong>EIS — Executive Information System</strong>
+        <div class="pyr-ex">🏢 Walmart's CEO views one dashboard showing global store performance, regional inventory, and market trends — all in real time.</div>
+      </div>
+      <div class="pyr-lvl pyr-dss" onclick="togglePyr(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="DSS - Decision Support System">
+        <div class="pyr-sub">Senior / Middle Managers</div>
+        <strong>DSS — Decision Support System</strong>
+        <div class="pyr-ex">✈️ American Airlines uses a DSS to analyze weather, crew schedules, and fuel costs to decide whether to reroute or delay flights.</div>
+      </div>
+      <div class="pyr-lvl pyr-mis" onclick="togglePyr(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="MIS - Management Information System">
+        <div class="pyr-sub">Department Managers</div>
+        <strong>MIS — Management Information System</strong>
+        <div class="pyr-ex">☕ Starbucks' district manager reviews weekly reports: which stores hit targets, employee hours logged, and complaint trends by location.</div>
+      </div>
+      <div class="pyr-lvl pyr-tps" onclick="togglePyr(this)" onkeydown="kbClick(event,this)" tabindex="0" role="listitem button" aria-label="TPS - Transaction Processing System">
+        <div class="pyr-sub">Front-Line Operations (every day, every second)</div>
+        <strong>TPS — Transaction Processing System</strong>
+        <div class="pyr-ex">💳 Every tap of your card at McDonald's: a TPS processes payment, updates inventory, and records the sale — millions of times per day.</div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Four-level corporate pyramid with glowing tiers, workers at each level with different screens and responsibilities, bottom level busy and chaotic, top level calm and strategic, blue and purple palette, digital illustration"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 7 — NAME THAT SYSTEM!                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-activity" id="s7" role="region" aria-label="Slide 7 of 12: Name That System Activity">
+    <span class="slide-badge badge-activity">⚡ Team Competition</span>
+    <h2>🎯 Name That System!</h2>
+    <p style="color:rgba(255,255,255,0.6);margin-bottom:0.8rem;">TPS · MIS · DSS · EIS — which one? 2 points each! 🏆</p>
+    <div class="sc-grid">
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🛒 Every Amazon purchase is recorded, payment processed, inventory updated — automatically, 24/7.</div>
+        <div class="sc-a">✅ TPS — processes routine daily transactions</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">📉 A VP of Marketing gets a monthly report: which email campaigns had the best open rates by region.</div>
+        <div class="sc-a">✅ MIS — structured reports for managers</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">🏥 A hospital AI analyzes patient records to predict who's at risk of readmission within 30 days.</div>
+        <div class="sc-a">✅ DSS — data models for complex decisions</div>
+      </div>
+      <div class="sc-card" onclick="toggleSC(this)" onkeydown="kbClick(event,this)" tabindex="0" role="button">
+        <div class="sc-q">📈 Apple's board views a live dashboard: global revenue by product line, market share, and competitor moves.</div>
+        <div class="sc-a">✅ EIS — strategic view for top executives</div>
+      </div>
+    </div>
+    <button class="timer-btn" onclick="startTimer(this,300)" aria-label="Start 5-minute timer">⏱ Start Timer: 5:00</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 8 — IT vs IS                             -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-learn" id="s8" role="region" aria-label="Slide 8 of 12: IT versus IS">
+    <span class="slide-badge badge-learn">📚 Know the Difference</span>
+    <h2>IT vs IS — Don't Mix These Up</h2>
+    <div class="compare" style="margin-top:1.2rem;">
+      <div class="compare-col" style="border:2px solid #7C3AED;">
+        <h3 style="color:#A78BFA;">⚙️ IT (Information Technology)</h3>
+        <ul>
+          <li>Hardware + Software + Networks</li>
+          <li>The tools and infrastructure</li>
+          <li>Example: the iPhone itself</li>
+          <li>Example: AWS cloud servers</li>
+          <li>Example: a 5G tower</li>
+        </ul>
+      </div>
+      <div class="compare-col" style="border:2px solid #059669;">
+        <h3 style="color:#34D399;">🔄 IS (Information System)</h3>
+        <ul>
+          <li>IT + People + Data + Processes</li>
+          <li>The whole system in action</li>
+          <li>Example: Uber's entire platform</li>
+          <li>Example: FIU's student portal</li>
+          <li>Example: a hospital's patient records</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:1.2rem;">
+      💡 <strong>Quick Rule:</strong> IT is the engine. IS is the whole car — including the driver, the road, and the destination.
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Split-screen image: left side shows servers, cables, circuit boards (cold blue light); right side shows people in a meeting using those tools (warm golden light). A glowing bridge connects both sides."</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 9 — THE INFORMED USER                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-learn" id="s9" role="region" aria-label="Slide 9 of 12: The Informed User">
+    <span class="slide-badge badge-learn">💼 Career</span>
+    <h1>Be an Informed User.<br><span class="accent">That's Your Competitive Edge.</span></h1>
+    <div class="callout" style="margin-top:1rem;">
+      An <strong>Informed User</strong> knows enough about IS and IT to leverage them effectively for their job — no Computer Science degree required.
+    </div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="big-stat" style="font-size:clamp(2rem,4.5vw,3.5rem);">$78K</div>
+        <div class="stat-label">Business Analyst<br>avg starting</div>
+      </div>
+      <div class="stat-box">
+        <div class="big-stat" style="font-size:clamp(2rem,4.5vw,3.5rem);">$94K</div>
+        <div class="stat-label">IS Analyst<br>avg starting</div>
+      </div>
+      <div class="stat-box">
+        <div class="big-stat" style="font-size:clamp(2rem,4.5vw,3.5rem);">$120K+</div>
+        <div class="stat-label">IT Project Mgr<br>avg starting</div>
+      </div>
+    </div>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "Confident diverse young professional standing in a modern office, surrounded by floating holographic salary numbers and job titles, warm lighting, aspirational and empowering mood, photorealistic"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 10 — DISCUSSION                          -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-discuss" id="s10" role="region" aria-label="Slide 10 of 12: Discussion Activity">
+    <span class="slide-badge badge-discuss">💬 Think-Pair-Share</span>
+    <h2>🔍 Your IS Audit</h2>
+    <div class="activity-box">
+      <p>📝 <strong>Step 1 — Think (1 min):</strong> Write down 3 apps or digital tools you used in the last 24 hours.</p>
+      <br>
+      <p>🗣️ <strong>Step 2 — Pair (2 min):</strong> Tell your partner which IS type each one is (TPS, MIS, DSS, or EIS) and <em>why</em>.</p>
+      <br>
+      <p>📢 <strong>Step 3 — Share (2 min):</strong> Class share — who has the most surprising or unexpected example?</p>
+    </div>
+    <button class="timer-btn" onclick="startTimer(this,300)" aria-label="Start 5-minute timer">⏱ Start Timer: 5:00</button>
+    <div class="img-prompt"><strong>AI Image Prompt:</strong> "University students in a bright classroom having animated conversations in pairs, smartphones and laptops visible on desks, diverse group, warm and energetic atmosphere, candid photography style"</div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 11 — KEY TAKEAWAYS                       -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-wrap" id="s11" role="region" aria-label="Slide 11 of 12: Key Takeaways">
+    <span class="slide-badge badge-wrap">🎯 Wrap-Up</span>
+    <h2>5 Things You Must Walk Out Knowing</h2>
+    <ul class="reveal-list" id="takeaway-list" aria-live="polite">
+      <li><span class="bullet" aria-hidden="true">1</span> An IS = people + hardware + software + data + procedures, all working together</li>
+      <li><span class="bullet" aria-hidden="true">2</span> IT = the tools (engine); IS = the full system including people &amp; processes (the whole car)</li>
+      <li><span class="bullet" aria-hidden="true">3</span> TPS → daily ops · MIS → manager reports · DSS → complex analysis · EIS → executive strategy</li>
+      <li><span class="bullet" aria-hidden="true">4</span> Every organization — McDonald's, NASA, your university — runs on information systems</li>
+      <li><span class="bullet" aria-hidden="true">5</span> Being an informed IS user is a career superpower — not just a class requirement</li>
+    </ul>
+    <p class="reveal-hint" id="reveal-hint">Press Space or → to reveal each point</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!--  SLIDE 12 — GAME TIME!                          -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="slide slide-game" id="s12" role="region" aria-label="Slide 12 of 12: Game Time">
+    <span class="slide-badge badge-game">🎮 Game Time!</span>
+    <h1>🏆 Chapter 1 Team Quiz Challenge!</h1>
+    <p style="color:rgba(255,255,255,0.55);margin-bottom:1.2rem;">5 questions · Each correct answer = 1 team point · May the best team win!</p>
+    <a href="index.html" class="game-card" aria-label="Open MIS Journey app to play Chapter 1 quiz" target="_blank">
+      <span class="gc-emoji" aria-hidden="true">💻</span>
+      <div class="gc-label">Launch MIS Journey App</div>
+      <div class="gc-sub">Find Ch 1 → Play Learning Game</div>
+    </a>
+    <div style="margin-top:1.8rem;display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;">
+      <a href="ch1-printables.html" style="color:rgba(255,255,255,0.35);font-size:0.88rem;text-decoration:none;" target="_blank">📄 Print Student Handout</a>
+      <a href="ch1-printables.html#bingo" style="color:rgba(255,255,255,0.35);font-size:0.88rem;text-decoration:none;" target="_blank">🎲 Print Bingo Cards</a>
+      <a href="professor-portal.html" style="color:rgba(255,255,255,0.35);font-size:0.88rem;text-decoration:none;" target="_blank">🎓 Professor Notes</a>
+    </div>
+  </section>
+
+  <script>
+    let cur = 0;
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const N = slides.length;
+    const prev = document.getElementById('prev-btn');
+    const next = document.getElementById('next-btn');
+    const counter = document.getElementById('slide-counter');
+    const pfill = document.getElementById('progress-fill');
+    const pbar = document.getElementById('progress-bar');
+    let revealIdx = 0;
+
+    function go(dir) {
+      // Slide 11 (index 10): reveal bullets one by one before advancing
+      if (cur === 10 && dir === 1) {
+        const items = document.querySelectorAll('#takeaway-list li:not(.shown)');
+        if (items.length > 0) {
+          items[0].classList.add('shown');
+          if (document.querySelectorAll('#takeaway-list li:not(.shown)').length === 0) {
+            document.getElementById('reveal-hint').style.display = 'none';
+          }
+          return;
+        }
+      }
+      const nxt = Math.max(0, Math.min(N - 1, cur + dir));
+      if (nxt === cur) return;
+      slides[cur].classList.remove('active');
+      cur = nxt;
+      slides[cur].classList.add('active');
+      prev.disabled = cur === 0;
+      next.disabled = cur === N - 1;
+      counter.textContent = (cur + 1) + ' / ' + N;
+      pfill.style.width = ((cur + 1) / N * 100) + '%';
+      pbar.setAttribute('aria-valuenow', cur + 1);
+      slides[cur].focus();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); go(-1); }
+    });
+
+    function toggleComp(el) { el.classList.toggle('revealed'); }
+    function toggleSC(el)   { el.classList.toggle('revealed'); }
+    function togglePyr(el)  { el.classList.toggle('open'); }
+
+    function kbClick(e, el) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+    }
+
+    const scores = { a: 0, b: 0, c: 0 };
+    function adj(t, d) {
+      scores[t] = Math.max(0, scores[t] + d);
+      document.getElementById('sc-' + t).textContent = scores[t];
+    }
+    function toggleSB() {
+      const sb = document.getElementById('scoreboard');
+      const visible = sb.classList.toggle('visible');
+      sb.setAttribute('aria-hidden', !visible);
+    }
+
+    function startTimer(btn, secs) {
+      if (btn._iv) { clearInterval(btn._iv); delete btn._iv; btn.classList.remove('running'); btn.textContent = '⏱ Start Timer: ' + fmt(secs); btn.style.cssText = ''; return; }
+      let rem = secs;
+      btn.classList.add('running');
+      btn.textContent = '⏹ ' + fmt(rem);
+      btn._iv = setInterval(() => {
+        rem--;
+        if (rem <= 0) {
+          clearInterval(btn._iv); delete btn._iv; btn.classList.remove('running');
+          btn.textContent = "✅ Time's Up!";
+          btn.style.background = 'rgba(34,197,94,0.2)';
+          btn.style.borderColor = '#22C55E';
+          btn.style.color = '#4ADE80';
+        } else {
+          btn.textContent = '⏹ ' + fmt(rem);
+        }
+      }, 1000);
+    }
+    function fmt(s) { return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+  </script>
+</body>
+</html>

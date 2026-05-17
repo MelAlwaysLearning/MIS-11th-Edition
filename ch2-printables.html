@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 2 Printables — Student Handout &amp; Bingo | ISM3011</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── SCREEN STYLES ── */
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: #fff7ed; color: #1E293B;
+    }
+    .screen-nav {
+      background: #1E293B; color: white;
+      padding: 1rem 2rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .screen-nav h1 { font-size: 1rem; font-weight: 700; }
+    .screen-nav p  { font-size: 0.8rem; color: #94A3B8; margin-top: 2px; }
+    .nav-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-print { background: #D97706; color: white; }
+    .btn-print:hover { background: #B45309; }
+    .btn-back { background: transparent; border: 1px solid #475569; color: #94A3B8; }
+    .btn-back:hover { background: #334155; color: white; }
+
+    .print-preview { max-width: 860px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .page-label {
+      font-family: -apple-system, sans-serif; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #64748B;
+      margin: 2rem 0 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .page-label::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+    /* ── PRINT PAGE ── */
+    .print-page {
+      background: white; width: 100%; max-width: 780px; margin: 0 auto 1rem;
+      padding: 0.7in 0.75in; border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      min-height: 10.5in;
+    }
+
+    /* ── HANDOUT STYLES ── */
+    .handout-header {
+      border-bottom: 3px solid #1E293B; padding-bottom: 10px; margin-bottom: 18px;
+    }
+    .handout-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .handout-header .meta { font-size: 0.78rem; color: #475569; margin-top: 3px; }
+    .student-info {
+      display: flex; gap: 2rem; margin-bottom: 18px;
+    }
+    .info-field { flex: 1; }
+    .info-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; display: block; margin-bottom: 3px; }
+    .info-field .line { border-bottom: 1px solid #1E293B; height: 22px; }
+
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #92400E; margin: 18px 0 8px;
+      border-left: 3px solid #D97706; padding-left: 8px;
+    }
+    p, li { font-size: 0.82rem; line-height: 1.55; }
+    .fill-blank {
+      display: inline-block; border-bottom: 1px solid #1E293B;
+      min-width: 120px; height: 16px; margin: 0 3px;
+    }
+    .fill-blank-lg {
+      display: block; border-bottom: 1px solid #1E293B;
+      min-width: 100%; height: 16px; margin: 6px 0;
+    }
+
+    /* FORCES GRID */
+    .forces-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 6px; margin: 10px 0;
+    }
+    .force-box {
+      border: 1.5px solid #D97706; border-radius: 6px;
+      padding: 8px; min-height: 60px; font-size: 0.75rem;
+      text-align: center; font-weight: 700;
+    }
+    .force-center {
+      background: #FEF3C7; border-color: #B45309;
+    }
+    .force-blank {
+      background: #FFF7ED;
+    }
+
+    /* VALUE CHAIN */
+    .vc-row {
+      display: flex; gap: 4px; margin: 8px 0; align-items: stretch;
+    }
+    .vc-cell {
+      flex: 1; border: 1.5px solid #D97706; border-radius: 4px;
+      padding: 5px 4px; font-size: 0.68rem; text-align: center;
+      min-height: 38px; display: flex; align-items: center; justify-content: center;
+      font-weight: 600;
+    }
+    .vc-label {
+      font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em;
+      color: #92400E; margin-bottom: 3px; font-weight: 700;
+    }
+    .vc-blank { background: #FFF7ED; }
+    .vc-filled { background: #FEF3C7; font-size: 0.66rem; }
+    .vc-margin {
+      border: 2px solid #92400E; background: #FEF3C7;
+      min-width: 60px; flex: 0 0 60px;
+      font-size: 0.68rem; font-weight: 700; color: #92400E;
+    }
+
+    /* STRATEGY TABLE */
+    table.strat-table {
+      width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0;
+    }
+    .strat-table th {
+      background: #1E293B; color: white; padding: 5px 8px; text-align: left;
+    }
+    .strat-table td {
+      border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top;
+    }
+    .strat-table tr:nth-child(even) td { background: #FFF7ED; }
+
+    /* SCENARIO BOXES */
+    .scenario-box {
+      border: 1px solid #CBD5E1; border-radius: 6px;
+      padding: 8px 10px; margin: 6px 0; font-size: 0.78rem;
+    }
+    .scenario-box strong { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: #D97706; }
+    .scenario-answer { border-bottom: 1px solid #1E293B; margin-top: 4px; height: 16px; }
+
+    /* KEY TERMS */
+    .terms-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 8px 0;
+    }
+    .term-entry .term-name {
+      font-weight: 700; font-size: 0.8rem; color: #92400E;
+    }
+    .term-entry .term-line { border-bottom: 1px solid #CBD5E1; height: 14px; margin: 3px 0; }
+
+    /* EXIT TICKET */
+    .exit-ticket {
+      border: 2px dashed #D97706; border-radius: 10px;
+      padding: 12px 14px; margin-top: 18px;
+    }
+    .exit-ticket .et-title {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #92400E; margin-bottom: 8px;
+    }
+    .et-line { border-bottom: 1px solid #CBD5E1; height: 16px; margin: 6px 0; }
+
+    /* ── BINGO STYLES ── */
+    .bingo-header {
+      text-align: center; margin-bottom: 10px;
+    }
+    .bingo-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .bingo-header .card-num { font-size: 0.8rem; color: #64748B; }
+    .bingo-table {
+      width: 100%; border-collapse: collapse; table-layout: fixed;
+    }
+    .bingo-table th {
+      background: #D97706; color: white; text-align: center;
+      padding: 10px 4px; font-size: 1.2rem; font-weight: 800;
+      border: 2px solid white;
+    }
+    .bingo-table td {
+      border: 2px solid #D97706; text-align: center;
+      padding: 5px 3px; font-size: 0.62rem; font-weight: 700;
+      height: 1.3in; vertical-align: middle; line-height: 1.2;
+      color: #1E293B;
+    }
+    .bingo-table td.free {
+      background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 800;
+    }
+    .bingo-table tr:nth-child(odd) td { background: #FFFBF0; }
+    .bingo-table tr:nth-child(even) td { background: #FFF7ED; }
+    .bingo-table td.free { background: #FEF3C7 !important; }
+
+    /* CALL LIST */
+    .call-list {
+      columns: 2; column-gap: 1.5rem; margin: 8px 0;
+    }
+    .call-item {
+      font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #E2E8F0;
+      break-inside: avoid;
+    }
+    .call-item .ci-term { font-weight: 700; color: #92400E; }
+    .how-to-box {
+      border: 1.5px solid #D97706; border-radius: 8px;
+      padding: 10px 12px; margin: 10px 0; font-size: 0.78rem; background: #FFF7ED;
+    }
+    .how-to-box h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #92400E; }
+    .how-to-box ol { padding-left: 1.2rem; }
+    .how-to-box li { margin-bottom: 4px; }
+
+    /* ── PRINT RULES ── */
+    @media print {
+      .screen-nav { display: none; }
+      .print-preview { margin: 0; padding: 0; }
+      .page-label { display: none; }
+      .print-page {
+        box-shadow: none; border: none;
+        padding: 0.6in 0.7in;
+        page-break-after: always;
+        min-height: 0;
+        margin: 0;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Screen navigation (hidden in print) -->
+<nav class="screen-nav" aria-label="Page navigation">
+  <div>
+    <h1>Chapter 2 Printables — Org Strategy &amp; Competitive Advantage</h1>
+    <p>ISM3011 | Print-ready student handout, notes page, call list &amp; 4 Bingo cards</p>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn btn-print" onclick="window.print()">🖨 Print All Pages</button>
+    <button class="nav-btn btn-back" onclick="window.location='index.html'">← Back to MIS Journey</button>
+  </div>
+</nav>
+
+<div class="print-preview">
+
+  <!-- ══ PAGE 1 — STUDENT HANDOUT ══ -->
+  <div class="page-label">Page 1 of 6 — Student Handout</div>
+  <div class="print-page" id="page1">
+
+    <div class="handout-header">
+      <h2>Chapter 2 Study Guide — Organizational Strategy &amp; Competitive Advantage</h2>
+      <div class="meta">ISM3011 | Introduction to Management of Information Systems | 10th Edition</div>
+    </div>
+
+    <div class="student-info">
+      <div class="info-field"><label>Name</label><div class="line"></div></div>
+      <div class="info-field"><label>Date</label><div class="line"></div></div>
+      <div class="info-field"><label>Section</label><div class="line"></div></div>
+    </div>
+
+    <div class="section-title">Part 1 — Business Process Basics</div>
+    <p>A <strong>business process</strong> is a <span class="fill-blank" style="min-width:200px;"></span> of activities designed to produce a
+    <span class="fill-blank" style="min-width:150px;"></span> for a customer.</p>
+    <p style="margin-top:8px;">Circle which statement is TRUE:</p>
+    <p style="margin-top:4px;">A) Every business process involves only one department.</p>
+    <p>B) Business processes can cross departmental boundaries to create value.</p>
+    <p>C) Business processes never involve technology.</p>
+
+    <div class="section-title">Part 2 — Porter's Five Forces</div>
+    <p>Label each box with the correct competitive force. Use the word bank: <em>Competitive Rivalry, Threat of New Entrants, Threat of Substitutes, Bargaining Power of Buyers, Bargaining Power of Suppliers</em></p>
+
+    <div class="forces-grid">
+      <div class="force-box force-blank" style="grid-column:2;grid-row:1;"></div>
+      <div class="force-box force-blank" style="grid-column:1;grid-row:2;"></div>
+      <div class="force-box force-center" style="grid-column:2;grid-row:2;">Industry<br>Rivalry</div>
+      <div class="force-box force-blank" style="grid-column:3;grid-row:2;"></div>
+      <div class="force-box force-blank" style="grid-column:2;grid-row:3;"></div>
+    </div>
+
+    <p style="margin-top:10px;">Which force is usually HIGHEST for Uber? <span class="fill-blank" style="min-width:180px;"></span></p>
+    <p style="margin-top:6px;">Which force is usually LOWEST for a local water utility? <span class="fill-blank" style="min-width:180px;"></span></p>
+
+    <div class="section-title">Part 3 — Value Chain Analysis</div>
+    <p>Label each Primary Activity. Word bank: <em>Inbound Logistics, Operations, Outbound Logistics, Marketing &amp; Sales, Service</em></p>
+    <div class="vc-label" style="margin-top:8px;">Primary Activities →</div>
+    <div class="vc-row">
+      <div class="vc-cell vc-blank"></div>
+      <div class="vc-cell vc-blank"></div>
+      <div class="vc-cell vc-blank"></div>
+      <div class="vc-cell vc-blank"></div>
+      <div class="vc-cell vc-blank"></div>
+      <div class="vc-cell vc-margin">Margin</div>
+    </div>
+    <div class="vc-label">Support Activities (already filled in) ↓</div>
+    <div class="vc-row">
+      <div class="vc-cell vc-filled" style="flex:5;">Firm Infrastructure · HR Management · Technology Development · Procurement</div>
+      <div class="vc-cell vc-margin">Margin</div>
+    </div>
+
+    <div class="section-title">Part 4 — BPR vs. Incremental Improvement</div>
+    <p>For each statement, write <strong>BPR</strong> or <strong>INC</strong> (Incremental) in the blank:</p>
+    <p style="margin-top:6px;">_____ "We cut process steps from 22 down to 4 and changed the entire workflow."</p>
+    <p style="margin-top:4px;">_____ "We improved our checkout page load time by 0.3 seconds."</p>
+    <p style="margin-top:4px;">_____ "We redesigned the entire supply chain from scratch using new IS."</p>
+    <p style="margin-top:4px;">_____ "We added one extra field to the customer registration form."</p>
+
+  </div><!-- /page1 -->
+
+  <!-- ══ PAGE 2 — KEY TERMS + REFLECTION ══ -->
+  <div class="page-label">Page 2 of 6 — Key Terms &amp; Reflection</div>
+  <div class="print-page" id="page2">
+
+    <div class="handout-header">
+      <h2>Chapter 2 — Key Terms &amp; Strategy Reflection</h2>
+      <div class="meta">ISM3011 | Define each term in your own words</div>
+    </div>
+
+    <div class="section-title">Key Terms</div>
+    <div class="terms-grid">
+      <div class="term-entry">
+        <div class="term-name">Competitive Advantage</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Business Process</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Porter's Five Forces</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Value Chain</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">BPR (Business Process Reengineering)</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Strategic IS</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Cost Leadership</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Differentiation Strategy</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Focus / Niche Strategy</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+      <div class="term-entry">
+        <div class="term-name">Threat of Substitutes</div>
+        <div class="term-line"></div><div class="term-line"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Strategy Matching</div>
+    <p>Match each company to its primary IT competitive strategy (Cost Leadership / Differentiation / Focus):</p>
+    <table class="strat-table">
+      <thead>
+        <tr><th>Company / System</th><th>What They Do</th><th>Strategy (write it in)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Walmart RFID</td><td>Tracks every item in real-time to minimize inventory cost</td><td></td></tr>
+        <tr><td>Spotify Discover Weekly</td><td>Personalized playlist algorithm that no competitor can replicate</td><td></td></tr>
+        <tr><td>Amazon Recommendation Engine</td><td>Learns each customer's taste for hyper-targeted suggestions</td><td></td></tr>
+        <tr><td>Budget airline booking app</td><td>Lowest fares, no-frills digital-only check-in</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-title">Chapter Summary Fill-In</div>
+    <p>Organizations use IS to achieve <span class="fill-blank"></span> advantage over competitors.
+    Porter identified <span class="fill-blank" style="min-width:60px;"></span> competitive forces that shape every industry.
+    The value chain shows how a firm creates value through <span class="fill-blank" style="min-width:90px;"></span> and
+    <span class="fill-blank" style="min-width:90px;"></span> activities.
+    When companies radically redesign processes, this is called <span class="fill-blank" style="min-width:100px;"></span>.</p>
+
+    <div class="exit-ticket">
+      <div class="et-title">🎟 Exit Ticket — Which strategy would YOU recommend?</div>
+      <p style="font-size:0.78rem;margin-bottom:6px;">Your friend wants to open a food truck in Miami. Describe ONE IT strategy (Cost Leadership, Differentiation, or Focus) that would help them succeed and explain why.</p>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+    </div>
+
+  </div><!-- /page2 -->
+
+  <!-- ══ PAGE 3 — BINGO CALL LIST ══ -->
+  <div class="page-label">Page 3 of 6 — Bingo Call List (Professor Use)</div>
+  <div class="print-page" id="page3">
+
+    <div class="handout-header">
+      <h2>Chapter 2 Bingo — Call List &amp; Instructions</h2>
+      <div class="meta">ISM3011 | Read the CLUE aloud, not the term — students must recall the term</div>
+    </div>
+
+    <div class="how-to-box">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Distribute one Bingo card (pages 4–7) to each student. Cards 1–4 have different layouts.</li>
+        <li>Read the <strong>clue</strong> aloud (bold text below). Do NOT read the term in parentheses.</li>
+        <li>Students mark the matching term on their card.</li>
+        <li>First student to get 5-in-a-row (horizontal, vertical, or diagonal) calls "BINGO!"</li>
+        <li>Verify by reading back the terms for each marked square. Award a prize.</li>
+        <li>Continue for 2nd and 3rd winners, or clear boards and play again.</li>
+      </ol>
+    </div>
+
+    <p style="font-size:0.78rem;margin-bottom:6px;"><em>Prize suggestions: extra credit point, candy, skip-one-homework pass, front-of-line seating.</em></p>
+
+    <div class="section-title">Call List</div>
+    <div class="call-list">
+      <div class="call-item"><span class="ci-term">Competitive Advantage</span> — "Producing better products or at lower cost than rivals so customers choose you"</div>
+      <div class="call-item"><span class="ci-term">Business Process</span> — "A network of activities that produces a product or service for a customer"</div>
+      <div class="call-item"><span class="ci-term">Porter's Five Forces</span> — "The framework that analyzes industry competitiveness from five angles"</div>
+      <div class="call-item"><span class="ci-term">Competitive Rivalry</span> — "The intensity of competition among existing firms in an industry"</div>
+      <div class="call-item"><span class="ci-term">Threat of New Entrants</span> — "How easy it is for new competitors to enter a market"</div>
+      <div class="call-item"><span class="ci-term">Threat of Substitutes</span> — "The likelihood customers will switch to a different type of product"</div>
+      <div class="call-item"><span class="ci-term">Buyer Power</span> — "The influence customers have to push prices down"</div>
+      <div class="call-item"><span class="ci-term">Supplier Power</span> — "The influence vendors have to raise their prices on a firm"</div>
+      <div class="call-item"><span class="ci-term">Value Chain</span> — "The linked set of activities through which a firm creates value"</div>
+      <div class="call-item"><span class="ci-term">Primary Activities</span> — "The five core steps that directly create a product: inbound logistics through service"</div>
+      <div class="call-item"><span class="ci-term">Support Activities</span> — "HR, IT, procurement, and infrastructure that enable the core steps"</div>
+      <div class="call-item"><span class="ci-term">Inbound Logistics</span> — "Receiving and storing raw materials before production"</div>
+      <div class="call-item"><span class="ci-term">Outbound Logistics</span> — "Delivering finished products to customers"</div>
+      <div class="call-item"><span class="ci-term">Operations</span> — "Transforming inputs into the final product or service"</div>
+      <div class="call-item"><span class="ci-term">BPR</span> — "Radical redesign of a business process to achieve dramatic improvements"</div>
+      <div class="call-item"><span class="ci-term">Incremental Improvement</span> — "Small, continuous tweaks to an existing process"</div>
+      <div class="call-item"><span class="ci-term">Strategic IS</span> — "An information system that gives a long-term competitive advantage"</div>
+      <div class="call-item"><span class="ci-term">Cost Leadership</span> — "Competing by being the lowest-cost producer in the industry"</div>
+      <div class="call-item"><span class="ci-term">Differentiation</span> — "Competing by offering a unique product or service rivals can't copy"</div>
+      <div class="call-item"><span class="ci-term">Focus / Niche</span> — "Targeting a specific segment of the market with tailored offerings"</div>
+      <div class="call-item"><span class="ci-term">Margin</span> — "The profit left over after all value chain costs are subtracted"</div>
+      <div class="call-item"><span class="ci-term">Switching Costs</span> — "The expense or hassle a customer faces when changing providers"</div>
+      <div class="call-item"><span class="ci-term">Industry Analysis</span> — "Examining the forces that determine profitability in a market"</div>
+      <div class="call-item"><span class="ci-term">RFID</span> — "The Walmart technology used to track every item in inventory automatically"</div>
+      <div class="call-item"><span class="ci-term">FREE SPACE</span> — "Everyone marks the center square!"</div>
+    </div>
+
+  </div><!-- /page3 -->
+
+  <!-- ══ PAGE 4 — BINGO CARD 1 ══ -->
+  <div class="page-label">Page 4 of 6 — Bingo Card 1</div>
+  <div class="print-page" id="page4">
+    <div class="bingo-header">
+      <h2>Chapter 2 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 1</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 1">
+      <thead>
+        <tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Competitive Advantage</td>
+          <td>Porter's Five Forces</td>
+          <td>BPR</td>
+          <td>Value Chain</td>
+          <td>Cost Leadership</td>
+        </tr>
+        <tr>
+          <td>Business Process</td>
+          <td>Buyer Power</td>
+          <td>Inbound Logistics</td>
+          <td>Strategic IS</td>
+          <td>Differentiation</td>
+        </tr>
+        <tr>
+          <td>Threat of New Entrants</td>
+          <td>Operations</td>
+          <td class="free">★<br>FREE<br>SPACE</td>
+          <td>Supplier Power</td>
+          <td>RFID</td>
+        </tr>
+        <tr>
+          <td>Switching Costs</td>
+          <td>Primary Activities</td>
+          <td>Outbound Logistics</td>
+          <td>Competitive Rivalry</td>
+          <td>Margin</td>
+        </tr>
+        <tr>
+          <td>Support Activities</td>
+          <td>Threat of Substitutes</td>
+          <td>Focus / Niche</td>
+          <td>Incremental Improvement</td>
+          <td>Industry Analysis</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 5 — BINGO CARD 2 ══ -->
+  <div class="page-label">Page 5 of 6 — Bingo Card 2</div>
+  <div class="print-page" id="page5">
+    <div class="bingo-header">
+      <h2>Chapter 2 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 2</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 2">
+      <thead>
+        <tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Differentiation</td>
+          <td>Competitive Rivalry</td>
+          <td>Value Chain</td>
+          <td>Business Process</td>
+          <td>Switching Costs</td>
+        </tr>
+        <tr>
+          <td>RFID</td>
+          <td>Threat of New Entrants</td>
+          <td>Cost Leadership</td>
+          <td>Support Activities</td>
+          <td>Competitive Advantage</td>
+        </tr>
+        <tr>
+          <td>Outbound Logistics</td>
+          <td>Focus / Niche</td>
+          <td class="free">★<br>FREE<br>SPACE</td>
+          <td>BPR</td>
+          <td>Inbound Logistics</td>
+        </tr>
+        <tr>
+          <td>Margin</td>
+          <td>Buyer Power</td>
+          <td>Strategic IS</td>
+          <td>Porter's Five Forces</td>
+          <td>Primary Activities</td>
+        </tr>
+        <tr>
+          <td>Industry Analysis</td>
+          <td>Operations</td>
+          <td>Supplier Power</td>
+          <td>Incremental Improvement</td>
+          <td>Threat of Substitutes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 6 — BINGO CARDS 3 & 4 ══ -->
+  <div class="page-label">Page 6 of 6 — Bingo Cards 3 &amp; 4</div>
+  <div class="print-page" id="page6">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3in;">
+
+      <!-- Card 3 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 2 Bingo | ISM3011</h2>
+          <div class="card-num">Card 3</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 3" style="font-size:0.55rem;">
+          <thead>
+            <tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Support Activities</td><td>BPR</td><td>Cost Leadership</td><td>RFID</td><td>Value Chain</td>
+            </tr>
+            <tr>
+              <td>Supplier Power</td><td>Competitive Advantage</td><td>Threat of New Entrants</td><td>Margin</td><td>Business Process</td>
+            </tr>
+            <tr>
+              <td>Incremental Improvement</td><td>Strategic IS</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Operations</td><td>Differentiation</td>
+            </tr>
+            <tr>
+              <td>Industry Analysis</td><td>Buyer Power</td><td>Porter's Five Forces</td><td>Outbound Logistics</td><td>Competitive Rivalry</td>
+            </tr>
+            <tr>
+              <td>Primary Activities</td><td>Switching Costs</td><td>Focus / Niche</td><td>Threat of Substitutes</td><td>Inbound Logistics</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card 4 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 2 Bingo | ISM3011</h2>
+          <div class="card-num">Card 4</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 4" style="font-size:0.55rem;">
+          <thead>
+            <tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Inbound Logistics</td><td>Margin</td><td>Competitive Rivalry</td><td>Strategic IS</td><td>Buyer Power</td>
+            </tr>
+            <tr>
+              <td>Focus / Niche</td><td>RFID</td><td>Supplier Power</td><td>Differentiation</td><td>Porter's Five Forces</td>
+            </tr>
+            <tr>
+              <td>Value Chain</td><td>Business Process</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>BPR</td><td>Cost Leadership</td>
+            </tr>
+            <tr>
+              <td>Competitive Advantage</td><td>Outbound Logistics</td><td>Industry Analysis</td><td>Support Activities</td><td>Switching Costs</td>
+            </tr>
+            <tr>
+              <td>Threat of Substitutes</td><td>Incremental Improvement</td><td>Primary Activities</td><td>Operations</td><td>Threat of New Entrants</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /page6 -->
+
+</div><!-- /print-preview -->
+</body>
+</html>

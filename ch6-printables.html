@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ch 6 Printables — Student Handout &amp; Bingo | ISM3011</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: Georgia, "Times New Roman", serif; background: #FFF7ED; color: #1E293B; }
+
+    .screen-nav {
+      background: #1E293B; color: white;
+      padding: 1rem 2rem; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .screen-nav h1 { font-size: 1rem; font-weight: 700; }
+    .screen-nav p  { font-size: 0.8rem; color: #94A3B8; margin-top: 2px; }
+    .nav-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .nav-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-print { background: #EA580C; color: white; }
+    .btn-print:hover { background: #C2410C; }
+    .btn-back { background: transparent; border: 1px solid #475569; color: #94A3B8; }
+    .btn-back:hover { background: #334155; color: white; }
+
+    .print-preview { max-width: 860px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .page-label {
+      font-family: -apple-system, sans-serif; font-size: 0.78rem;
+      text-transform: uppercase; letter-spacing: 0.1em; color: #64748B;
+      margin: 2rem 0 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+    }
+    .page-label::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+    .print-page {
+      background: white; width: 100%; max-width: 780px; margin: 0 auto 1rem;
+      padding: 0.7in 0.75in; border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); min-height: 10.5in;
+    }
+
+    .handout-header { border-bottom: 3px solid #1E293B; padding-bottom: 10px; margin-bottom: 18px; }
+    .handout-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .handout-header .meta { font-size: 0.78rem; color: #475569; margin-top: 3px; }
+    .student-info { display: flex; gap: 2rem; margin-bottom: 18px; }
+    .info-field { flex: 1; }
+    .info-field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748B; display: block; margin-bottom: 3px; }
+    .info-field .line { border-bottom: 1px solid #1E293B; height: 22px; }
+
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #9A3412; margin: 18px 0 8px;
+      border-left: 3px solid #EA580C; padding-left: 8px;
+    }
+    p, li { font-size: 0.82rem; line-height: 1.55; }
+    .fill-blank { display: inline-block; border-bottom: 1px solid #1E293B; min-width: 120px; height: 16px; margin: 0 3px; }
+
+    /* NETWORK DIAGRAM EXERCISE */
+    .net-diagram { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .net-diagram th { background: #EA580C; color: white; padding: 5px 8px; text-align: left; font-weight: 700; }
+    .net-diagram td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .net-diagram tr:nth-child(even) td { background: #FFF7ED; }
+
+    /* COMPARE TABLE */
+    table.compare-t { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin: 8px 0; }
+    .compare-t th { background: #1E293B; color: white; padding: 5px 8px; }
+    .compare-t td { border: 1px solid #CBD5E1; padding: 5px 8px; vertical-align: top; }
+    .compare-t tr:nth-child(even) td { background: #FFF7ED; }
+
+    /* KEY TERMS */
+    .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin: 8px 0; }
+    .term-entry .term-name { font-weight: 700; font-size: 0.8rem; color: #9A3412; }
+    .term-entry .term-line { border-bottom: 1px solid #CBD5E1; height: 14px; margin: 3px 0; }
+
+    /* EXIT TICKET */
+    .exit-ticket { border: 2px dashed #EA580C; border-radius: 10px; padding: 12px 14px; margin-top: 18px; }
+    .exit-ticket .et-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #9A3412; margin-bottom: 8px; }
+    .et-line { border-bottom: 1px solid #CBD5E1; height: 16px; margin: 6px 0; }
+
+    /* BINGO */
+    .bingo-header { text-align: center; margin-bottom: 10px; }
+    .bingo-header h2 { font-size: 1.2rem; font-weight: 800; }
+    .bingo-header .card-num { font-size: 0.8rem; color: #64748B; }
+    .bingo-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .bingo-table th {
+      background: #EA580C; color: white; text-align: center;
+      padding: 10px 4px; font-size: 1.2rem; font-weight: 800; border: 2px solid white;
+    }
+    .bingo-table td {
+      border: 2px solid #EA580C; text-align: center;
+      padding: 5px 3px; font-size: 0.62rem; font-weight: 700;
+      height: 1.3in; vertical-align: middle; line-height: 1.2;
+    }
+    .bingo-table td.free { background: #FFEDD5; color: #9A3412; font-size: 0.75rem; font-weight: 800; }
+    .bingo-table tr:nth-child(odd) td  { background: #FFF7ED; }
+    .bingo-table tr:nth-child(even) td { background: #FFEDD5; }
+    .bingo-table td.free { background: #FED7AA !important; }
+
+    /* CALL LIST */
+    .call-list { columns: 2; column-gap: 1.5rem; margin: 8px 0; }
+    .call-item { font-size: 0.75rem; padding: 3px 0; border-bottom: 1px solid #E2E8F0; break-inside: avoid; }
+    .call-item .ci-term { font-weight: 700; color: #9A3412; }
+    .how-to-box { border: 1.5px solid #EA580C; border-radius: 8px; padding: 10px 12px; margin: 10px 0; font-size: 0.78rem; background: #FFF7ED; }
+    .how-to-box h3 { font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #9A3412; }
+    .how-to-box ol { padding-left: 1.2rem; }
+    .how-to-box li { margin-bottom: 4px; }
+
+    @media print {
+      .screen-nav { display: none; }
+      .print-preview { margin: 0; padding: 0; }
+      .page-label { display: none; }
+      .print-page {
+        box-shadow: none; border: none; padding: 0.6in 0.7in;
+        page-break-after: always; min-height: 0; margin: 0;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="screen-nav" aria-label="Page navigation">
+  <div>
+    <h1>Chapter 6 Printables — Telecommunications &amp; Networking</h1>
+    <p>ISM3011 | Print-ready student handout, key terms, call list &amp; 4 Bingo cards</p>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn btn-print" onclick="window.print()">🖨 Print All Pages</button>
+    <button class="nav-btn btn-back" onclick="window.location='index.html'">← Back to MIS Journey</button>
+  </div>
+</nav>
+
+<div class="print-preview">
+
+  <!-- ══ PAGE 1 — STUDENT HANDOUT ══ -->
+  <div class="page-label">Page 1 of 6 — Student Handout</div>
+  <div class="print-page" id="page1">
+
+    <div class="handout-header">
+      <h2>Chapter 6 Study Guide — Telecommunications &amp; Networking</h2>
+      <div class="meta">ISM3011 | Introduction to Management of Information Systems | 10th Edition</div>
+    </div>
+
+    <div class="student-info">
+      <div class="info-field"><label>Name</label><div class="line"></div></div>
+      <div class="info-field"><label>Date</label><div class="line"></div></div>
+      <div class="info-field"><label>Section</label><div class="line"></div></div>
+    </div>
+
+    <div class="section-title">Part 1 — Network Types</div>
+    <p>Match each scenario to the correct network type: <strong>PAN · LAN · MAN · WAN</strong></p>
+    <p style="margin-top:6px;">____ Your Bluetooth earbuds connected to your phone while you jog</p>
+    <p style="margin-top:4px;">____ All computers in this classroom connected to FIU's campus Wi-Fi</p>
+    <p style="margin-top:4px;">____ Miami-Dade County's citywide public Wi-Fi system</p>
+    <p style="margin-top:4px;">____ An airline's reservation system connecting offices in 40 countries</p>
+    <p style="margin-top:4px;">____ The internet itself</p>
+
+    <div class="section-title">Part 2 — Network Hardware</div>
+    <p>Fill in the correct device for each job description. Use: <strong>Router · Switch · Modem · Access Point</strong></p>
+    <table class="net-diagram" style="margin-top:8px;">
+      <thead><tr><th>Job Description</th><th>Device (fill in)</th></tr></thead>
+      <tbody>
+        <tr><td>Connects devices within the same LAN and sends data only to the intended recipient</td><td></td></tr>
+        <tr><td>Directs data packets between different networks using IP addresses</td><td></td></tr>
+        <tr><td>Translates digital signals into cable/phone line signals and back again</td><td></td></tr>
+        <tr><td>Broadcasts a wireless Wi-Fi signal to extend a wired network</td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px;">What is the key difference between a Router and a Switch? <span class="fill-blank" style="min-width:220px;"></span></p>
+
+    <div class="section-title">Part 3 — OSI Model</div>
+    <p>Number the OSI layers from 1 (Physical) to 7 (Application). Write the layer number in the blank.</p>
+    <p style="margin-top:6px;">____ Transport &nbsp;&nbsp; ____ Application &nbsp;&nbsp; ____ Network &nbsp;&nbsp; ____ Physical &nbsp;&nbsp; ____ Presentation &nbsp;&nbsp; ____ Session &nbsp;&nbsp; ____ Data Link</p>
+    <p style="margin-top:8px;">Which layer handles IP addressing and routing? Layer ____. Which layer encrypts data? Layer ____.</p>
+    <p style="margin-top:4px;">Write the OSI mnemonic (7→1): <span class="fill-blank" style="min-width:280px;"></span></p>
+
+    <div class="section-title">Part 4 — Internet vs. Intranet vs. Extranet</div>
+    <table class="compare-t">
+      <thead><tr><th>Network</th><th>Who can access it?</th><th>Give one real-world example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Internet</strong></td><td></td><td></td></tr>
+        <tr><td><strong>Intranet</strong></td><td></td><td></td></tr>
+        <tr><td><strong>Extranet</strong></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+  </div><!-- /page1 -->
+
+  <!-- ══ PAGE 2 — KEY TERMS + REFLECTION ══ -->
+  <div class="page-label">Page 2 of 6 — Key Terms &amp; Reflection</div>
+  <div class="print-page" id="page2">
+
+    <div class="handout-header">
+      <h2>Chapter 6 — Key Terms &amp; Bandwidth Scenarios</h2>
+      <div class="meta">ISM3011 | Define each term in your own words</div>
+    </div>
+
+    <div class="section-title">Key Terms</div>
+    <div class="terms-grid">
+      <div class="term-entry"><div class="term-name">LAN (Local Area Network)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">WAN (Wide Area Network)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">TCP/IP</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">OSI Model</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Router</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Switch</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Bandwidth</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">VPN (Virtual Private Network)</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Firewall</div><div class="term-line"></div><div class="term-line"></div></div>
+      <div class="term-entry"><div class="term-name">Protocol</div><div class="term-line"></div><div class="term-line"></div></div>
+    </div>
+
+    <div class="section-title">Bandwidth Scenario</div>
+    <p>A company's 100 Mbps internet connection is shared among 50 employees. Each employee is simultaneously streaming a 4K video (requires 25 Mbps each). Will this work? Show your reasoning.</p>
+    <div class="et-line"></div><div class="et-line"></div>
+    <p style="margin-top:8px;">What would you recommend to solve this problem?</p>
+    <div class="et-line"></div><div class="et-line"></div>
+
+    <div class="section-title">Wireless Standards Matching</div>
+    <p>Match each wireless standard to its best description. Write the letter.</p>
+    <p style="margin-top:6px;"><strong>A) Wi-Fi (802.11) &nbsp; B) Bluetooth &nbsp; C) 5G &nbsp; D) NFC</strong></p>
+    <p style="margin-top:6px;">____ Range of ~4 cm; used for Apple Pay and contactless credit cards</p>
+    <p style="margin-top:4px;">____ Standard for wireless LAN; up to ~9.6 Gbps on Wi-Fi 6; range 100–300 feet</p>
+    <p style="margin-top:4px;">____ Short-range PAN; connects earbuds, speakers, keyboards; up to ~30 feet</p>
+    <p style="margin-top:4px;">____ 5th generation cellular; up to 10 Gbps; enables smart cities and autonomous vehicles</p>
+
+    <div class="exit-ticket">
+      <div class="et-title">🎟 Exit Ticket — VPN Decision</div>
+      <p style="font-size:0.78rem;margin-bottom:6px;">An employee works from home and needs to access the company's private intranet. The company's IT team recommends using a VPN. In 2–3 sentences, explain what a VPN does and why it is the right solution here.</p>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+      <div class="et-line"></div>
+    </div>
+
+  </div><!-- /page2 -->
+
+  <!-- ══ PAGE 3 — BINGO CALL LIST ══ -->
+  <div class="page-label">Page 3 of 6 — Bingo Call List (Professor Use)</div>
+  <div class="print-page" id="page3">
+
+    <div class="handout-header">
+      <h2>Chapter 6 Bingo — Call List &amp; Instructions</h2>
+      <div class="meta">ISM3011 | Read the CLUE aloud — students identify the term on their card</div>
+    </div>
+
+    <div class="how-to-box">
+      <h3>How to Play</h3>
+      <ol>
+        <li>Distribute one Bingo card (pages 4–6) per student. Cards 1–4 have different layouts.</li>
+        <li>Read the <strong>clue</strong> aloud. Do NOT say the term in parentheses.</li>
+        <li>Students mark the matching term on their card.</li>
+        <li>First to get 5-in-a-row calls "BINGO!" Verify and award a prize.</li>
+      </ol>
+    </div>
+
+    <p style="font-size:0.78rem;margin-bottom:6px;"><em>Prize suggestions: extra credit, snack, skip-one-homework pass, front-of-room seating.</em></p>
+
+    <div class="section-title">Call List</div>
+    <div class="call-list">
+      <div class="call-item"><span class="ci-term">LAN</span> — "A network that covers a single building or campus — like this classroom's Wi-Fi"</div>
+      <div class="call-item"><span class="ci-term">WAN</span> — "The largest type of network — spans countries or the entire globe; the internet is one"</div>
+      <div class="call-item"><span class="ci-term">MAN</span> — "A network that covers a city or metropolitan area"</div>
+      <div class="call-item"><span class="ci-term">PAN</span> — "A network covering just a few meters around one person — like Bluetooth earbuds"</div>
+      <div class="call-item"><span class="ci-term">TCP/IP</span> — "The suite of protocols that is the universal language of the internet"</div>
+      <div class="call-item"><span class="ci-term">OSI Model</span> — "A 7-layer framework showing how data travels from one device to another"</div>
+      <div class="call-item"><span class="ci-term">Bandwidth</span> — "The capacity of a network connection — measured in bits per second"</div>
+      <div class="call-item"><span class="ci-term">Router</span> — "Directs data packets between different networks using IP addresses"</div>
+      <div class="call-item"><span class="ci-term">Switch</span> — "Connects devices within the same LAN — smarter than a hub, sends only to the right device"</div>
+      <div class="call-item"><span class="ci-term">Modem</span> — "MOdulator-DEModulator: translates digital signals for travel over cable or phone lines"</div>
+      <div class="call-item"><span class="ci-term">Wi-Fi</span> — "Wireless LAN technology using radio waves; standard 802.11; range up to 300 feet"</div>
+      <div class="call-item"><span class="ci-term">Ethernet</span> — "A wired LAN standard using twisted-pair copper cable — the cables in offices and labs"</div>
+      <div class="call-item"><span class="ci-term">Packet</span> — "A small chunk of data that travels independently across a network and is reassembled at the destination"</div>
+      <div class="call-item"><span class="ci-term">Protocol</span> — "A set of rules that govern how devices communicate on a network"</div>
+      <div class="call-item"><span class="ci-term">Intranet</span> — "A private network using internet technology accessible only to an organization's employees"</div>
+      <div class="call-item"><span class="ci-term">Extranet</span> — "An extended intranet that allows selected external partners to access certain resources"</div>
+      <div class="call-item"><span class="ci-term">VPN</span> — "Creates an encrypted tunnel through the public internet for secure remote access"</div>
+      <div class="call-item"><span class="ci-term">Firewall</span> — "Monitors and filters network traffic to block unauthorized access and attacks"</div>
+      <div class="call-item"><span class="ci-term">ISP</span> — "Internet Service Provider — the company that gives you internet access (Comcast, AT&amp;T)"</div>
+      <div class="call-item"><span class="ci-term">5G</span> — "Fifth-generation cellular network — up to 10 Gbps; enables IoT, autonomous vehicles, smart cities"</div>
+      <div class="call-item"><span class="ci-term">Bluetooth</span> — "Short-range wireless PAN standard — ~30 feet; used for earbuds, keyboards, speakers"</div>
+      <div class="call-item"><span class="ci-term">NFC</span> — "Near Field Communication — 4 cm range; used for Apple Pay and contactless tap payments"</div>
+      <div class="call-item"><span class="ci-term">IP Address</span> — "A unique numerical address assigned to every device on a network — like a street address for data"</div>
+      <div class="call-item"><span class="ci-term">Network Topology</span> — "The physical or logical layout/arrangement of devices and connections in a network"</div>
+      <div class="call-item"><span class="ci-term">FREE SPACE</span> — "Everyone marks the center square!"</div>
+    </div>
+
+  </div><!-- /page3 -->
+
+  <!-- ══ PAGE 4 — BINGO CARD 1 ══ -->
+  <div class="page-label">Page 4 of 6 — Bingo Card 1</div>
+  <div class="print-page" id="page4">
+    <div class="bingo-header">
+      <h2>Chapter 6 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 1</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 1">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr><td>LAN</td><td>Router</td><td>Packet</td><td>Intranet</td><td>5G</td></tr>
+        <tr><td>WAN</td><td>Switch</td><td>Protocol</td><td>Extranet</td><td>Bluetooth</td></tr>
+        <tr><td>MAN</td><td>Modem</td><td class="free">★<br>FREE<br>SPACE</td><td>VPN</td><td>NFC</td></tr>
+        <tr><td>PAN</td><td>Wi-Fi</td><td>Bandwidth</td><td>Firewall</td><td>IP Address</td></tr>
+        <tr><td>TCP/IP</td><td>Ethernet</td><td>OSI Model</td><td>ISP</td><td>Network Topology</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 5 — BINGO CARD 2 ══ -->
+  <div class="page-label">Page 5 of 6 — Bingo Card 2</div>
+  <div class="print-page" id="page5">
+    <div class="bingo-header">
+      <h2>Chapter 6 Bingo &nbsp;|&nbsp; ISM3011</h2>
+      <div class="card-num">Card 2</div>
+    </div>
+    <table class="bingo-table" role="grid" aria-label="Bingo card 2">
+      <thead><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr></thead>
+      <tbody>
+        <tr><td>TCP/IP</td><td>Wi-Fi</td><td>MAN</td><td>Switch</td><td>IP Address</td></tr>
+        <tr><td>PAN</td><td>Router</td><td>Ethernet</td><td>Firewall</td><td>Network Topology</td></tr>
+        <tr><td>Extranet</td><td>Bandwidth</td><td class="free">★<br>FREE<br>SPACE</td><td>LAN</td><td>Bluetooth</td></tr>
+        <tr><td>ISP</td><td>OSI Model</td><td>Protocol</td><td>WAN</td><td>5G</td></tr>
+        <tr><td>Modem</td><td>Intranet</td><td>VPN</td><td>NFC</td><td>Packet</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ PAGE 6 — BINGO CARDS 3 & 4 ══ -->
+  <div class="page-label">Page 6 of 6 — Bingo Cards 3 &amp; 4</div>
+  <div class="print-page" id="page6">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3in;">
+
+      <!-- Card 3 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 6 Bingo | ISM3011</h2>
+          <div class="card-num">Card 3</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 3" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>Protocol</td><td>Ethernet</td><td>LAN</td><td>ISP</td><td>VPN</td></tr>
+            <tr><td>Bandwidth</td><td>OSI Model</td><td>MAN</td><td>Router</td><td>Firewall</td></tr>
+            <tr><td>Intranet</td><td>PAN</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>WAN</td><td>IP Address</td></tr>
+            <tr><td>TCP/IP</td><td>Modem</td><td>Bluetooth</td><td>Extranet</td><td>Switch</td></tr>
+            <tr><td>5G</td><td>NFC</td><td>Wi-Fi</td><td>Network Topology</td><td>Packet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Card 4 -->
+      <div>
+        <div class="bingo-header">
+          <h2 style="font-size:0.95rem;">Chapter 6 Bingo | ISM3011</h2>
+          <div class="card-num">Card 4</div>
+        </div>
+        <table class="bingo-table" role="grid" aria-label="Bingo card 4" style="font-size:0.55rem;">
+          <thead><tr><th style="font-size:0.9rem;">B</th><th style="font-size:0.9rem;">I</th><th style="font-size:0.9rem;">N</th><th style="font-size:0.9rem;">G</th><th style="font-size:0.9rem;">O</th></tr></thead>
+          <tbody>
+            <tr><td>VPN</td><td>MAN</td><td>Protocol</td><td>5G</td><td>LAN</td></tr>
+            <tr><td>Firewall</td><td>Ethernet</td><td>Bandwidth</td><td>Packet</td><td>Router</td></tr>
+            <tr><td>NFC</td><td>ISP</td><td class="free" style="font-size:0.6rem;">★ FREE</td><td>Bluetooth</td><td>OSI Model</td></tr>
+            <tr><td>IP Address</td><td>Intranet</td><td>Wi-Fi</td><td>PAN</td><td>Modem</td></tr>
+            <tr><td>WAN</td><td>TCP/IP</td><td>Switch</td><td>Network Topology</td><td>Extranet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- /page6 -->
+
+</div><!-- /print-preview -->
+</body>
+</html>

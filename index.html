@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MIS Journey — IS 10e</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-600:   #2563EB;
+      --blue-700:   #1D4ED8;
+      --blue-100:   #DBEAFE;
+      --blue-800:   #1E40AF;
+      --green-500:  #22C55E;
+      --green-100:  #DCFCE7;
+      --red-500:    #EF4444;
+      --red-100:    #FEE2E2;
+      --bg-page:    #F0F4FF;
+      --bg-card:    #FFFFFF;
+      --bg-input:   #FFFFFF;
+      --text-main:  #1E293B;
+      --text-muted: #64748B;
+      --border:     #E2E8F0;
+      --shadow:     0 2px 8px rgba(37,99,235,0.10);
+      --shadow-hover: 0 4px 20px rgba(37,99,235,0.18);
+      --radius-card: 12px;
+      --radius-badge: 20px;
+      --radius-btn:   8px;
+      --transition:   0.18s ease;
+    }
+
+    body.dark {
+      --blue-100:   #1E3A5F;
+      --blue-800:   #93C5FD;
+      --green-100:  #14532D;
+      --red-100:    #7F1D1D;
+      --bg-page:    #0F172A;
+      --bg-card:    #1E293B;
+      --bg-input:   #0F172A;
+      --text-main:  #F1F5F9;
+      --text-muted: #94A3B8;
+      --border:     #334155;
+      --shadow:     0 2px 8px rgba(0,0,0,0.4);
+      --shadow-hover: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ── HEADER ── */
+    #site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(37,99,235,0.07);
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0.9rem 1.5rem;
+      display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 1.25rem; font-weight: 800; color: var(--blue-600);
+      letter-spacing: -0.02em;
+    }
+    .logo-sub {
+      font-size: 0.7rem; font-weight: 500; color: var(--text-muted);
+      display: block; letter-spacing: 0;
+    }
+    .header-actions { display: flex; align-items: center; gap: 0.65rem; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: var(--radius-btn);
+      font-size: 0.875rem; font-weight: 600; cursor: pointer;
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--blue-600); color: #fff; border: none; }
+    .btn-primary:hover { background: var(--blue-700); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--blue-100); color: var(--blue-800); }
+    .btn-game {
+      background: linear-gradient(135deg, #7C3AED, #4F46E5);
+      color: #fff; border: none;
+      padding: 0.45rem 1rem; font-size: 0.82rem; font-weight: 700;
+      border-radius: var(--radius-btn); cursor: pointer; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      transition: opacity var(--transition), transform var(--transition);
+      margin-top: 0.25rem;
+    }
+    .btn-game:hover { opacity: 0.9; transform: translateY(-1px); }
+    .dark-toggle {
+      background: none; border: 1px solid var(--border); border-radius: var(--radius-btn);
+      cursor: pointer; font-size: 1.1rem; padding: 0.4rem 0.58rem; line-height: 1;
+      color: var(--text-main); transition: background var(--transition), border-color var(--transition);
+    }
+    .dark-toggle:hover { background: var(--blue-100); border-color: var(--blue-600); }
+    .icon-btn {
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      padding: 0.25rem 0.35rem; border-radius: 5px; font-size: 0.95rem; line-height: 1;
+      transition: color var(--transition), background var(--transition);
+      display: flex; align-items: center;
+    }
+    .icon-btn:hover { color: #EF4444; background: rgba(239,68,68,0.10); }
+
+    /* ── SKIP NAV ── */
+    .skip-link {
+      position: absolute; top: -100%; left: 1rem;
+      background: var(--blue-600); color: #fff;
+      padding: 0.5rem 1rem; border-radius: 0 0 8px 8px;
+      font-weight: 700; font-size: 0.875rem; text-decoration: none; z-index: 9999;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ── CLASS RESOURCE BUTTONS ON CARD ── */
+    .btn-slides {
+      background: transparent; border: 1.5px solid #0891B2; color: #0891B2;
+      border-radius: var(--radius-btn); padding: 0.38rem 0.85rem;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      transition: background var(--transition), color var(--transition);
+      margin-top: 0.3rem; text-decoration: none;
+    }
+    .btn-slides:hover { background: #0891B2; color: #fff; }
+    .btn-print {
+      background: transparent; border: 1.5px solid #D97706; color: #D97706;
+      border-radius: var(--radius-btn); padding: 0.38rem 0.85rem;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      transition: background var(--transition), color var(--transition);
+      margin-top: 0.3rem; text-decoration: none;
+    }
+    .btn-print:hover { background: #D97706; color: #fff; }
+
+    /* ── TOOLBAR ── */
+    #toolbar {
+      max-width: 1200px; margin: 1.5rem auto 0.5rem; padding: 0 1.5rem;
+      display: flex; flex-direction: column; gap: 0.9rem;
+    }
+    .search-wrapper { position: relative; width: 100%; max-width: 520px; }
+    .search-icon {
+      position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: var(--text-muted);
+    }
+    #search-input {
+      width: 100%; padding: 0.6rem 0.8rem 0.6rem 2.3rem;
+      border: 1px solid var(--border); border-radius: var(--radius-btn);
+      font-size: 0.93rem; font-family: inherit;
+      color: var(--text-main); background: var(--bg-input);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    #search-input:focus {
+      outline: none; border-color: var(--blue-600);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    #category-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .filter-btn {
+      padding: 0.3rem 0.85rem; border-radius: var(--radius-badge);
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-muted); font-size: 0.82rem; font-weight: 500; cursor: pointer;
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+    }
+    .filter-btn:hover { background: var(--blue-100); color: var(--blue-800); border-color: var(--blue-100); }
+    .filter-btn.active { background: var(--blue-600); color: #fff; border-color: var(--blue-600); }
+    #bookmark-count { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* ── GRID ── */
+    #grid-section { max-width: 1200px; margin: 0 auto 3rem; padding: 0 1.5rem; }
+    #bookmark-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem; padding-top: 1.1rem;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--bg-card); border-radius: var(--radius-card);
+      box-shadow: var(--shadow); padding: 1.15rem;
+      display: flex; flex-direction: column; gap: 0.55rem;
+      transition: box-shadow var(--transition), transform var(--transition), background var(--transition);
+      border: 1px solid transparent;
+    }
+    .card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); border-color: rgba(37,99,235,0.12); }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+    .card-title { font-size: 0.97rem; font-weight: 700; color: var(--text-main); word-break: break-word; line-height: 1.35; flex: 1; }
+    .card-actions { display: flex; gap: 0.1rem; flex-shrink: 0; }
+    .card-edit, .card-delete {
+      background: none; border: none; cursor: pointer; font-size: 0.9rem;
+      color: var(--text-muted); padding: 0.2rem 0.28rem; border-radius: 5px;
+      line-height: 1; transition: color var(--transition), background var(--transition);
+      display: none; align-items: center;
+    }
+    .card-edit:hover  { color: var(--blue-600); background: var(--blue-100); }
+    .card-delete:hover { color: #EF4444; background: rgba(239,68,68,0.10); }
+    .card-badge {
+      align-self: flex-start; padding: 0.2rem 0.7rem;
+      background: var(--blue-100); color: var(--blue-800);
+      border-radius: var(--radius-badge); font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+    }
+    .card-url {
+      font-size: 0.8rem; color: var(--blue-600); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; text-decoration: none; display: block;
+    }
+    .card-url:hover { text-decoration: underline; }
+    .card-notes {
+      font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-chapter-num {
+      font-size: 0.68rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    /* ── EMPTY STATE ── */
+    #empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+    .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+
+    /* ── ADD/EDIT MODAL ── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem;
+    }
+    .overlay.hidden { display: none; }
+    .modal-box {
+      background: var(--bg-card); border-radius: 16px; width: 100%; max-width: 480px;
+      padding: 2rem; box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      animation: modal-in 0.18s ease; transition: background var(--transition);
+    }
+    @keyframes modal-in {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.4rem; }
+    .modal-header h2 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
+    #bookmark-form label {
+      display: block; font-size: 0.855rem; font-weight: 600;
+      color: var(--text-main); margin-bottom: 0.28rem; margin-top: 0.9rem;
+    }
+    #bookmark-form label:first-of-type { margin-top: 0; }
+    #bookmark-form input, #bookmark-form textarea {
+      width: 100%; padding: 0.58rem 0.72rem;
+      border: 1px solid var(--border); border-radius: var(--radius-btn);
+      font-size: 0.93rem; font-family: inherit;
+      color: var(--text-main); background: var(--bg-input); resize: vertical;
+      transition: border-color var(--transition), box-shadow var(--transition),
+                  background var(--transition), color var(--transition);
+    }
+    #bookmark-form input:focus, #bookmark-form textarea:focus {
+      outline: none; border-color: var(--blue-600); box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+    .required { color: var(--blue-600); }
+    .optional { color: var(--text-muted); font-weight: 400; font-size: 0.78rem; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.4rem; }
+
+    /* ── GAME MODAL ── */
+    #game-overlay { z-index: 300; }
+    .game-box { max-width: 560px; max-height: 92vh; overflow-y: auto; }
+
+    /* intro */
+    #game-intro { padding: 0.25rem 0; }
+    .game-intro-header {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;
+    }
+    .game-big-emoji { font-size: 2.5rem; flex-shrink: 0; }
+    #game-intro h2 { font-size: 1.15rem; font-weight: 800; color: var(--text-main); line-height: 1.3; }
+    .game-intro-subtitle { color: var(--text-muted); font-size: 0.85rem; margin: 0.65rem 0 1rem; text-align: center; }
+    .game-intro-actions { display: flex; gap: 0.65rem; justify-content: center; }
+
+    /* study tips */
+    .study-tips-box {
+      background: var(--blue-100); border-radius: var(--radius-btn);
+      padding: 0.85rem 1rem; margin-bottom: 0.25rem;
+    }
+    .study-tips-label {
+      font-size: 0.74rem; font-weight: 700; color: var(--blue-800);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.55rem;
+    }
+    .study-tips-list { list-style: none; display: flex; flex-direction: column; gap: 0.42rem; }
+    .study-tips-list li {
+      font-size: 0.84rem; color: var(--text-main); line-height: 1.45;
+      padding-left: 1.2rem; position: relative;
+    }
+    .study-tips-list li::before {
+      content: "→"; position: absolute; left: 0;
+      color: var(--blue-600); font-weight: 700;
+    }
+
+    /* quiz */
+    #game-quiz { display: flex; flex-direction: column; gap: 1rem; }
+    .game-progress-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; color: var(--text-muted); font-weight: 600;
+    }
+    .progress-bar {
+      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+      flex: 1; margin: 0 0.75rem;
+    }
+    .progress-fill { height: 100%; background: var(--blue-600); border-radius: 99px; transition: width 0.3s ease; }
+    #game-question {
+      font-size: 1rem; font-weight: 600; color: var(--text-main); line-height: 1.5;
+      min-height: 3rem;
+    }
+    #game-answers { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .answer-btn {
+      background: var(--bg-input); border: 1.5px solid var(--border);
+      border-radius: var(--radius-btn); padding: 0.7rem 0.85rem;
+      font-size: 0.875rem; font-weight: 500; color: var(--text-main);
+      cursor: pointer; text-align: left; line-height: 1.4;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+    }
+    .answer-btn:hover:not(:disabled) { border-color: var(--blue-600); background: var(--blue-100); color: var(--blue-800); }
+    .answer-btn.correct { background: var(--green-100) !important; border-color: var(--green-500) !important; color: #166534 !important; }
+    .answer-btn.wrong   { background: var(--red-100) !important;   border-color: var(--red-500) !important;   color: #991B1B !important; }
+    .answer-btn:disabled { cursor: default; }
+    #game-feedback {
+      font-size: 0.875rem; font-weight: 600; min-height: 1.4rem;
+      padding: 0.5rem 0.75rem; border-radius: var(--radius-btn);
+      display: none;
+    }
+    #game-feedback.correct { background: var(--green-100); color: #166534; display: block; }
+    #game-feedback.wrong   { background: var(--red-100);   color: #991B1B; display: block; }
+    #game-next-btn { align-self: flex-end; }
+
+    /* result */
+    #game-result { text-align: center; padding: 0.5rem 0; }
+    .result-trophy { font-size: 4rem; display: block; margin-bottom: 0.5rem; }
+    #game-result h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.3rem; color: var(--text-main); }
+    #game-score-text { font-size: 2rem; font-weight: 800; color: var(--blue-600); margin-bottom: 0.3rem; }
+    #game-stars { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    #game-message { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .result-actions { display: flex; gap: 0.65rem; justify-content: center; }
+
+    .hidden { display: none !important; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) { #bookmark-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 560px) {
+      #bookmark-grid { grid-template-columns: 1fr; }
+      .header-inner { flex-direction: column; align-items: stretch; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .header-actions .btn { flex: 1; justify-content: center; }
+      #toolbar { margin-top: 1.1rem; }
+      .search-wrapper { max-width: 100%; }
+      .modal-box { padding: 1.4rem; }
+      #game-answers { grid-template-columns: 1fr; }
+    }
+
+    /* ── NOTES BUTTON ON CARD ── */
+    .btn-notes {
+      background: transparent; border: 1.5px solid #7C3AED; color: #7C3AED;
+      border-radius: var(--radius-btn); padding: 0.38rem 0.85rem;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer; width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+      transition: background var(--transition), color var(--transition);
+      margin-top: 0.3rem;
+    }
+    .btn-notes:hover { background: #7C3AED; color: #fff; }
+
+    /* ── NOTES MODAL ── */
+    #notes-overlay { z-index: 250; }
+    .notes-box { max-width: 560px; max-height: 88vh; overflow-y: auto; }
+    .notes-overview {
+      font-size: 0.875rem; color: var(--text-main); line-height: 1.65;
+      background: var(--blue-100); border-left: 3px solid var(--blue-600);
+      border-radius: 0 6px 6px 0; padding: 0.75rem 1rem; margin-bottom: 1.1rem;
+    }
+    .notes-section { margin-bottom: 1.1rem; }
+    .notes-section-heading {
+      font-size: 0.74rem; font-weight: 700; color: var(--blue-600);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 0.5rem; padding-bottom: 0.25rem;
+      border-bottom: 1.5px solid var(--blue-100);
+    }
+    .notes-list { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+    .notes-list li {
+      font-size: 0.875rem; color: var(--text-main); line-height: 1.55;
+      padding-left: 1.3rem; position: relative;
+    }
+    .notes-list li::before {
+      content: "▸"; position: absolute; left: 0;
+      color: var(--blue-600); font-size: 0.72rem; top: 0.17rem;
+    }
+    .notes-terms { display: flex; flex-direction: column; gap: 0.5rem; }
+    .notes-term-item {
+      background: var(--bg-page); border-radius: 6px;
+      padding: 0.5rem 0.75rem; border: 1px solid var(--border);
+    }
+    .notes-term-name { font-size: 0.82rem; font-weight: 700; color: var(--blue-600); }
+    .notes-term-def { font-size: 0.82rem; color: var(--text-muted); line-height: 1.45; margin-top: 0.1rem; }
+    .notes-footer { display: flex; gap: 0.65rem; justify-content: flex-end; margin-top: 1.25rem; }
+
+    /* ── STUDY GUIDE ── */
+    .sg-box {
+      width: 100%; max-width: 700px; max-height: 92vh; overflow-y: auto;
+      border-radius: 16px; background: var(--bg-card); padding: 1.75rem;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25); animation: modal-in 0.18s ease;
+      transition: background var(--transition);
+    }
+    .sg-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 1.1rem;
+    }
+    .sg-header-left h2 { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+    .sg-header-left p { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .sg-filter-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+    .sg-chapter {
+      border: 1px solid var(--border); border-radius: var(--radius-card);
+      margin-bottom: 0.5rem; overflow: hidden; transition: border-color var(--transition);
+    }
+    .sg-chapter.open { border-color: rgba(37,99,235,0.3); }
+    .sg-chapter-btn {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 0.85rem 1rem; background: none; border: none; cursor: pointer;
+      text-align: left; font-family: inherit; gap: 0.75rem; transition: background var(--transition);
+    }
+    .sg-chapter-btn:hover { background: var(--blue-100); }
+    .sg-chapter.open .sg-chapter-btn { background: var(--blue-100); }
+    .sg-chapter-left { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; }
+    .sg-chapter-emoji { font-size: 1.2rem; flex-shrink: 0; }
+    .sg-chapter-title-text {
+      font-size: 0.9rem; font-weight: 700; color: var(--text-main); line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sg-chapter.open .sg-chapter-title-text { color: var(--blue-600); }
+    .sg-chapter-cat {
+      font-size: 0.68rem; font-weight: 600; background: var(--blue-100);
+      color: var(--blue-800); padding: 0.15rem 0.55rem; border-radius: 99px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .sg-chapter-chev {
+      font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0;
+      transition: transform 0.22s ease, color var(--transition);
+    }
+    .sg-chapter.open .sg-chapter-chev { transform: rotate(180deg); color: var(--blue-600); }
+    .sg-chapter-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .sg-chapter.open .sg-chapter-body { max-height: 2000px; }
+    .sg-chapter-inner { padding: 0.75rem 1rem 1rem; border-top: 1px solid var(--border); }
+    .sg-play-btn {
+      margin-top: 1rem; width: 100%; display: flex !important;
+      align-items: center; justify-content: center; gap: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header id="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span>&#128218;</span>
+        <div>
+          MIS Journey
+          <span class="logo-sub">Introduction to Information Systems · 10th Ed.</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="dark-toggle" class="dark-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">&#127769;</button>
+<button id="study-guide-btn" class="btn btn-ghost" aria-label="Open Study Guide">&#128218; Study Guide</button>
+        <button id="open-modal-btn" class="btn btn-primary" aria-label="Add new bookmark" style="display:none">&#43; Add Bookmark</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section id="toolbar" aria-label="Search and filter">
+      <div>
+        <div class="search-wrapper">
+          <span class="search-icon" aria-hidden="true">&#128269;</span>
+          <input type="text" id="search-input" placeholder="Search chapters or categories&hellip;" autocomplete="off" aria-label="Search chapters, topics, and keywords" />
+        </div>
+        <div id="bookmark-count" aria-live="polite" aria-atomic="true"></div>
+      </div>
+      <div id="category-filters"></div>
+    </section>
+
+    <section id="grid-section">
+      <div id="bookmark-grid"></div>
+      <div id="empty-state" class="hidden">
+        <span class="empty-icon">&#128269;</span>
+        No bookmarks match your search.
+      </div>
+    </section>
+  </main>
+
+  <!-- Add / Edit Modal -->
+  <div id="modal-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-title">Add Bookmark</h2>
+        <button id="close-modal-btn" class="icon-btn" aria-label="Close">&#10005;</button>
+      </div>
+      <form id="bookmark-form" novalidate>
+        <label for="input-title">Title <span class="required">*</span></label>
+        <input type="text" id="input-title" required placeholder="e.g. Chapter 1 Notes" />
+
+        <label for="input-url">URL <span class="required">*</span></label>
+        <input type="url" id="input-url" required placeholder="https://example.com" />
+
+        <label for="input-category">Category <span class="required">*</span></label>
+        <input type="text" id="input-category" required list="category-datalist" placeholder="e.g. Foundations" />
+        <datalist id="category-datalist"></datalist>
+
+        <label for="input-notes">Notes <span class="optional">(optional)</span></label>
+        <textarea id="input-notes" rows="3" placeholder="Key topics, study tips&hellip;"></textarea>
+
+        <div class="form-actions">
+          <button type="button" id="cancel-btn" class="btn btn-ghost">Cancel</button>
+          <button type="submit" id="submit-btn" class="btn btn-primary">Save Bookmark</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Game Modal -->
+  <div id="game-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="game-chapter-title">
+    <div class="modal-box game-box">
+
+      <!-- Intro -->
+      <div id="game-intro">
+        <div class="game-intro-header">
+          <span id="game-emoji" class="game-big-emoji"></span>
+          <h2 id="game-chapter-title"></h2>
+        </div>
+        <div class="study-tips-box">
+          <div class="study-tips-label">&#128218; Key Points &mdash; Study before you play!</div>
+          <ul id="game-tips-list" class="study-tips-list"></ul>
+        </div>
+        <p class="game-intro-subtitle">5 questions &middot; Good luck!</p>
+        <div class="game-intro-actions">
+          <button id="start-game-btn" class="btn btn-primary">&#9654; Start Quiz</button>
+          <button id="close-game-intro-btn" class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Quiz -->
+      <div id="game-quiz" class="hidden">
+        <div class="game-progress-row">
+          <span id="game-q-label">Q 1/5</span>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          <span id="game-score-live">&#9733; 0</span>
+        </div>
+        <p id="game-question"></p>
+        <div id="game-answers"></div>
+        <div id="game-feedback"></div>
+        <button id="game-next-btn" class="btn btn-primary hidden">Next &#8594;</button>
+      </div>
+
+      <!-- Result -->
+      <div id="game-result" class="hidden">
+        <span id="result-trophy" class="result-trophy"></span>
+        <h2>Quiz Complete!</h2>
+        <div id="game-score-text"></div>
+        <div id="game-stars"></div>
+        <p id="game-message"></p>
+        <div class="result-actions">
+          <button id="play-again-btn" class="btn btn-primary">&#8635; Play Again</button>
+          <button id="close-game-result-btn" class="btn btn-ghost">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Chapter Notes Modal -->
+  <div id="notes-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="notes-title">
+    <div class="modal-box notes-box">
+      <div class="modal-header">
+        <div style="display:flex;align-items:center;gap:0.65rem;">
+          <span id="notes-emoji" style="font-size:1.7rem;flex-shrink:0;"></span>
+          <h2 id="notes-title" style="font-size:1.05rem;line-height:1.3;"></h2>
+        </div>
+        <button id="close-notes-btn" class="icon-btn" aria-label="Close">&#10005;</button>
+      </div>
+      <p id="notes-overview" class="notes-overview"></p>
+      <div class="notes-section">
+        <div class="notes-section-heading">Key Concepts</div>
+        <ul id="notes-concepts-list" class="notes-list"></ul>
+      </div>
+      <div class="notes-section">
+        <div class="notes-section-heading">Key Terms</div>
+        <div id="notes-terms-list" class="notes-terms"></div>
+      </div>
+      <div class="notes-footer">
+        <button id="notes-play-btn" class="btn btn-primary">&#9654; Play Quiz</button>
+        <button id="notes-close-footer-btn" class="btn btn-ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study Guide Overlay -->
+  <div id="sg-overlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="sg-box">
+      <div class="sg-header">
+        <div class="sg-header-left">
+          <h2>&#128218; MIS Study Guide</h2>
+          <p>Introduction to Information Systems &middot; 10th Edition &mdash; All 17 Chapters</p>
+        </div>
+        <button id="close-sg-btn" class="icon-btn" aria-label="Close">&#10005;</button>
+      </div>
+      <div id="sg-filter-bar" class="sg-filter-bar"></div>
+      <div id="sg-chapters-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // GAME DATA  (17 chapters × 5 questions each)
+    // q = question, o = options[4], a = correct index
+    // ─────────────────────────────────────────────
+    const GAMES = {
+      "1": { title: "Ch 1: Intro to Information Systems", emoji: "💻",
+        tips: [
+          "An IS <strong>collects, processes, stores, and distributes</strong> information — not just financial data",
+          "<strong>IT = hardware + software + networking</strong> working together (not one piece alone)",
+          "A <strong>TPS</strong> (Transaction Processing System) handles <strong>routine day-to-day transactions</strong> like sales and orders",
+          "An <strong>informed user</strong> knows how to <strong>leverage IT effectively</strong> for their work — no coding degree needed",
+          "Computer-based IS components: hardware, software, data, <strong>people</strong>, and procedures"
+        ], qs: [
+        { q: "What is the primary purpose of an information system?", o: ["Store only financial data","Collect, process, store & distribute information","Replace all human decision-making","Provide free internet access"], a: 1 },
+        { q: "A Transaction Processing System (TPS) primarily:", o: ["Supports long-term strategic planning","Processes day-to-day business transactions","Creates executive performance dashboards","Analyzes competitive market forces"], a: 1 },
+        { q: "Being an 'informed user' of IT means you:", o: ["Have a computer science degree","Can program any software from scratch","Understand how to use IT effectively for your work","Only use open-source tools"], a: 2 },
+        { q: "Which is NOT typically a component of a computer-based IS?", o: ["Hardware","Software","Daily weather forecasts","People"], a: 2 },
+        { q: "Information Technology (IT) refers to:", o: ["Hardware components only","Software applications only","Hardware, software & networking","Only the internet"], a: 2 }
+      ]},
+      "2": { title: "Ch 2: Organizational Strategy & Competitive Advantage", emoji: "🏆",
+        tips: [
+          "A <strong>business process</strong> = an ongoing collection of <strong>related activities that create value</strong> for an organization",
+          "<strong>Porter's Five Forces</strong>: rivals, new entrants, substitutes, buyer power, and supplier power — that's <strong>5 forces</strong>",
+          "<strong>BPR</strong> = <strong>fundamentally rethinking and redesigning</strong> processes from scratch — NOT minor tweaks",
+          "A <strong>strategic IS</strong> gives a company a <strong>competitive advantage</strong> over rivals (e.g., Amazon's recommendation engine)",
+          "<strong>Competitive advantage</strong> = <strong>outperforming rivals</strong> in a meaningful, sustainable way"
+        ], qs: [
+        { q: "A business process is best defined as:", o: ["A profit-generating activity only","An ongoing collection of related activities that create value","A single task done by one person","A financial reporting structure"], a: 1 },
+        { q: "Porter's Competitive Forces Model identifies how many forces?", o: ["Three","Four","Five","Seven"], a: 2 },
+        { q: "Business Process Reengineering (BPR) involves:", o: ["Minor tweaks to existing workflows","Outsourcing all business activities","Fundamentally rethinking & redesigning business processes","Eliminating technology use"], a: 2 },
+        { q: "A strategic information system gives a company:", o: ["Payroll automation only","A competitive advantage over rivals","Exclusive use by top executives","The ability to replace employees"], a: 1 },
+        { q: "Competitive advantage means:", o: ["Always having the lowest price","Having the most employees","Outperforming industry rivals in a meaningful way","Being the largest company in the market"], a: 2 }
+      ]},
+      "3": { title: "Ch 3: Ethics and Privacy", emoji: "⚖️",
+        tips: [
+          "<strong>Ethics in IT</strong> = standards of <strong>right and wrong</strong> in how information is collected, used, and shared",
+          "<strong>GDPR</strong> = <strong>General Data Protection Regulation</strong> — the EU law protecting citizens' personal data",
+          "<strong>PII</strong> = Personally Identifiable Information: <strong>SSN, home address, biometrics</strong> — not public/general info",
+          "The <strong>right to be forgotten</strong> = individuals can request companies <strong>delete their personal data</strong>",
+          "<strong>HIPAA</strong> protects personal <strong>health information</strong> in the U.S. (not FERPA, COPPA, or GDPR)"
+        ], qs: [
+        { q: "Ethics in IT primarily refers to:", o: ["Legal requirements for software licensing","Technical encryption standards","Standards of right and wrong in information use","Government surveillance programs"], a: 2 },
+        { q: "What does GDPR stand for?", o: ["Global Digital Privacy Rights","General Data Protection Regulation","Government Data Processing Rules","General Digital Privacy Regulation"], a: 1 },
+        { q: "Personally Identifiable Information (PII) includes:", o: ["General weather data","Public news articles","Social Security numbers and home addresses","Stock market prices"], a: 2 },
+        { q: "The 'right to be forgotten' allows individuals to:", o: ["Erase their criminal records","Avoid paying taxes","Block all internet advertising","Request deletion of their personal data"], a: 3 },
+        { q: "Which U.S. law protects personal health information?", o: ["FERPA","COPPA","HIPAA","GDPR"], a: 2 }
+      ]},
+      "4": { title: "Ch 4: Information Security", emoji: "🛡️",
+        tips: [
+          "<strong>CIA triad</strong> = <strong>C</strong>onfidentiality (who sees it) + <strong>I</strong>ntegrity (is it accurate?) + <strong>A</strong>vailability (can you access it?)",
+          "<strong>Phishing</strong> = tricking users via fake emails/sites into <strong>revealing passwords or sensitive info</strong>",
+          "A <strong>firewall monitors and controls</strong> incoming/outgoing network traffic — the network gatekeeper",
+          "<strong>Ransomware</strong> = malware that <strong>encrypts your files</strong> and demands payment to unlock them",
+          "<strong>2FA</strong> = something you <strong>know</strong> (password) PLUS something you <strong>have</strong> (phone) or <strong>are</strong> (fingerprint)"
+        ], qs: [
+        { q: "In the CIA triad of security, 'CIA' stands for:", o: ["Central Intelligence Agency","Control, Identity, Authentication","Confidentiality, Integrity, Availability","Cybersecurity, Infrastructure, Access"], a: 2 },
+        { q: "Phishing attacks work by:", o: ["Overloading a server with traffic","Exploiting hardware vulnerabilities","Breaking encryption algorithms","Tricking users into revealing sensitive information"], a: 3 },
+        { q: "A firewall is used to:", o: ["Encrypt stored data","Detect email viruses","Monitor and control incoming/outgoing network traffic","Back up data automatically"], a: 2 },
+        { q: "Ransomware is best described as:", o: ["A network monitoring tool","A type of phishing attack","Software that steals passwords","Malware that encrypts files and demands payment"], a: 3 },
+        { q: "Two-factor authentication (2FA) requires:", o: ["Two passwords","Two different devices","Two security questions","Something you know plus something you have or are"], a: 3 }
+      ]},
+      "5": { title: "Ch 5: Data and Knowledge Management", emoji: "🗄️",
+        tips: [
+          "<strong>Relational database</strong> = data stored in <strong>tables</strong> (rows = records, columns = fields)",
+          "<strong>SQL</strong> = <strong>Structured Query Language</strong> — used to query and manipulate relational databases",
+          "<strong>Big Data 3 Vs</strong> = <strong>Volume</strong> (massive amounts) + <strong>Velocity</strong> (fast-moving) + <strong>Variety</strong> (many types)",
+          "<strong>Data mining</strong> = discovering <strong>hidden patterns and insights</strong> in large datasets (not deleting duplicates!)",
+          "A <strong>data warehouse</strong> is for <strong>analytics and reporting</strong> — NOT real-time transaction processing"
+        ], qs: [
+        { q: "A relational database stores data in:", o: ["Flat text files only","Spreadsheets only","Binary tree structures","Tables with rows and columns"], a: 3 },
+        { q: "SQL stands for:", o: ["Standard Question Logic","System Query Library","Structured Query Language","Software Quality Level"], a: 2 },
+        { q: "Big Data is characterized by the '3 Vs' which includes:", o: ["Value, Virtue, and Vision","Verification, Validation, and Vision","Volume, Velocity, and Variety","Value, Volume, and Visualization"], a: 2 },
+        { q: "Data mining is used to:", o: ["Extract minerals using computer simulations","Delete duplicate records from databases","Encrypt sensitive information","Discover patterns and insights in large datasets"], a: 3 },
+        { q: "A data warehouse is primarily used for:", o: ["Real-time transaction processing","Storing emails and documents","Hosting websites","Analytical reporting and business intelligence"], a: 3 }
+      ]},
+      "6": { title: "Ch 6: Telecommunications and Networking", emoji: "🌐",
+        tips: [
+          "<strong>LAN</strong> = <strong>Local Area Network</strong> — connects devices within a small area like a building or campus",
+          "The internet uses <strong>TCP/IP</strong> — the core communication protocol suite (not HTTP or SMTP alone)",
+          "<strong>Bandwidth</strong> = the <strong>amount of data transmitted per second</strong> — think of it as highway lane width",
+          "The <strong>OSI model</strong> has <strong>7 layers</strong>: Physical → Data Link → Network → Transport → Session → Presentation → Application",
+          "<strong>Wi-Fi</strong> provides <strong>wireless local area networking</strong> — not satellite and not cellular"
+        ], qs: [
+        { q: "LAN stands for:", o: ["Large Area Network","Layered Access Network","Local Area Network","Linked Application Node"], a: 2 },
+        { q: "The Internet primarily uses which communication protocol?", o: ["HTTP only","SMTP only","FTP only","TCP/IP"], a: 3 },
+        { q: "Bandwidth in networking refers to:", o: ["The physical width of a cable","The number of connected devices","The cost of internet service","The amount of data transmitted per second"], a: 3 },
+        { q: "The OSI model consists of how many layers?", o: ["4","5","7","10"], a: 2 },
+        { q: "Wi-Fi technology provides:", o: ["Wired high-speed connections","Satellite internet access","Cellular data connectivity","Wireless local area networking"], a: 3 }
+      ]},
+      "7": { title: "Ch 7: E-Business and E-Commerce", emoji: "🛒",
+        tips: [
+          "<strong>B2C</strong> = <strong>Business-to-Consumer</strong> — a company selling directly to individual customers (Amazon → you)",
+          "<strong>E-business</strong> covers ALL digital business activities; <strong>e-commerce</strong> specifically = buying and selling online",
+          "<strong>EDI</strong> = standardized <strong>computer-to-computer</strong> document exchange between companies (orders, invoices)",
+          "A <strong>digital wallet</strong> stores and uses <strong>payment info electronically</strong> (Apple Pay, Google Pay)",
+          "<strong>B2B</strong> example: a <strong>manufacturer ordering supplies</strong> from a vendor online — not consumers involved"
+        ], qs: [
+        { q: "B2C e-commerce refers to transactions between:", o: ["Businesses and Contractors","Buyers and Companies","Businesses and Consumers","Brands and Communities"], a: 2 },
+        { q: "The main difference between e-business and e-commerce is:", o: ["There is no difference","E-commerce includes more activities","E-business only applies to large corporations","E-business covers all digital business; e-commerce focuses on buying/selling"], a: 3 },
+        { q: "Electronic Data Interchange (EDI) is used for:", o: ["Encrypting emails","Video conferencing","Standardized computer-to-computer business document exchange","Managing social media accounts"], a: 2 },
+        { q: "A digital wallet allows users to:", o: ["Create cryptocurrency","Block online advertising","Build e-commerce websites","Store and use payment information electronically"], a: 3 },
+        { q: "Which is an example of B2B e-commerce?", o: ["A customer buying from Amazon","A student downloading an ebook","An employee checking email","A manufacturer ordering supplies from a vendor online"], a: 3 }
+      ]},
+      "8": { title: "Ch 8: Wireless, Mobile Computing & Mobile Commerce", emoji: "📱",
+        tips: [
+          "<strong>RFID</strong> = <strong>Radio Frequency Identification</strong> — uses radio waves to automatically track tagged objects",
+          "<strong>M-commerce</strong> = <strong>e-commerce conducted via mobile devices</strong> (shopping, banking, payments on your phone)",
+          "<strong>NFC</strong> = short-range (~4 cm) wireless tech used for <strong>contactless payments</strong> — tap to pay",
+          "<strong>Bluetooth</strong> = short-range wireless for <strong>connecting nearby devices</strong> (headphones, keyboards, speakers)",
+          "A <strong>mobile hotspot shares your cellular data connection</strong> with other devices via Wi-Fi"
+        ], qs: [
+        { q: "RFID stands for:", o: ["Remote File Identification Device","Real-time Frequency Integration Data","Regulated File Indexing Directory","Radio Frequency Identification"], a: 3 },
+        { q: "Mobile commerce (m-commerce) refers to:", o: ["Selling mobile phones online","Managing a business using a mobile app","Setting up wireless networks","E-commerce conducted via mobile devices"], a: 3 },
+        { q: "NFC (Near Field Communication) is best used for:", o: ["Long-range satellite communication","GPS navigation systems","Cellular network infrastructure","Short-range data exchange like contactless payments"], a: 3 },
+        { q: "Bluetooth technology is best suited for:", o: ["Connecting to the internet from anywhere","Streaming satellite TV","Long-distance file transfers","Short-range wireless connection between nearby devices"], a: 3 },
+        { q: "A mobile hotspot allows you to:", o: ["Find the nearest Wi-Fi automatically","Boost your home Wi-Fi signal","Connect to a VPN","Share a cellular data connection with other devices"], a: 3 }
+      ]},
+      "9": { title: "Ch 9: Social Computing", emoji: "👥",
+        tips: [
+          "<strong>Web 2.0</strong> = the interactive era of the web defined by <strong>user-generated content</strong> and two-way participation",
+          "<strong>Crowdsourcing</strong> = getting work, ideas, or input from a <strong>large online community</strong> (not outsourcing to a company)",
+          "A <strong>wiki</strong> = a collaborative website that <strong>anyone can edit</strong> — Wikipedia is the classic example",
+          "<strong>Social networks</strong> let users <strong>create and share content</strong> within a network of personal connections",
+          "Business social computing example: <strong>crowdsourcing product ideas</strong> from customers via online community"
+        ], qs: [
+        { q: "Web 2.0 is best characterized by:", o: ["Static, read-only web pages","Faster download speeds only","Government-controlled internet","User-generated content and interactivity"], a: 3 },
+        { q: "Crowdsourcing involves:", o: ["Hiring a large internal team","Outsourcing to overseas companies","Using AI to automate customer service","Obtaining work or input from a large online community"], a: 3 },
+        { q: "A wiki is:", o: ["A private company blog","A type of social media ad","An encrypted messaging app","A collaborative website that anyone can edit"], a: 3 },
+        { q: "Social networking sites primarily allow users to:", o: ["Process financial transactions","Host business websites","Develop software applications","Create and share content within a network of connections"], a: 3 },
+        { q: "Which is an example of social computing in business?", o: ["Using spreadsheets for accounting","Processing payroll automatically","Running antivirus software","Crowdsourcing product ideas from customers online"], a: 3 }
+      ]},
+      "10": { title: "Ch 10: Information Systems within the Organization", emoji: "🏢",
+        tips: [
+          "<strong>ERP</strong> = <strong>Enterprise Resource Planning</strong> — integrates ALL business functions (finance, HR, supply chain) into one system",
+          "<strong>TPS</strong> = handles <strong>routine day-to-day business transactions</strong> like sales, orders, and payments",
+          "<strong>MIS</strong> provides managers with <strong>reports and summaries</strong> to support structured decisions",
+          "<strong>DSS</strong> provides <strong>models and data analysis tools</strong> to help tackle complex, unstructured decisions",
+          "<strong>EIS</strong> (Executive IS) is built for <strong>senior executives</strong> to monitor KPIs and high-level strategic performance"
+        ], qs: [
+        { q: "ERP stands for:", o: ["Electronic Revenue Processing","External Reporting Platform","Employee Records Program","Enterprise Resource Planning"], a: 3 },
+        { q: "A Transaction Processing System (TPS) primarily handles:", o: ["Strategic long-term planning","Executive decision support","Marketing campaign management","Routine, day-to-day business transactions"], a: 3 },
+        { q: "A Management Information System (MIS) provides:", o: ["Real-time stock trading signals","Programming tools for apps","Customer service chat functions","Reports and summaries to support managerial decisions"], a: 3 },
+        { q: "A Decision Support System (DSS) helps managers by:", o: ["Automatically making all decisions","Tracking employee attendance","Processing customer invoices","Providing models and data to analyze complex decisions"], a: 3 },
+        { q: "An Executive Information System (EIS) is designed for:", o: ["Front-line customer service staff","IT technicians managing servers","Accountants processing expenses","Senior executives monitoring key performance indicators"], a: 3 }
+      ]},
+      "11": { title: "Ch 11: CRM and Supply Chain Management", emoji: "🤝",
+        tips: [
+          "<strong>CRM</strong> = <strong>Customer Relationship Management</strong> — managing all interactions with customers to build loyalty",
+          "<strong>SCM</strong> goal = <strong>coordinate the flow</strong> of goods, information, and finances from raw material to end customer",
+          "<strong>CLV</strong> (Customer Lifetime Value) = <strong>total revenue</strong> a customer generates over their entire relationship with a company",
+          "<strong>JIT</strong> (Just-in-Time) = receive materials <strong>only when needed</strong> in production — reduces inventory costs",
+          "CRM in action: <strong>personalizing email offers based on purchase history</strong> (not shipping or payroll)"
+        ], qs: [
+        { q: "CRM stands for:", o: ["Corporate Revenue Management","Central Resource Monitoring","Collaborative Retail Marketing","Customer Relationship Management"], a: 3 },
+        { q: "The main goal of Supply Chain Management (SCM) is to:", o: ["Increase the number of suppliers","Eliminate the need for warehouses","Reduce customer service costs","Coordinate the flow of goods, information & finances efficiently"], a: 3 },
+        { q: "Customer Lifetime Value (CLV) measures:", o: ["How long a customer has been alive","The average price a customer pays","How often a customer visits","Total revenue a customer generates over their relationship with a company"], a: 3 },
+        { q: "Just-in-Time (JIT) inventory aims to:", o: ["Store as much inventory as possible","Speed up delivery to customers","Reduce the number of suppliers","Receive goods only when they are needed in production"], a: 3 },
+        { q: "Which is an example of CRM in action?", o: ["A company orders raw materials","A manufacturer ships to a distributor","An employee submits an expense report","A retailer personalizes email offers based on purchase history"], a: 3 }
+      ]},
+      "12": { title: "Ch 12: Business Analytics", emoji: "📊",
+        tips: [
+          "<strong>Descriptive analytics</strong> = answers <strong>\"What happened?\"</strong> — looks backward at historical data",
+          "<strong>Predictive analytics</strong> = uses past data to <strong>forecast future outcomes</strong> — answers \"What will happen?\"",
+          "<strong>Prescriptive analytics</strong> = recommends <strong>specific actions</strong> to achieve goals — answers \"What should we do?\"",
+          "A <strong>BI dashboard</strong> = displays <strong>key performance metrics visually</strong> for quick decision-making",
+          "<strong>Data visualization</strong> = charts, graphs, maps that make <strong>complex data easy to understand</strong>"
+        ], qs: [
+        { q: "Descriptive analytics answers the question:", o: ["What will happen?","What should we do?","Why did it happen?","What happened?"], a: 3 },
+        { q: "Predictive analytics uses:", o: ["Real-time data only","Surveys and questionnaires","Manual calculations","Past data to forecast future outcomes"], a: 3 },
+        { q: "Prescriptive analytics helps organizations:", o: ["Describe historical performance","Predict customer behavior","Visualize data in charts","Recommend actions to achieve desired outcomes"], a: 3 },
+        { q: "A business intelligence dashboard primarily:", o: ["Controls network security","Processes financial transactions","Manages employee schedules","Displays key performance metrics visually"], a: 3 },
+        { q: "Data visualization is important because it:", o: ["Encrypts sensitive business data","Speeds up database queries","Reduces storage costs","Makes complex data easier to understand through charts & graphs"], a: 3 }
+      ]},
+      "13": { title: "Ch 13: Acquiring Information Systems", emoji: "🔧",
+        tips: [
+          "<strong>SDLC</strong> = <strong>Systems Development Life Cycle</strong> — the structured phases: plan → analyze → design → implement → maintain",
+          "An <strong>RFP</strong> (Request for Proposal) = document that formally <strong>asks vendors to submit bids</strong> for an IT project",
+          "<strong>Prototyping</strong> = building a <strong>preliminary working model</strong> to test and refine concepts before full development",
+          "<strong>Agile</strong> = <strong>iterative sprints</strong> with frequent customer feedback — flexible and adaptive to change",
+          "<strong>\"Buy\" option</strong> = purchasing <strong>pre-built software</strong> (like Microsoft 365) rather than developing it in-house"
+        ], qs: [
+        { q: "SDLC stands for:", o: ["Software Deployment & Licensing Contract","Structured Data Layout Configuration","Standard Digital Learning Curriculum","Systems Development Life Cycle"], a: 3 },
+        { q: "A Request for Proposal (RFP) is used to:", o: ["Request a pay raise","Apply for a software patent","Document software bugs","Ask vendors to submit bids for a project"], a: 3 },
+        { q: "Prototyping in systems development involves:", o: ["Building the final version first","Outsourcing all development","Skipping the testing phase","Creating a preliminary model to test concepts"], a: 3 },
+        { q: "Agile development is characterized by:", o: ["Completing all planning before development","Using only open-source tools","Avoiding documentation entirely","Iterative development with frequent customer feedback"], a: 3 },
+        { q: "The 'buy' option for IT acquisition means:", o: ["Buying hardware only","Acquiring another company's IT department","Buying software licenses at a discount","Purchasing pre-built software instead of developing in-house"], a: 3 }
+      ]},
+      "14": { title: "Ch 14: Artificial Intelligence", emoji: "🤖",
+        tips: [
+          "<strong>Machine learning</strong> = computers <strong>learn from data and improve</strong> performance without being explicitly reprogrammed",
+          "<strong>NLP</strong> (Natural Language Processing) = enables computers to <strong>understand and generate human language</strong> (Siri, ChatGPT)",
+          "<strong>Expert systems</strong> = AI that <strong>mimics human expert decision-making</strong> in a specific domain (medical diagnosis, tax advice)",
+          "<strong>Deep learning</strong> = type of ML using <strong>multi-layered neural networks</strong> — powers image recognition and voice assistants",
+          "<strong>Neural networks</strong> = computing systems <strong>modeled after the human brain's</strong> interconnected neurons"
+        ], qs: [
+        { q: "Machine learning enables computers to:", o: ["Browse the internet autonomously","Replace all human workers","Generate electricity","Learn from data and improve without explicit programming"], a: 3 },
+        { q: "Natural Language Processing (NLP) allows computers to:", o: ["Translate machine code to binary","Process visual images","Perform math faster","Understand and generate human language"], a: 3 },
+        { q: "Expert systems are designed to:", o: ["Train new employees on policies","Process large transaction volumes","Connect to the internet automatically","Mimic the decision-making of human experts in a domain"], a: 3 },
+        { q: "Deep learning is a subset of:", o: ["Database management","Quantum computing","E-commerce systems","Machine learning using multilayered neural networks"], a: 3 },
+        { q: "A neural network is modeled after:", o: ["The structure of the internet","A supply chain network","A corporate org chart","The human brain's interconnected neurons"], a: 3 }
+      ]},
+      "TG1": { title: "Tech Guide 1: Hardware", emoji: "⚙️",
+        tips: [
+          "<strong>CPU</strong> = <strong>Central Processing Unit</strong> — the 'brain' of the computer that executes all instructions",
+          "<strong>RAM</strong> = <strong>temporary memory</strong> used while the computer runs — it is cleared when power is off (not permanent)",
+          "<strong>SSD vs HDD</strong>: SSD has <strong>no moving parts</strong>, is much faster, but more expensive per GB than traditional HDDs",
+          "<strong>Moore's Law</strong> = the number of <strong>transistors on a chip doubles approximately every 2 years</strong> — driving more powerful processors",
+          "<strong>Input devices</strong> send data INTO the computer: <strong>keyboard, mouse, scanner</strong> — NOT monitor, printer, or speakers (those are output)"
+        ], qs: [
+        { q: "CPU stands for:", o: ["Computer Processing Unit","Core Program Utility","Central Power Unit","Central Processing Unit"], a: 3 },
+        { q: "RAM (Random Access Memory) is:", o: ["Permanent storage for the OS","A type of external hard drive","A networking component","Temporary memory used while the computer is running"], a: 3 },
+        { q: "An SSD compared to a traditional HDD:", o: ["Has more storage capacity","Is slower but cheaper","Uses magnetic tape for storage","Has no moving parts and is faster"], a: 3 },
+        { q: "Moore's Law originally states that:", o: ["Internet speeds double every 18 months","Storage costs triple each decade","Battery life improves 50% annually","Transistors on a chip double approximately every 2 years"], a: 3 },
+        { q: "Which of the following is an input device?", o: ["Monitor","Printer","Speaker","Keyboard"], a: 3 }
+      ]},
+      "TG2": { title: "Tech Guide 2: Software", emoji: "💾",
+        tips: [
+          "An <strong>operating system</strong> <strong>manages hardware resources</strong> and provides the user interface (Windows, macOS, Linux)",
+          "<strong>Open-source software</strong> = source code is <strong>publicly available</strong> to view, modify, and distribute — not always free",
+          "<strong>SaaS</strong> = <strong>Software as a Service</strong> — cloud-delivered software accessed via browser (Google Docs, Salesforce)",
+          "<strong>Application software</strong> = programs that help users <strong>perform specific tasks</strong> (Word, Photoshop, Excel)",
+          "<strong>System software</strong> (e.g., Windows 11) manages the hardware; <strong>application software</strong> (Word, Chrome, Photoshop) runs on top of it"
+        ], qs: [
+        { q: "An operating system is responsible for:", o: ["Connecting to the internet","Processing financial data","Designing websites","Managing hardware resources & providing a user interface"], a: 3 },
+        { q: "Open-source software means the software:", o: ["Is always free to use","Was developed by governments","Has no bugs","Has source code available for anyone to view and modify"], a: 3 },
+        { q: "SaaS stands for:", o: ["System as a Solution","Secure Application Software","Scalable Application Suite","Software as a Service"], a: 3 },
+        { q: "Application software is designed to:", o: ["Manage hardware components","Connect networks together","Store data in databases","Help users perform specific tasks"], a: 3 },
+        { q: "Which of the following is system software?", o: ["Microsoft Word","Google Chrome","Adobe Photoshop","Windows 11"], a: 3 }
+      ]},
+      "TG3": { title: "Tech Guide 3: Cloud Computing", emoji: "☁️",
+        tips: [
+          "<strong>IaaS</strong> = <strong>Infrastructure as a Service</strong> — rent virtual servers, storage, and networking (AWS EC2, Azure VMs)",
+          "<strong>Public cloud</strong> = cloud services <strong>available to anyone over the internet</strong> (AWS, Google Cloud, Azure)",
+          "<strong>Scalability</strong> = ability to <strong>quickly increase or decrease</strong> computing resources based on demand — no over-provisioning",
+          "Cloud's main cost benefit = <strong>eliminates large upfront capital expenditure</strong> on physical IT infrastructure",
+          "<strong>PaaS</strong> = <strong>Platform as a Service</strong> — provides a <strong>development environment</strong> with tools to build and deploy apps"
+        ], qs: [
+        { q: "IaaS stands for:", o: ["Internet as a Service","Integrated Application Software","Internal Access System","Infrastructure as a Service"], a: 3 },
+        { q: "A public cloud provides:", o: ["Cloud only for government agencies","Services used exclusively within one company","A hybrid cloud model","Cloud services available to anyone over the internet"], a: 3 },
+        { q: "Cloud scalability means:", o: ["The cloud can be physically expanded","Data is accessible on any screen size","Cloud works at any internet speed","Resources can quickly increase or decrease based on demand"], a: 3 },
+        { q: "The main cost advantage of cloud computing is:", o: ["Eliminating the need for employees","Making software development faster","Providing free internet access","Reducing upfront capital investment in IT infrastructure"], a: 3 },
+        { q: "PaaS (Platform as a Service) provides:", o: ["Physical servers for rent","Pre-built business applications","Internet security services","A development environment for building applications"], a: 3 }
+      ]}
+    };
+
+    // ─────────────────────────────────────────────
+    // CHAPTER NOTES  (17 entries)
+    // overview, concepts[], terms[{t,d}]
+    // ─────────────────────────────────────────────
+    const NOTES = {
+      "1": {
+        overview: "An Information System (IS) collects, processes, stores, and distributes information to support organizational decision-making. IT provides the technical foundation while people and processes make the system work.",
+        concepts: [
+          "An IS has <strong>5 components</strong>: hardware, software, data, people, and procedures",
+          "<strong>IT</strong> = hardware + software + networking — the technical backbone of any IS",
+          "<strong>TPS</strong> processes high-volume routine transactions (sales, payroll, orders) — the most common IS type",
+          "<strong>MIS</strong> uses TPS data to produce structured reports and summaries for middle managers",
+          "<strong>DSS</strong> provides models and analytics to help managers tackle complex, unstructured decisions",
+          "<strong>EIS</strong> gives senior executives high-level dashboards and KPIs for strategic oversight",
+          "Being an <strong>informed user</strong> means knowing how to leverage IT effectively — no coding required"
+        ],
+        terms: [
+          { t: "Information System (IS)", d: "Organized system that collects, processes, stores, and distributes information to support decision-making" },
+          { t: "TPS (Transaction Processing System)", d: "Processes high-volume, routine business transactions such as sales, payroll, and orders" },
+          { t: "MIS (Management Information System)", d: "Produces scheduled and on-demand reports from TPS data to support managerial decisions" },
+          { t: "DSS (Decision Support System)", d: "Provides analytical models and data tools to support complex, semi-structured decision-making" },
+          { t: "EIS (Executive Information System)", d: "Delivers strategic dashboards and KPI tracking tools designed for senior executives" }
+        ]
+      },
+      "2": {
+        overview: "Organizations use IS strategically to gain and sustain competitive advantage. Porter's Five Forces and Value Chain frameworks help identify where technology creates the most value.",
+        concepts: [
+          "A <strong>business process</strong> is an ongoing set of related activities producing a specific result for the organization",
+          "<strong>Porter's Five Forces</strong>: rivalry among competitors, threat of new entrants, threat of substitutes, buyer bargaining power, supplier bargaining power",
+          "The <strong>Value Chain</strong> separates primary activities (operations, sales, service) from support activities (HR, IT, infrastructure)",
+          "<strong>BPR</strong> (Business Process Reengineering) = fundamental rethinking and radical redesign from scratch — not incremental tweaks",
+          "A <strong>strategic IS</strong> provides a sustainable competitive advantage over rivals (e.g., Amazon's recommendation engine)",
+          "IT enables competitive strategies: <strong>cost leadership</strong>, <strong>differentiation</strong>, and <strong>focus/niche</strong>"
+        ],
+        terms: [
+          { t: "Business Process", d: "An ongoing collection of related activities that produces a specific outcome or value for the organization" },
+          { t: "Porter's Five Forces", d: "Framework analyzing five competitive forces that shape industry profitability and strategic positioning" },
+          { t: "BPR (Business Process Reengineering)", d: "Fundamental rethinking and radical redesign of business processes to achieve dramatic improvements" },
+          { t: "Value Chain", d: "Framework identifying the primary and support activities through which a firm creates competitive advantage" },
+          { t: "Strategic IS", d: "An information system that provides a company with a sustainable competitive advantage over rivals" }
+        ]
+      },
+      "3": {
+        overview: "IT raises significant ethical and privacy concerns about how personal data is collected, stored, and used. Organizations must navigate evolving legal frameworks while upholding ethical standards.",
+        concepts: [
+          "<strong>Ethics in IT</strong> = standards of right and wrong behavior in collecting, using, and sharing information",
+          "<strong>PII</strong> (Personally Identifiable Information) = data uniquely identifying someone: SSN, address, biometrics, medical records",
+          "<strong>GDPR</strong> (EU): requires informed consent for data collection; grants users rights including access and deletion",
+          "The <strong>right to be forgotten</strong>: individuals can request companies permanently delete their personal data",
+          "<strong>HIPAA</strong> (US): protects personal health information in healthcare settings",
+          "IT ethics issues: <strong>privacy invasion, intellectual property theft, data accuracy, and digital accessibility</strong>"
+        ],
+        terms: [
+          { t: "Ethics", d: "Standards of right and wrong behavior guiding how information is collected, used, and shared" },
+          { t: "PII (Personally Identifiable Information)", d: "Data that can uniquely identify a specific individual, such as SSN, address, or biometrics" },
+          { t: "GDPR", d: "EU regulation requiring informed consent for data collection and granting users control over their personal data" },
+          { t: "HIPAA", d: "US law protecting the privacy and security of personal health information in healthcare systems" },
+          { t: "Right to be Forgotten", d: "The right to request a company permanently delete your personal data from their systems" }
+        ]
+      },
+      "4": {
+        overview: "Information security protects digital assets from unauthorized access, modification, and destruction. The CIA triad — Confidentiality, Integrity, Availability — is the foundational framework for all security decisions.",
+        concepts: [
+          "<strong>CIA Triad</strong>: Confidentiality (limit access) + Integrity (ensure accuracy) + Availability (ensure access when needed)",
+          "<strong>Phishing</strong>: deceptive emails/sites that trick users into revealing passwords — the most common social engineering attack",
+          "<strong>Ransomware</strong>: malware that encrypts your files and demands payment for the decryption key",
+          "Key controls: <strong>firewalls</strong> (network gatekeeper), <strong>encryption</strong> (scrambles data), <strong>VPN</strong> (encrypted tunnel), <strong>antivirus</strong>",
+          "<strong>2FA</strong> = something you <em>know</em> (password) + something you <em>have</em> (phone) OR something you <em>are</em> (fingerprint/face)",
+          "<strong>BCP</strong> (Business Continuity Planning) and disaster recovery ensure operations survive security incidents"
+        ],
+        terms: [
+          { t: "CIA Triad", d: "Security framework of Confidentiality (access control), Integrity (data accuracy), and Availability (uptime)" },
+          { t: "Phishing", d: "Social engineering attack using deceptive messages or websites to steal credentials or sensitive information" },
+          { t: "Ransomware", d: "Malware that encrypts a victim's files and demands a ransom payment to restore access" },
+          { t: "Firewall", d: "System that monitors and controls incoming/outgoing network traffic based on predefined security rules" },
+          { t: "Two-Factor Authentication (2FA)", d: "Security requiring two types of verification: something you know plus something you have or are" }
+        ]
+      },
+      "5": {
+        overview: "Effective data management transforms raw data into actionable information. Organizations use databases, Big Data systems, and knowledge management tools to derive insights and support decision-making.",
+        concepts: [
+          "A <strong>relational database</strong> stores data in tables: rows = records, columns = fields; tables linked by primary and foreign keys",
+          "<strong>DBMS</strong> (Database Management System) manages database creation, access, and maintenance (Oracle, MySQL, SQL Server)",
+          "<strong>SQL</strong> (Structured Query Language): used to query (SELECT), insert, update, and delete relational database data",
+          "<strong>Big Data 3 Vs</strong>: Volume (massive scale), Velocity (real-time speed), Variety (structured + unstructured data types)",
+          "A <strong>data warehouse</strong> is a subject-oriented repository optimized for <strong>analytics and reporting</strong> — not live transactions",
+          "<strong>Data mining</strong>: discovering hidden patterns and insights in large datasets using statistical and ML techniques"
+        ],
+        terms: [
+          { t: "Relational Database", d: "Database storing data in related tables linked by primary and foreign keys" },
+          { t: "SQL (Structured Query Language)", d: "Standard language for querying and manipulating data in relational databases" },
+          { t: "Big Data", d: "Extremely large datasets characterized by Volume, Velocity, and Variety requiring specialized tools to process" },
+          { t: "Data Warehouse", d: "Centralized repository of integrated historical data from multiple sources, designed for analytics and reporting" },
+          { t: "Data Mining", d: "Discovering hidden patterns, correlations, and insights in large datasets using analytical techniques" }
+        ]
+      },
+      "6": {
+        overview: "Telecommunications and networking are the backbone of modern digital communication. Networks connect devices, enable internet access, and allow organizations to share data and resources securely across the globe.",
+        concepts: [
+          "Network types by scale: <strong>PAN</strong> (~10m, personal) → <strong>LAN</strong> (building) → <strong>MAN</strong> (city) → <strong>WAN</strong> (global — includes the internet)",
+          "Key devices: <strong>router</strong> (directs traffic between networks), <strong>switch</strong> (connects LAN devices), <strong>modem</strong> (connects to ISP)",
+          "<strong>TCP/IP</strong>: the foundational protocol suite of the internet — enables reliable, packet-switched communication",
+          "The <strong>OSI model</strong> has 7 layers: Physical → Data Link → Network → Transport → Session → Presentation → Application",
+          "<strong>Bandwidth</strong>: maximum data transmission rate (Mbps/Gbps) — the wider the 'pipe', the more data flows per second",
+          "<strong>VPN</strong> (Virtual Private Network): creates an encrypted tunnel over the public internet for secure remote access"
+        ],
+        terms: [
+          { t: "LAN (Local Area Network)", d: "Network connecting devices within a limited geographic area such as an office building or campus" },
+          { t: "TCP/IP", d: "Protocol suite governing data communication across the internet using packet switching" },
+          { t: "Bandwidth", d: "Maximum rate of data transfer across a network connection, measured in bits per second" },
+          { t: "OSI Model", d: "7-layer conceptual framework describing how network communications are structured and transmitted" },
+          { t: "VPN (Virtual Private Network)", d: "Encrypted connection providing secure, private communication over a public network like the internet" }
+        ]
+      },
+      "7": {
+        overview: "E-commerce enables buying and selling over digital networks, while e-business extends digital technology to all organizational processes. Understanding these models is essential for the digital economy.",
+        concepts: [
+          "<strong>E-commerce</strong> = buying/selling online; <strong>e-business</strong> = broader — e-commerce PLUS CRM, SCM, internal operations",
+          "Business models: <strong>B2C</strong> (Amazon → you), <strong>B2B</strong> (supplier → manufacturer), <strong>C2C</strong> (eBay, Etsy), <strong>G2C</strong> (government portals)",
+          "<strong>EDI</strong> (Electronic Data Interchange): standardized computer-to-computer exchange of business documents (invoices, orders) between companies",
+          "<strong>Digital wallets</strong> store payment credentials for online and contactless transactions (Apple Pay, Google Pay, PayPal)",
+          "Revenue models: <strong>subscription, pay-per-use, advertising, freemium, and affiliate commissions</strong>",
+          "Key e-commerce challenges: security (card fraud), privacy (data harvesting), legal (jurisdiction), and trust"
+        ],
+        terms: [
+          { t: "E-Commerce", d: "Buying and selling goods and services over electronic networks such as the internet" },
+          { t: "B2C (Business-to-Consumer)", d: "E-commerce model where businesses sell directly to individual end customers" },
+          { t: "B2B (Business-to-Business)", d: "E-commerce model where transactions occur electronically between businesses" },
+          { t: "EDI (Electronic Data Interchange)", d: "Standardized system for computer-to-computer exchange of business documents between companies" },
+          { t: "Digital Wallet", d: "Electronic payment system storing payment credentials for online and contactless transactions" }
+        ]
+      },
+      "8": {
+        overview: "Mobile and wireless technologies enable computing anywhere, anytime. RFID, NFC, Bluetooth, and 5G are reshaping supply chains, payments, and business operations while introducing new security challenges.",
+        concepts: [
+          "<strong>RFID</strong> (Radio Frequency Identification): uses radio waves to automatically identify tagged objects; passive tags are powered by the reader",
+          "<strong>NFC</strong> (Near Field Communication): very short range (~4 cm) wireless tech for <strong>contactless payments</strong> (tap-to-pay)",
+          "<strong>Bluetooth</strong>: short-range wireless (~10-100m) for connecting nearby devices in a PAN (headphones, keyboards, wearables)",
+          "<strong>M-commerce</strong>: e-commerce via mobile devices — mobile banking, shopping, ticketing, and payments",
+          "<strong>GPS and location-based services</strong>: real-time location data for navigation, geo-targeted ads, and check-ins",
+          "<strong>5G networks</strong>: dramatically faster speeds and lower latency than 4G, enabling IoT and real-time applications at scale"
+        ],
+        terms: [
+          { t: "RFID (Radio Frequency Identification)", d: "Technology using radio waves to automatically identify and track objects fitted with electronic tags" },
+          { t: "NFC (Near Field Communication)", d: "Very short-range (~4 cm) wireless technology used primarily for contactless payments" },
+          { t: "M-Commerce (Mobile Commerce)", d: "E-commerce transactions conducted through mobile devices such as smartphones and tablets" },
+          { t: "Bluetooth", d: "Short-range wireless technology for connecting nearby devices within a personal area network" },
+          { t: "GPS (Global Positioning System)", d: "Satellite-based system providing real-time location and navigation data to mobile devices" }
+        ]
+      },
+      "9": {
+        overview: "Social computing technologies have transformed communication, collaboration, and commerce. Businesses leverage social platforms to engage customers, crowdsource ideas, and build brand communities at scale.",
+        concepts: [
+          "<strong>Web 2.0</strong>: the participatory, user-generated content era — social media, wikis, blogs, mashups, and interactive apps",
+          "<strong>Crowdsourcing</strong>: tapping the collective intelligence of a large online community for ideas, tasks, or funding",
+          "<strong>Wikis</strong>: collaborative websites anyone can create, edit, and link — Wikipedia is the classic example",
+          "<strong>Social commerce</strong>: integrating social features with shopping (Instagram Shopping, TikTok Shop, Facebook Marketplace)",
+          "Business uses of social computing: <strong>marketing, customer service, product feedback, and internal collaboration</strong>",
+          "Challenges: privacy risks, information overload, misinformation, and brand reputation management"
+        ],
+        terms: [
+          { t: "Web 2.0", d: "Era of internet technologies enabling user-generated content, social sharing, and interactive participation" },
+          { t: "Crowdsourcing", d: "Obtaining work, information, or creative input from a large group of people via the internet" },
+          { t: "Wiki", d: "Collaborative website that allows any user to create, edit, and link content" },
+          { t: "Social Commerce", d: "Integration of social networking features with e-commerce to enable shopping within social platforms" },
+          { t: "Viral Marketing", d: "Marketing strategy relying on social sharing to spread a message exponentially through networks" }
+        ]
+      },
+      "10": {
+        overview: "Organizations deploy a hierarchy of IS — from TPS to EIS — to support every operational level. ERP systems integrate these functions into a single unified platform covering the entire enterprise.",
+        concepts: [
+          "IS hierarchy: <strong>TPS</strong> (daily operations) → <strong>MIS</strong> (management reports) → <strong>DSS</strong> (analytical decisions) → <strong>EIS</strong> (executive strategy)",
+          "<strong>TPS</strong> processes high-volume, routine transactions; must be fast, reliable, and available 24/7 (POS, ATMs, payroll)",
+          "<strong>MIS</strong> produces scheduled, on-demand, and exception reports from TPS data for middle managers",
+          "<strong>DSS</strong> supports semi-structured decisions using what-if analysis, goal-seeking, and simulation models",
+          "<strong>EIS/ESS</strong> delivers dashboards with drill-down capability for C-suite strategic monitoring and KPI tracking",
+          "<strong>ERP</strong> integrates all business functions (finance, HR, supply chain, sales) into one real-time system — SAP and Oracle are major vendors"
+        ],
+        terms: [
+          { t: "ERP (Enterprise Resource Planning)", d: "Integrated software managing all core business processes across departments in a single real-time system" },
+          { t: "TPS (Transaction Processing System)", d: "IS processing high-volume, routine business transactions such as sales, orders, and payroll" },
+          { t: "MIS (Management Information System)", d: "IS producing structured reports from operational data to support managerial decision-making" },
+          { t: "DSS (Decision Support System)", d: "IS providing analytical models and data tools to support complex, semi-structured decisions" },
+          { t: "EIS (Executive Information System)", d: "IS delivering strategic dashboards and KPI tracking designed for senior executive oversight" }
+        ]
+      },
+      "11": {
+        overview: "CRM systems maximize customer value by managing every interaction across the customer lifecycle, while SCM systems optimize the flow of goods and information from raw materials to end consumers.",
+        concepts: [
+          "<strong>CRM</strong> tracks all customer interactions: marketing campaigns, sales history, support tickets, and service calls",
+          "<strong>CLV</strong> (Customer Lifetime Value): total net revenue a customer generates over their entire relationship with the company",
+          "CRM types: <strong>Operational</strong> (automates sales/service), <strong>Analytical</strong> (mines data for insights), <strong>Collaborative</strong> (shares data across channels)",
+          "<strong>SCM</strong> coordinates the flow of goods, services, information, and finances: supplier → manufacturer → distributor → retailer → customer",
+          "<strong>JIT</strong> (Just-in-Time): inventory arrives exactly when needed — minimizes storage costs and waste (Toyota Production System)",
+          "The <strong>Bullwhip Effect</strong>: small fluctuations in consumer demand create amplified inventory swings upstream in the supply chain"
+        ],
+        terms: [
+          { t: "CRM (Customer Relationship Management)", d: "Strategy and IS for managing all customer interactions to increase loyalty and lifetime value" },
+          { t: "CLV (Customer Lifetime Value)", d: "Total revenue a customer is expected to generate over their entire relationship with a company" },
+          { t: "SCM (Supply Chain Management)", d: "Coordinating the flow of goods, data, and finances from raw materials to end consumers" },
+          { t: "JIT (Just-in-Time)", d: "Inventory strategy ensuring materials arrive exactly when needed to minimize warehousing and waste" },
+          { t: "Bullwhip Effect", d: "Phenomenon where small consumer demand changes cause increasingly large inventory swings upstream in the supply chain" }
+        ]
+      },
+      "12": {
+        overview: "Business analytics transforms raw data into competitive advantage. The progression from descriptive to prescriptive analytics represents increasing levels of insight, sophistication, and business value.",
+        concepts: [
+          "<strong>Descriptive analytics</strong>: 'What happened?' — historical data, dashboards, standard reports, scorecards",
+          "<strong>Diagnostic analytics</strong>: 'Why did it happen?' — drill-down analysis, correlations, root cause investigation",
+          "<strong>Predictive analytics</strong>: 'What will happen?' — statistical models, machine learning forecasting, regression",
+          "<strong>Prescriptive analytics</strong>: 'What should we do?' — optimization models, simulation, recommendation engines",
+          "<strong>BI</strong> (Business Intelligence): umbrella term for tools and processes collecting, analyzing, and visualizing business data",
+          "<strong>Data visualization</strong>: charts, heat maps, and interactive dashboards that make complex data easier to interpret and act on"
+        ],
+        terms: [
+          { t: "Descriptive Analytics", d: "Analysis of historical data to understand what has happened, using reports and dashboards" },
+          { t: "Predictive Analytics", d: "Using statistical models and machine learning to forecast future events based on historical data" },
+          { t: "Prescriptive Analytics", d: "Recommending specific actions using optimization and simulation to achieve desired outcomes" },
+          { t: "Business Intelligence (BI)", d: "Technologies and strategies used to collect, analyze, and visualize data to support business decisions" },
+          { t: "KPI (Key Performance Indicator)", d: "Measurable value tracking how effectively an organization is achieving a specific business objective" }
+        ]
+      },
+      "13": {
+        overview: "Organizations choose to build, buy, or outsource IS — each with distinct trade-offs. Structured methodologies like SDLC and Agile ensure quality outcomes regardless of the acquisition strategy.",
+        concepts: [
+          "Three acquisition strategies: <strong>Build</strong> in-house (fully custom, expensive, slow), <strong>Buy</strong> COTS (faster, less custom), <strong>Outsource</strong> (vendor or offshore)",
+          "<strong>SDLC phases</strong>: Planning → Systems Analysis → Systems Design → Implementation → Maintenance",
+          "<strong>Systems Analysis</strong>: requirements gathering — determines <em>what</em> the system must do (feasibility study included)",
+          "<strong>Systems Design</strong>: logical and physical architecture — determines <em>how</em> the system will work",
+          "<strong>Agile</strong>: iterative sprints (1-4 weeks), user stories, product backlog, daily standups — adapts to changing requirements",
+          "<strong>UAT</strong> (User Acceptance Testing): final testing phase where end users verify the system meets their requirements"
+        ],
+        terms: [
+          { t: "SDLC (Systems Development Life Cycle)", d: "Structured process with phases: planning, analysis, design, implementation, and maintenance" },
+          { t: "Agile Development", d: "Iterative development methodology using short sprints, user stories, and continuous stakeholder feedback" },
+          { t: "Prototyping", d: "Building an early working model to test and refine system requirements before full-scale development" },
+          { t: "RFP (Request for Proposal)", d: "Formal document inviting vendors to submit bids and proposals for a specific IS project" },
+          { t: "UAT (User Acceptance Testing)", d: "Final testing phase where end users verify the system meets their actual business requirements" }
+        ]
+      },
+      "14": {
+        overview: "Artificial Intelligence enables computers to perform tasks requiring human-like intelligence. From expert systems to deep learning, AI is transforming every industry while raising important ethical questions.",
+        concepts: [
+          "<strong>Machine Learning (ML)</strong>: systems learn from data and improve automatically — supervised, unsupervised, and reinforcement learning",
+          "<strong>Deep Learning</strong>: ML subset using multi-layered neural networks — powers image recognition, speech, and language models",
+          "<strong>Neural Networks</strong>: architecture modeled on brain neurons — input layer → hidden layers → output layer",
+          "<strong>NLP</strong> (Natural Language Processing): AI that understands and generates human language (Siri, ChatGPT, Google Translate)",
+          "<strong>Expert Systems</strong>: use a knowledge base + inference engine to simulate human expert decisions in a specific domain",
+          "AI ethics concerns: <strong>algorithmic bias, lack of transparency (black box), job displacement, and data privacy</strong>"
+        ],
+        terms: [
+          { t: "Machine Learning", d: "AI technique where systems learn from data and improve performance without explicit reprogramming" },
+          { t: "Deep Learning", d: "Machine learning subset using multi-layered neural networks to learn patterns from large datasets" },
+          { t: "NLP (Natural Language Processing)", d: "AI capability enabling computers to read, understand, and generate human language" },
+          { t: "Expert System", d: "AI that mimics human expert decision-making using a domain-specific knowledge base and inference rules" },
+          { t: "Neural Network", d: "Computing system modeled after the brain's interconnected neurons, learning through weighted layers" }
+        ]
+      },
+      "TG1": {
+        overview: "Computer hardware comprises all physical components of a system. Understanding CPU, memory, storage, and I/O devices helps organizations make informed IT purchasing and architecture decisions.",
+        concepts: [
+          "<strong>CPU</strong> (Central Processing Unit): executes all instructions — key specs: clock speed (GHz), number of cores, and cache size",
+          "<strong>RAM</strong>: fast, volatile (temporary) primary storage used during active processing — cleared when power is off",
+          "<strong>HDD vs. SSD</strong>: HDD = magnetic spinning disks (cheaper per GB, slower); SSD = flash memory (faster, more durable, pricier)",
+          "Input devices send data <em>into</em> the computer: <strong>keyboard, mouse, touchscreen, scanner, microphone</strong>",
+          "Output devices send data <em>out</em>: <strong>monitor, printer, speakers, projector</strong>",
+          "<strong>Moore's Law</strong>: transistor count doubles approximately every 2 years → exponentially increasing computing power"
+        ],
+        terms: [
+          { t: "CPU (Central Processing Unit)", d: "Primary chip executing all instructions — the 'brain' of a computer, measured in GHz and core count" },
+          { t: "RAM (Random Access Memory)", d: "Fast, temporary storage holding data actively being processed; lost when power is off" },
+          { t: "SSD (Solid State Drive)", d: "Fast storage device using flash memory — no moving parts, more durable and faster than HDDs" },
+          { t: "Moore's Law", d: "Observation that transistor density doubles approximately every two years, driving exponential performance growth" },
+          { t: "GPU (Graphics Processing Unit)", d: "Processor optimized for parallel computations; used for graphics rendering and AI/ML workloads" }
+        ]
+      },
+      "TG2": {
+        overview: "Software translates hardware capability into useful functionality. Understanding system vs. application software, licensing models, and cloud delivery helps organizations manage IT assets strategically.",
+        concepts: [
+          "<strong>System software</strong> manages hardware and provides a platform: OS, device drivers, utilities",
+          "<strong>Operating Systems</strong> (Windows, macOS, Linux, iOS, Android) manage CPU, memory, file systems, and I/O devices",
+          "<strong>Application software</strong> helps users perform specific tasks: productivity, communications, media, and industry-specific vertical apps",
+          "<strong>Open-source software</strong>: source code is public and freely modifiable (Linux, Firefox) — not the same as 'free'",
+          "<strong>SaaS</strong> (Software as a Service): cloud-delivered apps on subscription, accessed via browser — Google Workspace, Microsoft 365, Salesforce",
+          "<strong>Middleware</strong>: software layer connecting different applications or systems to enable interoperability and data exchange"
+        ],
+        terms: [
+          { t: "Operating System (OS)", d: "System software managing hardware resources and providing the platform and user interface for all other software" },
+          { t: "Application Software", d: "Programs designed to help users accomplish specific tasks such as word processing or photo editing" },
+          { t: "Open-Source Software", d: "Software with publicly available source code that anyone can view, modify, and distribute" },
+          { t: "SaaS (Software as a Service)", d: "Cloud-delivered software accessed via browser on a subscription basis, hosted and maintained by the vendor" },
+          { t: "Middleware", d: "Software layer that enables different applications or systems to communicate and work together seamlessly" }
+        ]
+      },
+      "TG3": {
+        overview: "Cloud computing delivers computing resources — servers, storage, databases, and software — over the internet on a pay-as-you-go basis. It transforms IT from a capital expense to an operational one.",
+        concepts: [
+          "<strong>IaaS</strong>: rent virtualized infrastructure (VMs, storage, networking) — AWS EC2, Azure VMs; you manage OS and above",
+          "<strong>PaaS</strong>: rent a development/deployment platform — Google App Engine, Heroku; you manage apps and data only",
+          "<strong>SaaS</strong>: use complete applications online — Gmail, Salesforce, Microsoft 365; vendor manages everything",
+          "Deployment models: <strong>Public</strong> (shared, internet-accessible), <strong>Private</strong> (dedicated), <strong>Hybrid</strong> (mix), <strong>Multi-cloud</strong>",
+          "Key benefits: <strong>scalability</strong> (instant up/down), <strong>cost efficiency</strong> (pay-per-use, no capex), <strong>high availability</strong>, <strong>global reach</strong>",
+          "Key concerns: <strong>data security, vendor lock-in, regulatory compliance</strong>, and the shared responsibility model"
+        ],
+        terms: [
+          { t: "IaaS (Infrastructure as a Service)", d: "Cloud model providing virtualized computing infrastructure — servers, storage, networking — on demand" },
+          { t: "PaaS (Platform as a Service)", d: "Cloud model providing a managed development and deployment environment for building applications" },
+          { t: "Public Cloud", d: "Cloud infrastructure owned by a provider and made available to multiple organizations over the internet" },
+          { t: "Scalability", d: "Ability to quickly increase or decrease computing resources in response to changing demand" },
+          { t: "Hybrid Cloud", d: "Cloud deployment mixing private and public cloud environments integrated to work together seamlessly" }
+        ]
+      }
+    };
+
+    // ─────────────────────────────────────────────
+    // SEED DATA — all 17 chapters + tech guides
+    // ─────────────────────────────────────────────
+    const NOW = Date.now();
+    const DAY = 86400000;
+    const CHAPTER_BOOKMARKS = [
+      { id:"ch-1",  title:"Ch 1: Introduction to Information Systems",                          url:"game:1",   category:"Foundations",       notes:"Why study IS? Types of computer-based IS, IT's impact on organizations & society.",                                              createdAt: NOW - 16*DAY },
+      { id:"ch-2",  title:"Ch 2: Organizational Strategy & Competitive Advantage",              url:"game:2",   category:"Foundations",       notes:"Business processes, BPR, Porter's Five Forces, strategic IS, and competitive advantage.",                                       createdAt: NOW - 15*DAY },
+      { id:"ch-3",  title:"Ch 3: Ethics and Privacy",                                           url:"game:3",   category:"Ethics & Security", notes:"Ethical issues in IT, privacy laws (GDPR, HIPAA), PII, codes of ethics for IS professionals.",                                 createdAt: NOW - 14*DAY },
+      { id:"ch-4",  title:"Ch 4: Information Security",                                         url:"game:4",   category:"Ethics & Security", notes:"CIA triad, cyber threats (phishing, ransomware), firewalls, encryption, and 2FA.",                                             createdAt: NOW - 13*DAY },
+      { id:"ch-5",  title:"Ch 5: Data and Knowledge Management",                                url:"game:5",   category:"Data & Networks",   notes:"Databases, SQL, Big Data (5 Vs), data mining, data warehouses, and knowledge management.",                                     createdAt: NOW - 12*DAY },
+      { id:"ch-6",  title:"Ch 6: Telecommunications and Networking",                            url:"game:6",   category:"Data & Networks",   notes:"LANs, WANs, TCP/IP, OSI model, bandwidth, Wi-Fi, and network applications.",                                                   createdAt: NOW - 11*DAY },
+      { id:"ch-7",  title:"Ch 7: E-Business and E-Commerce",                                    url:"game:7",   category:"Digital Business",  notes:"B2C, B2B, digital payments, EDI, ethical/legal issues in online business.",                                                    createdAt: NOW - 10*DAY },
+      { id:"ch-8",  title:"Ch 8: Wireless, Mobile Computing & Mobile Commerce",                 url:"game:8",   category:"Digital Business",  notes:"RFID, NFC, Bluetooth, mobile payments, location-based services, and m-commerce.",                                              createdAt: NOW - 9*DAY  },
+      { id:"ch-9",  title:"Ch 9: Social Computing",                                             url:"game:9",   category:"Digital Business",  notes:"Web 2.0, social networks, wikis, blogs, crowdsourcing, and social computing in business.",                                     createdAt: NOW - 8*DAY  },
+      { id:"ch-10", title:"Ch 10: Information Systems within the Organization",                  url:"game:10",  category:"Organizational IS", notes:"TPS, MIS, DSS, EIS, and ERP — the full spectrum of IS supporting business operations.",                                         createdAt: NOW - 7*DAY  },
+      { id:"ch-11", title:"Ch 11: CRM and Supply Chain Management",                             url:"game:11",  category:"Organizational IS", notes:"Customer relationship management, CLV, SCM, JIT inventory, and supply chain optimization.",                                    createdAt: NOW - 6*DAY  },
+      { id:"ch-12", title:"Ch 12: Business Analytics",                                          url:"game:12",  category:"Analytics & AI",    notes:"Descriptive, predictive & prescriptive analytics, dashboards, and data visualization.",                                         createdAt: NOW - 5*DAY  },
+      { id:"ch-13", title:"Ch 13: Acquiring Information Systems",                               url:"game:13",  category:"Systems Dev",       notes:"SDLC, prototyping, Agile, RFPs, buy vs. build vs. outsource strategies.",                                                       createdAt: NOW - 4*DAY  },
+      { id:"ch-14", title:"Ch 14: Artificial Intelligence",                                     url:"game:14",  category:"Analytics & AI",    notes:"Machine learning, NLP, expert systems, deep learning, neural networks, and AI in business.",                                   createdAt: NOW - 3*DAY  },
+      { id:"tg-1",  title:"Tech Guide 1: Hardware",                                             url:"game:TG1", category:"Tech Guides",       notes:"CPUs, RAM, storage (HDD/SSD), input/output devices, Moore's Law.",                                                              createdAt: NOW - 2*DAY  },
+      { id:"tg-2",  title:"Tech Guide 2: Software",                                             url:"game:TG2", category:"Tech Guides",       notes:"Operating systems, application software, SaaS, open-source, and middleware.",                                                    createdAt: NOW - 1*DAY  },
+      { id:"tg-3",  title:"Tech Guide 3: Cloud Computing",                                      url:"game:TG3", category:"Tech Guides",       notes:"IaaS, PaaS, SaaS, public/private/hybrid clouds, scalability, and cost benefits.",                                               createdAt: NOW          }
+    ];
+
+    const STORAGE_KEY = "tjourney_bookmarks_v1";
+    const DARK_KEY    = "tjourney_dark";
+
+    // ── STATE ──
+    let bookmarks      = [];
+    let activeCategory = "All";
+    let searchQuery    = "";
+    let editingId      = null;
+    let gameState      = { id: null, qs: [], cur: 0, score: 0, answered: false };
+
+    // ── DOM REFS ──
+    const grid          = document.getElementById("bookmark-grid");
+    const emptyState    = document.getElementById("empty-state");
+    const filterBar     = document.getElementById("category-filters");
+    const searchInput   = document.getElementById("search-input");
+    const countEl       = document.getElementById("bookmark-count");
+    const modalOverlay  = document.getElementById("modal-overlay");
+    const modalTitle    = document.getElementById("modal-title");
+    const submitBtn     = document.getElementById("submit-btn");
+    const form          = document.getElementById("bookmark-form");
+    const inputTitle    = document.getElementById("input-title");
+    const inputUrl      = document.getElementById("input-url");
+    const inputCat      = document.getElementById("input-category");
+    const inputNotes    = document.getElementById("input-notes");
+    const datalist      = document.getElementById("category-datalist");
+    const darkToggle    = document.getElementById("dark-toggle");
+    const gameOverlay   = document.getElementById("game-overlay");
+    const gameIntro     = document.getElementById("game-intro");
+    const gameQuiz      = document.getElementById("game-quiz");
+    const gameResult    = document.getElementById("game-result");
+
+    // ── DARK MODE ──
+    function applyDarkMode(dark) {
+      document.body.classList.toggle("dark", dark);
+      darkToggle.innerHTML = dark ? "&#9728;" : "&#127769;";
+      darkToggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
+      localStorage.setItem(DARK_KEY, dark ? "1" : "0");
+    }
+    darkToggle.addEventListener("click", () => applyDarkMode(!document.body.classList.contains("dark")));
+
+    // ── STORAGE ──
+    function loadFromStorage() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { try { bookmarks = JSON.parse(raw); } catch { bookmarks = []; } }
+      if (!bookmarks || bookmarks.length === 0) {
+        bookmarks = CHAPTER_BOOKMARKS.map(b => ({ ...b }));
+        saveToStorage();
+      }
+    }
+    function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks)); }
+
+    // ── CHAPTER RESOURCE LOOKUP (add more chapters as slides are created) ──
+    const SLIDES     = { "1": "ch1-slides.html", "2": "ch2-slides.html", "3": "ch3-slides.html", "4": "ch4-slides.html", "5": "ch5-slides.html", "6": "ch6-slides.html", "7": "ch7-slides.html" };
+    const PRINTABLES = { "1": "ch1-printables.html", "2": "ch2-printables.html", "3": "ch3-printables.html", "4": "ch4-printables.html", "5": "ch5-printables.html", "6": "ch6-printables.html", "7": "ch7-printables.html" };
+
+    // ── HELPERS ──
+    function chapterOrder(b) {
+      if (!isGameUrl(b.url)) return 999;
+      const map = {"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"TG1":15,"TG2":16,"TG3":17};
+      return map[gameId(b.url)] ?? 998;
+    }
+    function getCategories() {
+      return ["All", ...[...new Set(bookmarks.map(b => b.category))].sort()];
+    }
+    function stripHtml(str) {
+      return str ? str.replace(/<[^>]+>/g, "") : "";
+    }
+    function getSearchableText(b) {
+      const parts = [b.title, b.category, b.notes || ""];
+      if (isGameUrl(b.url)) {
+        const gid = gameId(b.url);
+        const game = GAMES[gid];
+        const notes = NOTES[gid];
+        if (game) {
+          parts.push(game.title);
+          game.tips.forEach(t => parts.push(stripHtml(t)));
+          game.qs.forEach(item => { parts.push(item.q); item.o.forEach(o => parts.push(o)); });
+        }
+        if (notes) {
+          parts.push(notes.overview);
+          notes.concepts.forEach(c => parts.push(stripHtml(c)));
+          notes.terms.forEach(t => { parts.push(t.t); parts.push(t.d); });
+        }
+      }
+      return parts.join(" ").toLowerCase();
+    }
+    function getFiltered() {
+      const q = searchQuery.toLowerCase();
+      return bookmarks.filter(b => {
+        const mc = activeCategory === "All" || b.category === activeCategory;
+        const ms = !q || getSearchableText(b).includes(q);
+        return mc && ms;
+      });
+    }
+    function populateCategoryDatalist() {
+      datalist.innerHTML = "";
+      getCategories().filter(c => c !== "All").forEach(cat => {
+        const o = document.createElement("option"); o.value = cat; datalist.appendChild(o);
+      });
+    }
+    function isGameUrl(url) { return typeof url === "string" && url.startsWith("game:"); }
+    function gameId(url) { return url.replace("game:", ""); }
+
+    // ── RENDER ──
+    function renderFilterButtons() {
+      filterBar.innerHTML = "";
+      getCategories().forEach(cat => {
+        const btn = document.createElement("button");
+        btn.className = "filter-btn" + (cat === activeCategory ? " active" : "");
+        btn.textContent = cat;
+        btn.addEventListener("click", () => { activeCategory = cat; renderFilterButtons(); renderGrid(); });
+        filterBar.appendChild(btn);
+      });
+    }
+
+    function createCard(b) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const header = document.createElement("div");
+      header.className = "card-header";
+
+      const title = document.createElement("span");
+      title.className = "card-title";
+      title.textContent = b.title;
+
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "card-edit"; editBtn.title = "Edit";
+      editBtn.innerHTML = "&#9998;";
+      editBtn.addEventListener("click", () => openModal(b));
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "card-delete"; delBtn.title = "Delete";
+      delBtn.innerHTML = "&#128465;";
+      delBtn.addEventListener("click", () => deleteBookmark(b.id));
+
+      actions.appendChild(editBtn); actions.appendChild(delBtn);
+      header.appendChild(title); header.appendChild(actions);
+
+      const badge = document.createElement("span");
+      badge.className = "card-badge";
+      badge.textContent = b.category;
+
+      card.appendChild(header);
+      card.appendChild(badge);
+
+      if (isGameUrl(b.url)) {
+        const gid = gameId(b.url);
+        const gameData = GAMES[gid];
+        if (gameData) {
+          const playBtn = document.createElement("button");
+          playBtn.className = "btn-game";
+          playBtn.innerHTML = gameData.emoji + " Play Learning Game";
+          playBtn.addEventListener("click", () => launchGame(gid));
+          card.appendChild(playBtn);
+
+          const notesBtn = document.createElement("button");
+          notesBtn.className = "btn-notes";
+          notesBtn.innerHTML = "&#128221; Chapter Notes";
+          notesBtn.setAttribute("aria-label", "Open chapter notes for " + gameData.title);
+          notesBtn.addEventListener("click", () => launchNotes(gid));
+          card.appendChild(notesBtn);
+
+          if (SLIDES[gid]) {
+            const slidesLink = document.createElement("a");
+            slidesLink.className = "btn-slides";
+            slidesLink.href = SLIDES[gid];
+            slidesLink.target = "_blank";
+            slidesLink.rel = "noopener noreferrer";
+            slidesLink.innerHTML = "&#128202; Class Slides";
+            slidesLink.setAttribute("aria-label", "Open class slides for " + gameData.title);
+            card.appendChild(slidesLink);
+          }
+          if (PRINTABLES[gid]) {
+            const printLink = document.createElement("a");
+            printLink.className = "btn-print";
+            printLink.href = PRINTABLES[gid];
+            printLink.target = "_blank";
+            printLink.rel = "noopener noreferrer";
+            printLink.innerHTML = "&#128424; Print Materials";
+            printLink.setAttribute("aria-label", "Open printable materials for " + gameData.title);
+            card.appendChild(printLink);
+          }
+        }
+      } else {
+        const link = document.createElement("a");
+        link.className = "card-url";
+        link.href = b.url;
+        link.textContent = b.url.replace(/^https?:\/\//, "");
+        link.target = "_blank"; link.rel = "noopener noreferrer";
+        card.appendChild(link);
+      }
+
+      if (b.notes) {
+        const notes = document.createElement("p");
+        notes.className = "card-notes";
+        notes.textContent = b.notes;
+        card.appendChild(notes);
+      }
+
+      return card;
+    }
+
+    function renderGrid() {
+      const filtered = getFiltered();
+      grid.innerHTML = "";
+      const sorted = filtered.slice().sort((a, b) => {
+        const oa = chapterOrder(a), ob = chapterOrder(b);
+        if (oa !== ob) return oa - ob;
+        return b.createdAt - a.createdAt;
+      });
+      if (sorted.length === 0) {
+        emptyState.classList.remove("hidden");
+        countEl.textContent = "";
+      } else {
+        emptyState.classList.add("hidden");
+        sorted.forEach(b => grid.appendChild(createCard(b)));
+        const total = bookmarks.length;
+        countEl.textContent = filtered.length === total
+          ? total + " bookmark" + (total !== 1 ? "s" : "")
+          : filtered.length + " of " + total + " bookmarks";
+      }
+    }
+
+    // ── CRUD ──
+    function addBookmark({ title, url, category, notes }) {
+      const id = typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+      bookmarks.push({ id, title: title.trim(), url: url.trim(),
+                       category: category.trim(), notes: notes.trim(), createdAt: Date.now() });
+      saveToStorage(); populateCategoryDatalist(); renderFilterButtons(); renderGrid();
+    }
+    function updateBookmark(id, { title, url, category, notes }) {
+      const idx = bookmarks.findIndex(b => b.id === id);
+      if (idx === -1) return;
+      bookmarks[idx] = { ...bookmarks[idx],
+        title: title.trim(), url: url.trim(), category: category.trim(), notes: notes.trim() };
+      saveToStorage();
+      if (!getCategories().includes(activeCategory)) activeCategory = "All";
+      populateCategoryDatalist(); renderFilterButtons(); renderGrid();
+    }
+    function deleteBookmark(id) {
+      bookmarks = bookmarks.filter(b => b.id !== id);
+      saveToStorage();
+      if (!getCategories().includes(activeCategory)) activeCategory = "All";
+      populateCategoryDatalist(); renderFilterButtons(); renderGrid();
+    }
+
+    // ── ADD/EDIT MODAL ──
+    function openModal(bookmark) {
+      if (bookmark) {
+        editingId = bookmark.id;
+        modalTitle.textContent  = "Edit Bookmark";
+        submitBtn.textContent   = "Save Changes";
+        inputTitle.value = bookmark.title;
+        inputUrl.value   = bookmark.url;
+        inputCat.value   = bookmark.category;
+        inputNotes.value = bookmark.notes;
+      } else {
+        editingId = null;
+        modalTitle.textContent = "Add Bookmark";
+        submitBtn.textContent  = "Save Bookmark";
+      }
+      modalOverlay.classList.remove("hidden");
+      setTimeout(() => inputTitle.focus(), 50);
+    }
+    function closeModal() {
+      modalOverlay.classList.add("hidden");
+      form.reset(); editingId = null;
+      modalTitle.textContent = "Add Bookmark";
+      submitBtn.textContent  = "Save Bookmark";
+    }
+
+    document.getElementById("open-modal-btn").addEventListener("click", () => openModal());
+    document.getElementById("close-modal-btn").addEventListener("click", closeModal);
+    document.getElementById("cancel-btn").addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) closeModal(); });
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      if (!inputTitle.value.trim() || !inputUrl.value.trim() || !inputCat.value.trim()) {
+        form.reportValidity(); return;
+      }
+      let url = inputUrl.value.trim();
+      if (!isGameUrl(url) && !/^https?:\/\//i.test(url)) url = "https://" + url;
+      if (editingId) {
+        updateBookmark(editingId, { title: inputTitle.value, url, category: inputCat.value, notes: inputNotes.value });
+      } else {
+        addBookmark({ title: inputTitle.value, url, category: inputCat.value, notes: inputNotes.value });
+      }
+      closeModal();
+    });
+
+    // ── GAME ──
+    function launchGame(id) {
+      const data = GAMES[id];
+      if (!data) return;
+      gameState = { id, qs: data.qs, cur: 0, score: 0, answered: false };
+      document.getElementById("game-emoji").textContent         = data.emoji;
+      document.getElementById("game-chapter-title").textContent = data.title;
+
+      const tipsList = document.getElementById("game-tips-list");
+      tipsList.innerHTML = "";
+      (data.tips || []).forEach(tip => {
+        const li = document.createElement("li");
+        li.innerHTML = tip;
+        tipsList.appendChild(li);
+      });
+
+      gameIntro.classList.remove("hidden");
+      gameQuiz.classList.add("hidden");
+      gameResult.classList.add("hidden");
+      gameOverlay.classList.remove("hidden");
+    }
+    function closeGame() { gameOverlay.classList.add("hidden"); }
+
+    function startQuiz() {
+      gameIntro.classList.add("hidden");
+      gameResult.classList.add("hidden");
+      gameQuiz.classList.remove("hidden");
+      gameState.cur = 0; gameState.score = 0; gameState.answered = false;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const { qs, cur, score } = gameState;
+      const q = qs[cur];
+      const total = qs.length;
+
+      document.getElementById("game-q-label").textContent = "Q " + (cur + 1) + "/" + total;
+      document.getElementById("game-score-live").textContent = "★ " + score;
+      document.getElementById("progress-fill").style.width = (cur / total * 100) + "%";
+      document.getElementById("game-question").textContent = q.q;
+      document.getElementById("game-feedback").className = "";
+      document.getElementById("game-feedback").textContent = "";
+      document.getElementById("game-feedback").style.display = "none";
+      document.getElementById("game-next-btn").classList.add("hidden");
+
+      const answersDiv = document.getElementById("game-answers");
+      answersDiv.innerHTML = "";
+      q.o.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "answer-btn";
+        btn.textContent = opt;
+        btn.addEventListener("click", () => selectAnswer(i));
+        answersDiv.appendChild(btn);
+      });
+      gameState.answered = false;
+    }
+
+    function selectAnswer(idx) {
+      if (gameState.answered) return;
+      gameState.answered = true;
+      const q = gameState.qs[gameState.cur];
+      const correct = q.a;
+      const btns = document.querySelectorAll(".answer-btn");
+      btns.forEach(b => b.disabled = true);
+      btns[correct].classList.add("correct");
+
+      const fb = document.getElementById("game-feedback");
+      if (idx === correct) {
+        gameState.score++;
+        btns[idx].classList.add("correct");
+        fb.textContent = "✓ Correct!";
+        fb.className = "correct";
+      } else {
+        btns[idx].classList.add("wrong");
+        fb.textContent = "✗ Incorrect — the right answer is highlighted in green.";
+        fb.className = "wrong";
+      }
+      fb.style.display = "block";
+      document.getElementById("game-score-live").textContent = "★ " + gameState.score;
+      document.getElementById("game-next-btn").classList.remove("hidden");
+    }
+
+    function nextQuestion() {
+      gameState.cur++;
+      if (gameState.cur >= gameState.qs.length) {
+        showResult();
+      } else {
+        showQuestion();
+      }
+    }
+
+    function showResult() {
+      gameQuiz.classList.add("hidden");
+      gameResult.classList.remove("hidden");
+      document.getElementById("progress-fill").style.width = "100%";
+
+      const s = gameState.score;
+      const t = gameState.qs.length;
+      document.getElementById("game-score-text").textContent = s + " / " + t;
+
+      const trophies = ["😔","😐","🙂","😊","🎉","🏆"];
+      const messages = [
+        "Review this chapter — you've got this! 📖",
+        "Keep studying, you're making progress! 💪",
+        "Good effort! A quick review will help. 👍",
+        "Great job! You know this material well. 👏",
+        "Excellent! Almost perfect! 🌟",
+        "Perfect score! You're an IS expert! 🎓"
+      ];
+      const stars = ["⭐","⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"];
+      document.getElementById("result-trophy").textContent = trophies[s] || "🏆";
+      document.getElementById("game-stars").textContent    = stars[s]   || "⭐";
+      document.getElementById("game-message").textContent  = messages[s]|| messages[4];
+    }
+
+    document.getElementById("start-game-btn").addEventListener("click", startQuiz);
+    document.getElementById("close-game-intro-btn").addEventListener("click", closeGame);
+    document.getElementById("game-next-btn").addEventListener("click", nextQuestion);
+    document.getElementById("play-again-btn").addEventListener("click", startQuiz);
+    document.getElementById("close-game-result-btn").addEventListener("click", closeGame);
+    gameOverlay.addEventListener("click", e => { if (e.target === gameOverlay) closeGame(); });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        if (!modalOverlay.classList.contains("hidden")) closeModal();
+        if (!gameOverlay.classList.contains("hidden")) closeGame();
+        if (!document.getElementById("notes-overlay").classList.contains("hidden")) closeNotes();
+        if (!document.getElementById("sg-overlay").classList.contains("hidden")) closeStudyGuide();
+      }
+    });
+
+    // ── CHAPTER NOTES ──
+    let notesCurrentId = null;
+
+    function launchNotes(id) {
+      const gameData = GAMES[id];
+      const noteData = NOTES[id];
+      if (!gameData || !noteData) return;
+      notesCurrentId = id;
+
+      document.getElementById("notes-emoji").textContent = gameData.emoji;
+      document.getElementById("notes-title").textContent = gameData.title;
+      document.getElementById("notes-overview").textContent = noteData.overview;
+
+      const cList = document.getElementById("notes-concepts-list");
+      cList.innerHTML = "";
+      noteData.concepts.forEach(c => {
+        const li = document.createElement("li");
+        li.innerHTML = c;
+        cList.appendChild(li);
+      });
+
+      const tList = document.getElementById("notes-terms-list");
+      tList.innerHTML = "";
+      noteData.terms.forEach(t => {
+        const item = document.createElement("div");
+        item.className = "notes-term-item";
+        item.innerHTML = `<div class="notes-term-name">${t.t}</div><div class="notes-term-def">${t.d}</div>`;
+        tList.appendChild(item);
+      });
+
+      document.getElementById("notes-overlay").classList.remove("hidden");
+    }
+
+    function closeNotes() {
+      document.getElementById("notes-overlay").classList.add("hidden");
+      notesCurrentId = null;
+    }
+
+    document.getElementById("close-notes-btn").addEventListener("click", closeNotes);
+    document.getElementById("notes-close-footer-btn").addEventListener("click", closeNotes);
+    document.getElementById("notes-overlay").addEventListener("click", e => {
+      if (e.target === document.getElementById("notes-overlay")) closeNotes();
+    });
+    document.getElementById("notes-play-btn").addEventListener("click", () => {
+      const id = notesCurrentId;
+      closeNotes();
+      if (id) launchGame(id);
+    });
+
+    // ── STUDY GUIDE ──
+    let sgActiveCategory = "All";
+
+    function buildSgChapterItem(id) {
+      const gameData = GAMES[id];
+      const noteData = NOTES[id];
+      if (!gameData || !noteData) return null;
+      const bm = bookmarks.find(b => b.url === "game:" + id);
+      const cat = bm ? bm.category : "";
+
+      const item = document.createElement("div");
+      item.className = "sg-chapter";
+
+      const btn = document.createElement("button");
+      btn.className = "sg-chapter-btn";
+      btn.innerHTML = `
+        <div class="sg-chapter-left">
+          <span class="sg-chapter-emoji">${gameData.emoji}</span>
+          <span class="sg-chapter-title-text">${gameData.title}</span>
+        </div>
+        ${cat ? `<span class="sg-chapter-cat">${cat}</span>` : ""}
+        <span class="sg-chapter-chev">&#9660;</span>
+      `;
+      btn.addEventListener("click", () => {
+        const isOpen = item.classList.contains("open");
+        document.querySelectorAll(".sg-chapter.open").forEach(el => el.classList.remove("open"));
+        if (!isOpen) item.classList.add("open");
+      });
+
+      const body = document.createElement("div");
+      body.className = "sg-chapter-body";
+      const inner = document.createElement("div");
+      inner.className = "sg-chapter-inner";
+
+      const ov = document.createElement("p");
+      ov.className = "notes-overview";
+      ov.textContent = noteData.overview;
+      inner.appendChild(ov);
+
+      const ch = document.createElement("div");
+      ch.className = "notes-section-heading";
+      ch.style.marginTop = "0.9rem";
+      ch.textContent = "Key Concepts";
+      inner.appendChild(ch);
+
+      const cl = document.createElement("ul");
+      cl.className = "notes-list";
+      noteData.concepts.forEach(c => {
+        const li = document.createElement("li");
+        li.innerHTML = c;
+        cl.appendChild(li);
+      });
+      inner.appendChild(cl);
+
+      const th = document.createElement("div");
+      th.className = "notes-section-heading";
+      th.style.marginTop = "0.9rem";
+      th.textContent = "Key Terms";
+      inner.appendChild(th);
+
+      const tl = document.createElement("div");
+      tl.className = "notes-terms";
+      noteData.terms.forEach(t => {
+        const ti = document.createElement("div");
+        ti.className = "notes-term-item";
+        ti.innerHTML = `<div class="notes-term-name">${t.t}</div><div class="notes-term-def">${t.d}</div>`;
+        tl.appendChild(ti);
+      });
+      inner.appendChild(tl);
+
+      const pb = document.createElement("button");
+      pb.className = "btn btn-primary sg-play-btn";
+      pb.innerHTML = gameData.emoji + " Play Quiz";
+      pb.addEventListener("click", () => { closeStudyGuide(); launchGame(id); });
+      inner.appendChild(pb);
+
+      body.appendChild(inner);
+      item.appendChild(btn);
+      item.appendChild(body);
+      return item;
+    }
+
+    function renderSgFilters() {
+      const bar = document.getElementById("sg-filter-bar");
+      bar.innerHTML = "";
+      getCategories().forEach(cat => {
+        const b = document.createElement("button");
+        b.className = "filter-btn" + (cat === sgActiveCategory ? " active" : "");
+        b.textContent = cat;
+        b.addEventListener("click", () => { sgActiveCategory = cat; renderSgFilters(); renderSgChapters(); });
+        bar.appendChild(b);
+      });
+    }
+
+    function renderSgChapters() {
+      const list = document.getElementById("sg-chapters-list");
+      list.innerHTML = "";
+      Object.keys(GAMES).forEach(id => {
+        if (sgActiveCategory !== "All") {
+          const bm = bookmarks.find(b => b.url === "game:" + id);
+          if (!bm || bm.category !== sgActiveCategory) return;
+        }
+        const item = buildSgChapterItem(id);
+        if (item) list.appendChild(item);
+      });
+    }
+
+    function openStudyGuide() {
+      sgActiveCategory = "All";
+      renderSgFilters();
+      renderSgChapters();
+      document.getElementById("sg-overlay").classList.remove("hidden");
+    }
+    function closeStudyGuide() {
+      document.getElementById("sg-overlay").classList.add("hidden");
+    }
+
+    document.getElementById("study-guide-btn").addEventListener("click", openStudyGuide);
+    document.getElementById("close-sg-btn").addEventListener("click", closeStudyGuide);
+    document.getElementById("sg-overlay").addEventListener("click", e => {
+      if (e.target === document.getElementById("sg-overlay")) closeStudyGuide();
+    });
+
+    searchInput.addEventListener("input", e => { searchQuery = e.target.value; renderGrid(); });
+
+    // ── INIT ──
+    function init() {
+      loadFromStorage();
+      const savedDark = localStorage.getItem(DARK_KEY);
+      if (savedDark === "1" || (savedDark === null && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        applyDarkMode(true);
+      }
+      populateCategoryDatalist();
+      renderFilterButtons();
+      renderGrid();
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
