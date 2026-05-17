@@ -1,6 +1,6 @@
-# MIS Journey — IS 10th Edition
+# MIS Journey — IS 11th Edition
 
-A browser-based study tool for the *Information Systems* (IS) 10th Edition course. Covers all 14 chapters and 3 Tech Guides with interactive quizzes, chapter notes, and a personal bookmark manager.
+A browser-based study tool for the *Information Systems* (IS) 11th Edition course. Covers all 14 chapters and 3 Tech Guides with interactive quizzes, chapter notes, and a personal bookmark manager.
 
 ## Features
 
