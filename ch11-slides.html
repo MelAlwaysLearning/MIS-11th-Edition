@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 11: Customer Relationship &amp; Supply Chain Management — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #0284C7;
+      --accent2: #0369A1;
+      --accent3: #F0F9FF;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #7DD3FC; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* COMPARE TABLE */
+    .compare-wrap { width: 100%; max-width: 820px; margin-top: 1rem; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .compare-table th { background: var(--accent); color: white; padding: 8px 14px; text-align: left; }
+    .compare-table td { border-bottom: 1px solid #334155; padding: 8px 14px; vertical-align: top; }
+    .compare-table tr:nth-child(odd) td { background: rgba(2,132,199,0.08); }
+
+    /* REVENUE MODEL CARDS */
+    .rev-cards {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 1000px; width: 100%;
+    }
+    .rev-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 14px; padding: 1rem; flex: 1; min-width: 150px; max-width: 185px;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .rev-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .rev-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .rev-card .rv-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .rev-card .rv-name { font-size: 0.82rem; font-weight: 800; }
+    .rev-card .rv-def { font-size: 0.77rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .rev-card.revealed .rv-def { display: block; color: var(--white); }
+    .rev-card .rv-example { font-size: 0.72rem; color: #7DD3FC; display: none; margin-top: 5px; font-style: italic; }
+    .rev-card.revealed .rv-example { display: block; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-sky   { background: rgba(2,132,199,0.2); color: #7DD3FC; }
+    .badge-green { background: rgba(34,197,94,0.2); color: #86EFAC; }
+    .badge-amber { background: rgba(217,119,6,0.2); color: #FCD34D; }
+    .badge-red   { background: rgba(220,38,38,0.2); color: #FCA5A5; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px); transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Hook</div>
+    <div class="slide-title">CRM &amp; Supply Chain: The Hidden Networks</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">When Amazon promises delivery tomorrow, a supply chain system is tracking thousands of data points. When Netflix recommends the perfect show, a CRM system knows your habits. Two invisible networks power the businesses you use daily.</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">CRM</div>
+        <div class="stat-label">Manages every interaction between a company and its customers</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">SCM</div>
+        <div class="stat-label">Manages the flow from raw material to the customer's door</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5×</div>
+        <div class="stat-label">Often cited: keeping a customer costs far less than winning a new one</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">1 shared view</div>
+        <div class="stat-label">The goal: every employee sees the same customer and the same inventory</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: Think of one company that clearly "knows" you (recommendations, reminders). What data do you think it has on you?</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Supply chain network with factories, warehouses, trucks and customers connected by glowing sky-blue data lines — dark background, logistics dashboard style</div>
+  </section>
+
+  <!-- SLIDE 2 -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Definitions</div>
+    <div class="slide-title">CRM vs. SCM</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Two systems, two directions. Click each to see the difference.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤝</div>
+        <div class="card-label">CRM</div>
+        <div class="card-body"><strong>Customer Relationship Management</strong> — a strategy and IS for managing all interactions with customers to build loyalty and profit. Faces <em>outward toward the customer</em>.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🚛</div>
+        <div class="card-label">SCM</div>
+        <div class="card-body"><strong>Supply Chain Management</strong> — planning, coordinating and controlling the flow of goods, information and money from suppliers through to customers. Faces <em>backward toward suppliers</em>.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔄</div>
+        <div class="card-label">Integration</div>
+        <div class="card-body">When connected, a customer order in the CRM triggers production, purchasing and shipping automatically. Customers can see order status in real time.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔑</div>
+        <div class="card-label">Key Distinction</div>
+        <div class="card-body"><strong>CRM = demand side (customers). SCM = supply side (suppliers).</strong> Both share data so promises to customers match what operations can deliver.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-red">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">CRM is about customers; SCM is about the flow of goods, information and finances. Mixing up their goals is a classic wrong answer.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Left: smiling customer with data icons labeled CRM; right: factory to truck to store labeled SCM; linked in the middle — sky blue on dark</div>
+  </section>
+
+  <!-- SLIDE 3 -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 11 · CRM</div>
+    <div class="slide-title">How CRM Works</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">CRM captures everything about the customer relationship. Click each element.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📇</div>
+        <div class="card-label">One View of the Customer</div>
+        <div class="card-body">A single record combining purchases, support tickets, emails, calls and social mentions so any employee sees the full history.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⚙️</div>
+        <div class="card-label">Operational CRM</div>
+        <div class="card-body">Automates customer-facing processes: <strong>sales force automation, marketing campaigns, customer service and call centers</strong>.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔍</div>
+        <div class="card-label">Analytical CRM</div>
+        <div class="card-body">Mines customer data to find patterns: segmentation, churn prediction, <strong>customer lifetime value (CLV)</strong>, cross-selling opportunities.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📡</div>
+        <div class="card-label">Collaborative CRM</div>
+        <div class="card-body">Shares customer information <strong>across channels and with partners</strong> so the customer gets a consistent experience everywhere.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Also Know</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;"><strong>CLV</strong> = total revenue (or profit) a customer is expected to generate over the entire relationship. High-CLV customers get the best service.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A customer profile card surrounded by touchpoint icons — phone, email, store, app, social — sky-blue glow on dark, 360-degree customer view</div>
+  </section>
+
+  <!-- SLIDE 4 -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Team Competition</div>
+    <div class="slide-title">CRM in Action</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2 points per correct answer. Identify the CRM concept in each scenario.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">A retailer emails you a coupon for running shoes right after you browse them. Which CRM function is this?</div>
+        <div class="sc-a"><strong>Marketing automation / personalization</strong> — operational CRM using purchase and browsing history to target offers.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">A bank notices a customer's activity dropping and sends a retention offer before they leave. Which kind of CRM?</div>
+        <div class="sc-a"><strong>Analytical CRM</strong> — churn prediction using data mining on customer behavior.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">You tell a call-center agent your problem once, and the store clerk already knows when you walk in. What makes that possible?</div>
+        <div class="sc-a"><strong>Collaborative CRM / single view of the customer</strong> — shared records across channels.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">Which is worth more over time: a customer who buys one $200 item, or one who buys $40 every month for four years?</div>
+        <div class="sc-a">The second: <strong>$1,920 lifetime value</strong> vs $200. That's why CRM focuses on CLV, not just single sales.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four scenario cards — personalized email, churn alert, omnichannel agent, lifetime value graph — sky blue on dark, CRM quiz style</div>
+  </section>
+
+  <!-- SLIDE 5 -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Supply Chain</div>
+    <div class="slide-title">The Supply Chain</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">A supply chain has three flows. Click each.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📦</div>
+        <div class="card-label">Material Flow</div>
+        <div class="card-body">Physical goods moving from raw materials to supplier to manufacturer to distributor to retailer to customer. Includes <strong>reverse logistics</strong> — returns and recycling.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💬</div>
+        <div class="card-label">Information Flow</div>
+        <div class="card-body">Orders, forecasts, inventory levels and delivery status passing in both directions. Shared information is what makes a chain efficient.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💵</div>
+        <div class="card-label">Financial Flow</div>
+        <div class="card-body">Payments, credit terms, invoices and consignment arrangements moving between partners.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔗</div>
+        <div class="card-label">Upstream &amp; Downstream</div>
+        <div class="card-body"><strong>Upstream</strong> = suppliers and raw materials. <strong>Downstream</strong> = distribution to the end customer. Inside = the company's own operations.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Remember: a supply chain includes material, information AND financial flows — not just trucks and warehouses.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Left-to-right chain: raw materials, supplier, factory, warehouse, store, customer — sky-blue flow arrows for goods, data, and money on dark</div>
+  </section>
+
+  <!-- SLIDE 6 -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Problems &amp; Solutions</div>
+    <div class="slide-title">Supply Chain Problems &amp; Fixes</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Why supply chains break — and what technology does about it.</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Problem</th><th>What Happens</th><th>How IS Helps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bullwhip effect</strong></td>
+            <td>Small changes in consumer demand turn into huge swings in orders as you move upstream</td>
+            <td>Share real-time sales data with all partners; better forecasting</td>
+          </tr>
+          <tr>
+            <td><strong>Uncertainty</strong></td>
+            <td>Late shipments, quality issues, demand swings</td>
+            <td>Safety stock, tracking visibility, multiple suppliers</td>
+          </tr>
+          <tr>
+            <td><strong>Excess inventory</strong></td>
+            <td>Cash tied up in unsold goods and storage</td>
+            <td>Just-in-Time (JIT) and vendor-managed inventory</td>
+          </tr>
+          <tr>
+            <td><strong>Stockouts</strong></td>
+            <td>Customers can't buy what they want</td>
+            <td>Demand forecasting, automatic reordering (EDI)</td>
+          </tr>
+          <tr>
+            <td><strong>Lack of visibility</strong></td>
+            <td>Nobody sees where goods are</td>
+            <td>RFID, GPS tracking, supply chain dashboards</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Key Point</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">The <strong>bullwhip effect</strong> is the big textbook concept: distorted demand information gets amplified at every step upstream. Sharing information is the cure.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A cracking whip graph where small ripples at the customer end grow into huge waves at the supplier end — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 7 -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Inventory Strategy</div>
+    <div class="slide-title">Inventory: Just-in-Time vs. Just-in-Case</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">How much stock should you hold? Click each strategy.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⏰</div>
+        <div class="card-label">Just-in-Time (JIT)</div>
+        <div class="card-body">Receive materials <strong>only when needed in production</strong>. Minimizes storage cost and waste (Toyota). Risky if a supplier is late.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🛡️</div>
+        <div class="card-label">Safety Stock</div>
+        <div class="card-body">Extra inventory held to protect against uncertainty. Costs money to store, but prevents stockouts when demand or supply surprises you.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤲</div>
+        <div class="card-label">Vendor-Managed Inventory</div>
+        <div class="card-body">The <strong>supplier</strong> monitors the customer's stock and decides when to replenish, using shared data. Walmart and P&amp;G are the classic example.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏷️</div>
+        <div class="card-label">RFID &amp; Tracking</div>
+        <div class="card-body">Tags on pallets and items give real-time counts and locations, cutting errors and theft and speeding audits.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A warehouse with shelves, a JIT conveyor delivering exactly one pallet, and a safety-stock shelf behind glass — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 8 -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Technology</div>
+    <div class="slide-title">Technology Behind the Chain</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each tool to see where it fits.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔌</div>
+        <div class="card-label">EDI &amp; Portals</div>
+        <div class="card-body">Standardized electronic exchange of orders, invoices and shipping notices between partners. Supplier portals let partners see demand and inventory.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📊</div>
+        <div class="card-label">Planning Software</div>
+        <div class="card-body">Forecasts demand and plans production and purchasing, optimizing the whole chain rather than single steps.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌐</div>
+        <div class="card-label">IoT &amp; GPS Sensors</div>
+        <div class="card-body">Sensors on trucks and containers report location, temperature and condition — vital for food and medicine.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⛓️</div>
+        <div class="card-label">Blockchain</div>
+        <div class="card-body">A shared, tamper-resistant ledger that can trace products from origin to shelf — used in food safety and luxury goods verification.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">ERP typically contains the SCM and CRM modules; the exam may ask which system links suppliers, operations and customers in one database.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Truck, container, sensor and blockchain chain icons linked by sky-blue lines — dark background, supply chain technology visual</div>
+  </section>
+
+  <!-- SLIDE 9 -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Challenges</div>
+    <div class="slide-title">CRM &amp; SCM Challenges</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Both systems fail often. Click each reason.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧹</div>
+        <div class="card-label">Bad Data</div>
+        <div class="card-body">Duplicate, outdated or incomplete customer and product records make both systems unreliable. Data quality is the foundation.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🙅</div>
+        <div class="card-label">User Resistance</div>
+        <div class="card-body">Salespeople who won't log activity, or partners who won't share data, make the system useless.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔒</div>
+        <div class="card-label">Privacy &amp; Trust</div>
+        <div class="card-body">Customers worry about how much a company knows. Regulations (GDPR, CCPA) require consent and protection of personal data.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌪️</div>
+        <div class="card-label">Global Disruption</div>
+        <div class="card-body">Pandemics, wars, weather and port closures show how fragile long supply chains are. Resilience now matters as much as cost.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four cards — messy database, resistant user with crossed arms, privacy lock, storm over a cargo ship — sky-blue warning glow on dark</div>
+  </section>
+
+  <!-- SLIDE 10 -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Future</div>
+    <div class="slide-title">The Future of CRM &amp; SCM</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each trend.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤖</div>
+        <div class="card-label">AI-Driven CRM</div>
+        <div class="card-body">Chatbots, predictive lead scoring and personalized recommendations at scale.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🚚</div>
+        <div class="card-label">Automated Logistics</div>
+        <div class="card-body">Warehouse robots, drones and route-optimizing software shorten delivery times and cut costs.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌱</div>
+        <div class="card-label">Sustainable Supply Chains</div>
+        <div class="card-body">Tracking carbon, labor practices and sourcing — buyers and regulators increasingly demand transparency.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎯</div>
+        <div class="card-label">Hyper-Personalization</div>
+        <div class="card-body">Real-time offers based on context, location and behavior, balanced against privacy limits.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Futuristic warehouse robots, delivery drone and AI chatbot over a global map — sky-blue neon on dark background</div>
+  </section>
+
+  <!-- SLIDE 11 -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>CRM manages all customer interactions to build loyalty and lifetime value. SCM manages the flow of goods, information and finances from suppliers to customers.</li>
+      <li>CRM types: operational (sales, marketing, service automation), analytical (data mining, churn, CLV), collaborative (shared across channels and partners).</li>
+      <li>CLV = total revenue/profit a customer generates over the full relationship. One view of the customer lets every employee serve them consistently.</li>
+      <li>A supply chain has material, information and financial flows, with upstream suppliers and downstream distribution.</li>
+      <li>The bullwhip effect: small demand changes amplify upstream. Fix with shared information and better forecasting.</li>
+      <li>JIT reduces inventory cost but raises supply risk; safety stock and vendor-managed inventory balance it. RFID, EDI and ERP increase visibility.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet point panels — CRM, CRM types, CLV, supply chain flows, bullwhip, JIT — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 12 -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 11 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 11 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: CRM, SCM, CLV, JIT, CRM examples</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips pre-loaded in the app</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — CRM vs SCM and the bullwhip effect are favorites</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-sky" style="font-size:0.85rem;padding:8px 20px;">Remember: CRM = customers · SCM = flow of goods, info &amp; money · CLV = lifetime revenue · JIT = only when needed</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with truck and customer icons — sky-blue neon celebration style on dark background</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) { items[takeawayIdx].classList.add('show'); takeawayIdx++; return; }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    document.getElementById('s' + current).classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = (current / TOTAL * 100).toFixed(2) + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)    { card.classList.toggle('revealed'); }
+  function revealSc(card)  { card.classList.toggle('revealed'); }
+  function revealRev(card) { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]); el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 14: Business Intelligence &amp; Artificial Intelligence — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #0284C7;
+      --accent2: #0369A1;
+      --accent3: #F0F9FF;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #7DD3FC; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* COMPARE TABLE */
+    .compare-wrap { width: 100%; max-width: 820px; margin-top: 1rem; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .compare-table th { background: var(--accent); color: white; padding: 8px 14px; text-align: left; }
+    .compare-table td { border-bottom: 1px solid #334155; padding: 8px 14px; vertical-align: top; }
+    .compare-table tr:nth-child(odd) td { background: rgba(2,132,199,0.08); }
+
+    /* REVENUE MODEL CARDS */
+    .rev-cards {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 1000px; width: 100%;
+    }
+    .rev-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 14px; padding: 1rem; flex: 1; min-width: 150px; max-width: 185px;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .rev-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .rev-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .rev-card .rv-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .rev-card .rv-name { font-size: 0.82rem; font-weight: 800; }
+    .rev-card .rv-def { font-size: 0.77rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .rev-card.revealed .rv-def { display: block; color: var(--white); }
+    .rev-card .rv-example { font-size: 0.72rem; color: #7DD3FC; display: none; margin-top: 5px; font-style: italic; }
+    .rev-card.revealed .rv-example { display: block; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-sky   { background: rgba(2,132,199,0.2); color: #7DD3FC; }
+    .badge-green { background: rgba(34,197,94,0.2); color: #86EFAC; }
+    .badge-amber { background: rgba(217,119,6,0.2); color: #FCD34D; }
+    .badge-red   { background: rgba(220,38,38,0.2); color: #FCA5A5; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px); transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Hook</div>
+    <div class="slide-title">AI Is Already Here</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">AI isn't the future — it's here. ChatGPT reached 100 million users in about two months. Every major company is building AI into its products. The question isn't "if" but "how" and "when."</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">~2 mo</div>
+        <div class="stat-label">Time ChatGPT took to reach 100 million users — among the fastest ever</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">AI</div>
+        <div class="stat-label">Systems doing tasks that normally need human intelligence</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">ML</div>
+        <div class="stat-label">Learns from data instead of following hand-written rules</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">Human in the loop</div>
+        <div class="stat-label">The safeguard every business AI system still needs</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: List every AI-powered feature you used in the last 24 hours (maps, recommendations, spam filter, voice assistant, chatbot).</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing sky-blue human head silhouette filled with a neural network, data streams flowing in — dark background, AI infographic style</div>
+  </section>
+
+  <!-- SLIDE 2 -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Definitions</div>
+    <div class="slide-title">What Is AI?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">AI is a family of technologies, not a single product. Click each term.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧠</div>
+        <div class="card-label">Artificial Intelligence</div>
+        <div class="card-body"><strong>The ability of machines to perform tasks that normally require human intelligence</strong>: learning, reasoning, perceiving, understanding language, making decisions.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📚</div>
+        <div class="card-label">Machine Learning</div>
+        <div class="card-body">A branch of AI where algorithms <strong>learn patterns from data</strong> and improve with experience, instead of explicit rules.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🕸️</div>
+        <div class="card-label">Deep Learning / Neural Networks</div>
+        <div class="card-body">ML using many-layered neural networks loosely modeled on the brain. Powers image recognition, speech and modern language models.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">✨</div>
+        <div class="card-label">Generative AI</div>
+        <div class="card-body">Models that <strong>create new content</strong> — text, images, audio, code — from prompts. Large language models (LLMs) are the best-known example.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Hierarchy: AI ⊃ Machine Learning ⊃ Deep Learning. Generative AI is a type of deep learning that creates new content.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Nested circles — AI, Machine Learning, Deep Learning, Generative AI — sky blue gradient on dark background</div>
+  </section>
+
+  <!-- SLIDE 3 -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 14 · AI Types</div>
+    <div class="slide-title">Learning Types &amp; Strengths</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">How machines learn, and what they're good at. Click each.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏷️</div>
+        <div class="card-label">Supervised Learning</div>
+        <div class="card-body">Learns from <strong>labeled examples</strong> (emails marked spam/not spam). Used for classification and prediction.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔍</div>
+        <div class="card-label">Unsupervised Learning</div>
+        <div class="card-body">Finds structure in <strong>unlabeled data</strong> — customer segments, anomalies — without being told what to look for.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎮</div>
+        <div class="card-label">Reinforcement Learning</div>
+        <div class="card-body">Learns by trial and error using rewards and penalties. Used in robotics, game-playing and route optimization.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⚖️</div>
+        <div class="card-label">Narrow vs. General AI</div>
+        <div class="card-body"><strong>Narrow AI</strong> does one task well (all AI today). <strong>General AI</strong> would match human flexibility — still hypothetical.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-red">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">All AI in business today is <strong>narrow AI</strong>. If a question describes human-level general reasoning, that's artificial general intelligence — not what companies use now.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four panels — labeled examples, clustered dots, robot with reward star, single-task tool vs human brain — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 4 -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Team Competition</div>
+    <div class="slide-title">AI or Not AI?</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2 points per correct answer. Identify the AI concept in each scenario.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">Your email provider learns from messages you mark as spam and filters future ones. Which AI approach?</div>
+        <div class="sc-a"><strong>Supervised machine learning</strong> — learning from labeled examples.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">A retailer feeds purchase data into an algorithm that groups customers into segments no one defined in advance. Which approach?</div>
+        <div class="sc-a"><strong>Unsupervised learning</strong> — discovers patterns in unlabeled data.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">A tool writes a first draft of a marketing email from a short prompt. What kind of AI?</div>
+        <div class="sc-a"><strong>Generative AI</strong> (a large language model) — creates new content.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">A chatbot confidently cites a legal case that does not exist. What is this problem called?</div>
+        <div class="sc-a"><strong>Hallucination</strong> — generative AI producing plausible but false output. Always verify.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four scenario cards — spam filter, customer clusters, email drafting, fake citation — sky blue on dark, AI quiz style</div>
+  </section>
+
+  <!-- SLIDE 5 -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Business Uses</div>
+    <div class="slide-title">AI in Business Functions</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">AI shows up in every department. Click each.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📣</div>
+        <div class="card-label">Marketing &amp; Sales</div>
+        <div class="card-body">Personalized recommendations, lead scoring, dynamic pricing and content generation. Amazon's recommendations drive a large share of sales.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💬</div>
+        <div class="card-label">Customer Service</div>
+        <div class="card-body">Chatbots and voice assistants handle routine questions 24/7, escalating hard cases to humans.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💳</div>
+        <div class="card-label">Finance &amp; Risk</div>
+        <div class="card-body">Real-time fraud detection, credit scoring, automated invoice processing and forecasting.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🏭</div>
+        <div class="card-label">Operations</div>
+        <div class="card-body">Predictive maintenance, demand forecasting, quality inspection by computer vision, and warehouse robotics.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four department icons — megaphone, chat bubble, credit card, factory robot — each with a sky-blue AI glow on dark background</div>
+  </section>
+
+  <!-- SLIDE 6 -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Comparison</div>
+    <div class="slide-title">Traditional BI vs. AI-Powered Analytics</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">AI doesn't replace BI — it extends it.</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th><th>Traditional BI</th><th>AI-Powered</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Question answered</strong></td>
+            <td>What happened? (mostly descriptive)</td>
+            <td>What will happen and what to do? (predictive and prescriptive)</td>
+          </tr>
+          <tr>
+            <td><strong>How insight is found</strong></td>
+            <td>Analyst builds reports and queries</td>
+            <td>Algorithms find patterns automatically</td>
+          </tr>
+          <tr>
+            <td><strong>Data used</strong></td>
+            <td>Mostly structured data in a warehouse</td>
+            <td>Structured plus text, images, audio, sensors</td>
+          </tr>
+          <tr>
+            <td><strong>Interface</strong></td>
+            <td>Dashboards and reports</td>
+            <td>Natural-language questions, alerts, recommendations</td>
+          </tr>
+          <tr>
+            <td><strong>Speed</strong></td>
+            <td>Periodic updates</td>
+            <td>Real time, continuous learning</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Key Point</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">The best organizations pair them: BI provides the trusted numbers; AI finds patterns and makes recommendations on top of those numbers.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Split view — static dashboard on left, glowing AI assistant answering questions on right — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 7 -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Intelligent Systems</div>
+    <div class="slide-title">AI Technologies You'll Meet</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each to see what it does and where it appears.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🗣️</div>
+        <div class="card-label">Natural Language Processing</div>
+        <div class="card-body">Understands and generates language: chatbots, translation, sentiment analysis of reviews, voice assistants.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">👁️</div>
+        <div class="card-label">Computer Vision</div>
+        <div class="card-body">Interprets images and video: face unlock, medical imaging, quality inspection, self-checkout.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧑‍⚕️</div>
+        <div class="card-label">Expert &amp; Recommendation Systems</div>
+        <div class="card-body">Capture specialist rules or past behavior to advise: diagnosis aids, Netflix and Spotify recommendations.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🦾</div>
+        <div class="card-label">Robotics &amp; RPA</div>
+        <div class="card-body">Physical robots move goods; <strong>robotic process automation</strong> (software bots) handles repetitive digital tasks like data entry.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four tech icons — speech bubble, camera eye, recommendation stars, robot arm — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 8 -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Ethics</div>
+    <div class="slide-title">AI Ethics &amp; Responsibility</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Just because we can doesn't mean we should. Click each concern.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⚖️</div>
+        <div class="card-label">Bias &amp; Fairness</div>
+        <div class="card-body">AI trained on biased data repeats and scales that bias — hiring, lending, policing. Test models across groups.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔦</div>
+        <div class="card-label">Transparency</div>
+        <div class="card-body">People deserve to know when AI is deciding and why. Explainability is a legal and trust issue.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔒</div>
+        <div class="card-label">Privacy &amp; Data Use</div>
+        <div class="card-body">Training AI requires huge data. Consent, security and limits on sensitive data are essential.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">©️</div>
+        <div class="card-label">Intellectual Property</div>
+        <div class="card-body">Who owns AI-generated content and what data may be used for training are unsettled legal questions.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Human oversight ("human in the loop") is the standard safeguard: AI recommends, a person is accountable for high-stakes decisions.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A scale balancing a robot hand against a human hand, privacy lock and transparency eye icons — sky-blue glow on dark background</div>
+  </section>
+
+  <!-- SLIDE 9 -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Work &amp; Society</div>
+    <div class="slide-title">AI and the Future of Work</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">AI changes jobs more than it simply removes them. Click each effect.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤝</div>
+        <div class="card-label">Augmentation</div>
+        <div class="card-body">Most AI tools <strong>assist</strong> workers — drafting, summarizing, analyzing — so people focus on judgment and relationships.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔄</div>
+        <div class="card-label">Automation</div>
+        <div class="card-body">Routine, rule-based tasks are most exposed. Roles shift rather than vanish, but some jobs do disappear.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎓</div>
+        <div class="card-label">New Skills</div>
+        <div class="card-body">Prompting, data literacy, and checking AI output become core business skills — for every major, not just IT.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌍</div>
+        <div class="card-label">Inequality &amp; Access</div>
+        <div class="card-body">Benefits may flow to those with skills and capital first. Reskilling and policy matter.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A human and a robot collaborating at one desk, skill icons orbiting — sky-blue glow on dark background, future of work visual</div>
+  </section>
+
+  <!-- SLIDE 10 -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Future</div>
+    <div class="slide-title">What Comes Next</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each trend to see where AI is heading.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧑‍💼</div>
+        <div class="card-label">AI Agents</div>
+        <div class="card-body">Systems that plan and take multi-step actions — booking, researching, coding — with less step-by-step prompting.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔌</div>
+        <div class="card-label">AI Built Into Everything</div>
+        <div class="card-body">Productivity software, phones, cars and appliances ship with AI features by default.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📜</div>
+        <div class="card-label">Regulation</div>
+        <div class="card-body">Rules like the EU AI Act classify AI by risk and require transparency and audits for high-risk uses.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎯</div>
+        <div class="card-label">Competitive Advantage</div>
+        <div class="card-body">Firms that combine good data, clear strategy and responsible governance win. Tools alone don't.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Futuristic AI agent figure orchestrating glowing task cards over a city skyline — sky-blue neon on dark background</div>
+  </section>
+
+  <!-- SLIDE 11 -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>AI = machines performing tasks that normally require human intelligence. Machine learning learns from data; deep learning uses neural networks; generative AI creates new content.</li>
+      <li>Supervised learning uses labeled data; unsupervised finds patterns in unlabeled data; reinforcement learning learns from rewards. All current business AI is narrow AI.</li>
+      <li>AI is used in marketing, customer service, finance (fraud) and operations (predictive maintenance, vision). Also NLP, computer vision, recommendation systems and RPA.</li>
+      <li>BI answers what happened; AI-powered analytics predicts and recommends. Best results combine both.</li>
+      <li>Ethics: bias, transparency, privacy and intellectual property. Hallucinations mean outputs must be verified. Keep a human in the loop for high-stakes decisions.</li>
+      <li>AI mostly augments work but automates routine tasks; data literacy and judgment become essential for every business major.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet point panels — AI definition, learning types, business uses, BI vs AI, ethics, future of work — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 12 -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 14 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 14 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: AI definitions, machine learning, generative AI, ethics, business uses</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips pre-loaded in the app</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — AI vs ML vs generative AI and AI ethics are now standard exam topics</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-sky" style="font-size:0.85rem;padding:8px 20px;">Remember: AI ⊃ ML ⊃ Deep Learning · Supervised = labeled · All business AI is narrow AI · Human in the loop</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with neural-network brain icon — sky-blue neon celebration style on dark background</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) { items[takeawayIdx].classList.add('show'); takeawayIdx++; return; }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    document.getElementById('s' + current).classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = (current / TOTAL * 100).toFixed(2) + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)    { card.classList.toggle('revealed'); }
+  function revealSc(card)  { card.classList.toggle('revealed'); }
+  function revealRev(card) { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]); el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>

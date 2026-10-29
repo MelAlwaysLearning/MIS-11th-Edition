@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 9: Social Computing — ISM3011 Slides</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:  #0284C7;
+      --accent2: #0369A1;
+      --accent3: #F0F9FF;
+      --dark:    #0F172A;
+      --card-bg: #1E293B;
+      --muted:   #94A3B8;
+      --white:   #F8FAFC;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--dark); color: var(--white);
+      height: 100vh; overflow: hidden;
+    }
+
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 4px;
+      background: var(--accent); transition: width 0.4s ease; z-index: 200;
+    }
+    #slide-counter {
+      position: fixed; top: 12px; right: 16px; z-index: 200;
+      font-size: 0.78rem; color: var(--muted); font-weight: 600;
+      background: rgba(15,23,42,0.7); padding: 4px 10px; border-radius: 20px;
+    }
+
+    #scoreboard {
+      position: fixed; top: 12px; left: 16px; z-index: 200;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 12px; padding: 10px 14px; min-width: 160px; display: none;
+    }
+    #scoreboard h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+    .score-val { font-weight: 800; color: var(--accent); font-size: 0.9rem; }
+    .score-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+
+    #controls {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .ctrl-btn {
+      background: rgba(30,41,59,0.9); border: 1px solid #334155;
+      color: var(--white); padding: 8px 16px; border-radius: 8px;
+      font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+
+    #slides-wrap { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 3rem 5vw 4rem;
+      opacity: 0; transform: translateX(60px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .slide.active  { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .slide.exit    { opacity: 0; transform: translateX(-60px); }
+
+    .slide-eyebrow {
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; text-align: center;
+    }
+    .slide-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      text-align: center; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .slide-sub {
+      font-size: clamp(0.9rem, 2vw, 1.15rem); color: var(--muted);
+      text-align: center; max-width: 700px; line-height: 1.55;
+    }
+    .accent-line {
+      width: 60px; height: 4px; background: var(--accent);
+      border-radius: 2px; margin: 0.8rem auto 1.2rem;
+    }
+
+    .cards-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; width: 100%; max-width: 1000px;
+    }
+    .flip-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem;
+      cursor: pointer; transition: all 0.25s; min-width: 170px; max-width: 220px; flex: 1;
+      text-align: center;
+    }
+    .flip-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .flip-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .flip-card .card-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .flip-card .card-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .flip-card .card-body { font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.45; display: none; }
+    .flip-card.revealed .card-body { display: block; }
+    .flip-card .card-hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.6rem; }
+    .flip-card.revealed .card-hint { display: none; }
+
+    .stats-row {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1rem; width: 100%; max-width: 860px;
+    }
+    .stat-box {
+      background: var(--card-bg); border: 1px solid #334155; border-radius: 12px;
+      padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 160px; max-width: 220px;
+    }
+    .stat-num { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+    .scenario-cards {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 960px;
+    }
+    .scenario-card {
+      background: var(--card-bg); border: 1px solid #334155;
+      border-radius: 14px; padding: 1.2rem 1.4rem; flex: 1;
+      min-width: 200px; max-width: 280px; cursor: pointer; transition: all 0.25s;
+    }
+    .scenario-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .scenario-card.revealed { border-color: var(--accent); }
+    .scenario-card .sc-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+    .scenario-card .sc-q { font-size: 0.88rem; margin-top: 0.4rem; line-height: 1.45; font-weight: 600; }
+    .scenario-card .sc-a { font-size: 0.82rem; color: #7DD3FC; margin-top: 0.5rem; display: none; }
+    .scenario-card.revealed .sc-a { display: block; }
+    .scenario-card .sc-hint { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+    .scenario-card.revealed .sc-hint { display: none; }
+
+    /* COMPARE TABLE */
+    .compare-wrap { width: 100%; max-width: 820px; margin-top: 1rem; }
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .compare-table th { background: var(--accent); color: white; padding: 8px 14px; text-align: left; }
+    .compare-table td { border-bottom: 1px solid #334155; padding: 8px 14px; vertical-align: top; }
+    .compare-table tr:nth-child(odd) td { background: rgba(2,132,199,0.08); }
+
+    /* REVENUE MODEL CARDS */
+    .rev-cards {
+      display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center;
+      margin-top: 1.2rem; max-width: 1000px; width: 100%;
+    }
+    .rev-card {
+      background: var(--card-bg); border: 2px solid #334155;
+      border-radius: 14px; padding: 1rem; flex: 1; min-width: 150px; max-width: 185px;
+      cursor: pointer; transition: all 0.3s; text-align: center;
+    }
+    .rev-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .rev-card.revealed { border-color: var(--accent); background: rgba(2,132,199,0.12); }
+    .rev-card .rv-icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .rev-card .rv-name { font-size: 0.82rem; font-weight: 800; }
+    .rev-card .rv-def { font-size: 0.77rem; color: var(--muted); line-height: 1.4; display: none; margin-top: 6px; }
+    .rev-card.revealed .rv-def { display: block; color: var(--white); }
+    .rev-card .rv-example { font-size: 0.72rem; color: #7DD3FC; display: none; margin-top: 5px; font-style: italic; }
+    .rev-card.revealed .rv-example { display: block; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-sky   { background: rgba(2,132,199,0.2); color: #7DD3FC; }
+    .badge-green { background: rgba(34,197,94,0.2); color: #86EFAC; }
+    .badge-amber { background: rgba(217,119,6,0.2); color: #FCD34D; }
+    .badge-red   { background: rgba(220,38,38,0.2); color: #FCA5A5; }
+
+    .takeaway-list { list-style: none; max-width: 760px; width: 100%; margin-top: 1rem; }
+    .takeaway-list li {
+      background: var(--card-bg); border-left: 4px solid var(--accent);
+      padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.6rem;
+      font-size: clamp(0.82rem, 1.6vw, 0.98rem); line-height: 1.45;
+      opacity: 0; transform: translateX(20px); transition: opacity 0.35s, transform 0.35s;
+    }
+    .takeaway-list li.show { opacity: 1; transform: translateX(0); }
+
+    .timer-wrap { margin-top: 1.2rem; text-align: center; }
+    .timer-display { font-size: 2.5rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+    .timer-btn { margin-top: 0.6rem; background: var(--accent); color: white; border: none; padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .timer-btn:hover { background: var(--accent2); }
+
+    .ai-prompt-box {
+      position: fixed; bottom: 60px; left: 16px;
+      background: rgba(15,23,42,0.85); border: 1px solid #334155;
+      border-radius: 10px; padding: 8px 12px; max-width: 340px;
+      font-size: 0.68rem; color: var(--muted); line-height: 1.45; display: none;
+    }
+    .ai-prompt-box strong { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:8.33%;" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="12" aria-label="Slide progress"></div>
+<div id="slide-counter" aria-live="polite">1 / 12</div>
+
+<div id="scoreboard" aria-label="Team scoreboard">
+  <h3>🏆 Scoreboard</h3>
+  <div class="score-row"><span>🔴 Team Red</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('r',-1)" aria-label="Subtract Red">−</button><span class="score-val" id="sc-r">0</span><button class="score-btn" onclick="adj('r',1)" aria-label="Add Red">+</button></div></div>
+  <div class="score-row"><span>🔵 Team Blue</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('b',-1)" aria-label="Subtract Blue">−</button><span class="score-val" id="sc-b">0</span><button class="score-btn" onclick="adj('b',1)" aria-label="Add Blue">+</button></div></div>
+  <div class="score-row"><span>🟢 Team Green</span><div style="display:flex;align-items:center;gap:4px;"><button class="score-btn" onclick="adj('g',-1)" aria-label="Subtract Green">−</button><span class="score-val" id="sc-g">0</span><button class="score-btn" onclick="adj('g',1)" aria-label="Add Green">+</button></div></div>
+</div>
+
+<div id="slides-wrap" aria-live="polite" aria-atomic="true">
+
+  <!-- SLIDE 1 -->
+  <section class="slide active" id="s1" aria-label="Slide 1 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Hook</div>
+    <div class="slide-title">The Largest Conversation in History</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Billions of people use social media. Every one of you is part of the largest communication network humans have ever built — and every company wants to be part of the conversation.</div>
+    <div class="stats-row" style="margin-top:1.4rem;">
+      <div class="stat-box">
+        <div class="stat-num">4.8B</div>
+        <div class="stat-label">Social media users worldwide — roughly 59% of the global population</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">2+ hrs</div>
+        <div class="stat-label">Average time per day many users spend on social platforms</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">Web 2.0</div>
+        <div class="stat-label">The shift from reading the web to <em>writing</em> it</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">1 post</div>
+        <div class="stat-label">Can reach millions — or damage a brand — in hours</div>
+      </div>
+    </div>
+    <div class="timer-wrap" style="margin-top:1rem;">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:4px;">Partner activity — 60 sec: Name every social platform or user-generated site you used in the last 24 hours. Which ones also let you buy something?</div>
+      <div class="timer-display" id="t1">1:00</div>
+      <button class="timer-btn" onclick="startTimer('t1',60)">▶ Start Timer</button>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A glowing globe made of connected sky-blue nodes and chat bubbles, user avatars linked across continents — dark background, social network infographic style</div>
+  </section>
+
+  <!-- SLIDE 2 -->
+  <section class="slide" id="s2" aria-label="Slide 2 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Definitions</div>
+    <div class="slide-title">Web 2.0 &amp; Social Computing</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">The big idea: users are no longer just readers — they are the content creators. Click each term.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📖</div>
+        <div class="card-label">Web 1.0</div>
+        <div class="card-body"><strong>Read-only web.</strong> A company publishes pages; you consume them. Static, one-way, few creators.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">✍️</div>
+        <div class="card-label">Web 2.0</div>
+        <div class="card-body"><strong>The interactive, participatory web.</strong> Users create and share content (posts, videos, reviews, wikis). Blogs, social networks, mashups, rich media.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">👥</div>
+        <div class="card-label">Social Computing</div>
+        <div class="card-body"><strong>Using IT to support social interaction and collaboration</strong> — building communities, sharing content, and combining the intelligence of many people.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔑</div>
+        <div class="card-label">Key Idea</div>
+        <div class="card-body"><strong>User-generated content (UGC)</strong> is the engine of Web 2.0. Wikipedia, YouTube, Yelp and Reddit are valuable <em>because</em> users supply the content.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Web 2.0 is characterized by user-generated content and interactivity. If an answer says "static, read-only pages," that's Web 1.0.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Left: static document page labeled Web 1.0; right: many users posting and sharing labeled Web 2.0 — sky-blue contrast on dark background</div>
+  </section>
+
+  <!-- SLIDE 3 -->
+  <section class="slide" id="s3" aria-label="Slide 3 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Social Tools</div>
+    <div class="slide-title">Social Computing Tools</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Each tool supports a different kind of participation. Click to see what it does.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌐</div>
+        <div class="card-label">Social Networks</div>
+        <div class="card-body">Sites where users build profiles, connect with others and share content. Facebook, Instagram, LinkedIn (professional), TikTok, X.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📝</div>
+        <div class="card-label">Blogs &amp; Microblogs</div>
+        <div class="card-body"><strong>Blog</strong> = a personal or company web journal in reverse-chronological order. <strong>Microblog</strong> = very short posts (X, Threads).</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📚</div>
+        <div class="card-label">Wikis</div>
+        <div class="card-body">A website anyone with access can <strong>create, edit and link</strong>. Wikipedia is the classic example; companies use internal wikis as a knowledge base.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎬</div>
+        <div class="card-label">Media Sharing</div>
+        <div class="card-body">Platforms for user-created video, images and podcasts: YouTube, Instagram, TikTok, Spotify. Creators earn through ads, subscriptions and tips.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Also Know</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">A <strong>mashup</strong> combines content from multiple sources into a new service — like a real-estate site layered over Google Maps.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four social tool icons — network graph, blog page, wiki book, video play button — sky-blue cards on dark background</div>
+  </section>
+
+  <!-- SLIDE 4 -->
+  <section class="slide" id="s4" aria-label="Slide 4 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Team Competition</div>
+    <div class="slide-title">Name That Social Tool</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">2 points per correct answer. Identify the tool or concept in each scenario.</div>
+    <div class="scenario-cards" style="margin-top:1.2rem;">
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 1</div>
+        <div class="sc-q">Thousands of volunteers write and fix an online encyclopedia, and no one is paid. What tool is this, and what makes it work?</div>
+        <div class="sc-a"><strong>A wiki</strong> (Wikipedia) powered by <strong>user-generated content</strong> and crowdsourced collaboration.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 2</div>
+        <div class="sc-q">A food company posts a contest asking customers to submit and vote on new chip flavors. Which concept is this?</div>
+        <div class="sc-a"><strong>Crowdsourcing</strong> — obtaining ideas or work from a large online community. (Lay's "Do Us a Flavor" is a real example.) It is <em>not</em> outsourcing to one company.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 3</div>
+        <div class="sc-q">A clothing brand lets you buy directly inside Instagram without leaving the app. What is this called?</div>
+        <div class="sc-a"><strong>Social commerce</strong> — integrating social features with shopping (Instagram Shopping, TikTok Shop, Facebook Marketplace).</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+      <div class="scenario-card" onclick="revealSc(this)" tabindex="0" onkeydown="if(event.key==='Enter')revealSc(this)">
+        <div class="sc-num">Scenario 4</div>
+        <div class="sc-q">A new employee asks a question and gets answers from 30 colleagues in an internal chat channel in an hour. Which business use of social computing is that?</div>
+        <div class="sc-a"><strong>Enterprise social computing / internal collaboration.</strong> Tools like Slack and Teams capture knowledge and speed up problem solving.</div>
+        <div class="sc-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Four social scenarios — wiki volunteers, flavor contest, in-app shopping, internal chat — sky-blue cards on dark background, quiz style</div>
+  </section>
+
+  <!-- SLIDE 5 -->
+  <section class="slide" id="s5" aria-label="Slide 5 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Crowdsourcing</div>
+    <div class="slide-title">The Wisdom (and Work) of Crowds</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Companies tap large online communities for ideas, money and labor. Click each form.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💡</div>
+        <div class="card-label">Crowdsourcing</div>
+        <div class="card-body"><strong>Getting work, ideas, or input from a large online community</strong> instead of employees or a single contractor. Idea contests, product feedback, translation, mapping.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">💰</div>
+        <div class="card-label">Crowdfunding</div>
+        <div class="card-body">Raising small amounts of money from many people online. Kickstarter, GoFundMe, Indiegogo. Backers fund a project in exchange for rewards, equity or just support.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧠</div>
+        <div class="card-label">Collective Intelligence</div>
+        <div class="card-body">The idea that a diverse group can solve problems better than most individuals — as with prediction markets, Wikipedia and open-source software.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⭐</div>
+        <div class="card-label">Ratings &amp; Reviews</div>
+        <div class="card-body">Crowd opinion drives purchases: Yelp, Amazon reviews, TripAdvisor. Powerful — and open to fake reviews, which businesses must police.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-red">Exam Trap</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Crowdsourcing ≠ outsourcing. Outsourcing hands a task to a specific company; crowdsourcing opens it to an undefined, large online group.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A crowd of tiny avatars passing glowing idea bulbs and coins into a central project — sky blue on dark background, crowdsourcing visual</div>
+  </section>
+
+  <!-- SLIDE 6 -->
+  <section class="slide" id="s6" aria-label="Slide 6 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Business Use</div>
+    <div class="slide-title">Social Computing in Business</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Every function of the business uses social tools differently.</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Business Area</th><th>How Social Computing Helps</th><th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Marketing</strong></td>
+            <td>Build brand communities, run viral campaigns, advertise to targeted audiences</td>
+            <td>Influencer posts, branded hashtag challenges</td>
+          </tr>
+          <tr>
+            <td><strong>Customer Service</strong></td>
+            <td>Respond to complaints publicly and quickly; build trust</td>
+            <td>Airline replying to a tweet within minutes</td>
+          </tr>
+          <tr>
+            <td><strong>Product Development</strong></td>
+            <td>Gather ideas and feedback from customers</td>
+            <td>Starbucks idea community, beta-test forums</td>
+          </tr>
+          <tr>
+            <td><strong>Human Resources</strong></td>
+            <td>Recruit through LinkedIn, vet candidates, build employer brand</td>
+            <td>LinkedIn job posts, Glassdoor reviews</td>
+          </tr>
+          <tr>
+            <td><strong>Internal Collaboration</strong></td>
+            <td>Share knowledge and coordinate work across teams</td>
+            <td>Slack, Microsoft Teams, internal wikis</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-sky">Key Point</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Social computing is two-way. A company can no longer just broadcast — customers talk back publicly, and the conversation is searchable forever.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A hub-and-spoke diagram with a company in the center and marketing, support, product, HR, collaboration around it — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 7 -->
+  <section class="slide" id="s7" aria-label="Slide 7 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Social Commerce</div>
+    <div class="slide-title">Social Commerce &amp; Influencers</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Shopping is moving inside the feed. Click each element.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🛍️</div>
+        <div class="card-label">Social Commerce</div>
+        <div class="card-body">Buying and selling <strong>within</strong> social platforms. Shoppable posts, live-stream shopping, in-app checkout and group buying.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🌟</div>
+        <div class="card-label">Influencer Marketing</div>
+        <div class="card-body">Brands pay creators with trusted audiences to promote products. Authenticity is the currency; <strong>disclosure of sponsorships is legally required</strong>.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔁</div>
+        <div class="card-label">Viral Marketing</div>
+        <div class="card-body">A message that spreads exponentially as users share it with their own networks — cheap reach, but impossible to fully control.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🎯</div>
+        <div class="card-label">Social Advertising</div>
+        <div class="card-body">Ads targeted using profile data, interests, and behavior. Highly efficient — and the reason users' personal data is so valuable.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A phone feed with product tags, a live-stream shopping window, share arrows spreading in a viral burst — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 8 -->
+  <section class="slide" id="s8" aria-label="Slide 8 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Risks</div>
+    <div class="slide-title">The Dark Side of Social Media</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">The same openness that makes social computing powerful also creates real problems. Click each.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🕵️</div>
+        <div class="card-label">Privacy</div>
+        <div class="card-body">Users share enormous personal data, which platforms monetize. Oversharing can expose people to identity theft, stalking, and employer screening.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧪</div>
+        <div class="card-label">Misinformation &amp; Deepfakes</div>
+        <div class="card-body">False content spreads faster than corrections. <strong>Deepfakes</strong> use AI to create convincing fake video or audio of real people.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">😡</div>
+        <div class="card-label">Trolls &amp; Cyberbullying</div>
+        <div class="card-body">Anonymity and distance encourage abuse. Brands must moderate communities; individuals suffer real harm.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📉</div>
+        <div class="card-label">Brand Reputation</div>
+        <div class="card-body">One bad post, viral complaint or employee slip can do lasting damage. Companies need social media policies and monitoring.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem;text-align:center;">
+      <span class="badge badge-amber">Exam Note</span>
+      <span style="font-size:0.82rem;color:var(--muted);margin-left:8px;">Know the term <strong>deepfake</strong> and why it matters to businesses: it threatens trust, enables fraud, and can be used to impersonate executives.</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A social feed with a cracked-glass overlay, masked avatar, warning triangle, and a deepfake face split down the middle — sky-blue warning glow on dark</div>
+  </section>
+
+  <!-- SLIDE 9 -->
+  <section class="slide" id="s9" aria-label="Slide 9 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Managing Risk</div>
+    <div class="slide-title">How Companies Protect Themselves</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Social computing needs rules. Click each safeguard.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📜</div>
+        <div class="card-label">Social Media Policy</div>
+        <div class="card-body">Written rules on what employees may post about the company, how to disclose affiliations, and what is confidential.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">👀</div>
+        <div class="card-label">Social Listening</div>
+        <div class="card-body">Monitoring mentions, sentiment and trends across platforms to catch problems early and spot opportunities.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🛡️</div>
+        <div class="card-label">Content Moderation</div>
+        <div class="card-body">Using AI and human reviewers to remove abusive, illegal or fake content on company-run communities.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🔐</div>
+        <div class="card-label">Employee Training</div>
+        <div class="card-body">Phishing and social engineering often start on social media. Staff learn what not to share and how to spot scams.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> A shield over a social feed with a magnifying glass and policy document — sky blue on dark background, brand protection visual</div>
+  </section>
+
+  <!-- SLIDE 10 -->
+  <section class="slide" id="s10" aria-label="Slide 10 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Future</div>
+    <div class="slide-title">Where Social Computing Is Going</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Click each trend to see what it means for business.</div>
+    <div class="cards-row" style="margin-top:1.2rem;">
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🤖</div>
+        <div class="card-label">AI Content &amp; Chatbots</div>
+        <div class="card-body">AI writes posts, answers customers and personalizes feeds. It raises the volume of content — and the problem of telling real from synthetic.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">📺</div>
+        <div class="card-label">Short-Form &amp; Live Video</div>
+        <div class="card-body">Short video and live streaming drive attention and commerce. Brands build entire strategies around them.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">🧑‍🤝‍🧑</div>
+        <div class="card-label">Niche Communities</div>
+        <div class="card-body">Private groups, Discord servers and creator communities replace broad feeds with tighter, higher-trust audiences.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+      <div class="flip-card" onclick="reveal(this)" tabindex="0" onkeydown="if(event.key==='Enter')reveal(this)">
+        <div class="card-icon">⚖️</div>
+        <div class="card-label">More Regulation</div>
+        <div class="card-body">Privacy, content and children's-safety laws keep tightening. Compliance becomes part of every social strategy.</div>
+        <div class="card-hint">Click to reveal</div>
+      </div>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Futuristic social feed with AI avatars, short-video frames, community rooms and a legal gavel — sky-blue neon on dark background</div>
+  </section>
+
+  <!-- SLIDE 11 -->
+  <section class="slide" id="s11" aria-label="Slide 11 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Takeaways</div>
+    <div class="slide-title">What You Must Know</div>
+    <div class="accent-line"></div>
+    <ul class="takeaway-list" id="takeaways-s11">
+      <li>Web 2.0 = the interactive web defined by user-generated content. Social computing uses IT to support social interaction, communities and collaboration.</li>
+      <li>Core tools: social networks, blogs/microblogs, wikis (anyone can edit), media sharing. A mashup combines content from several sources into a new service.</li>
+      <li>Crowdsourcing = getting input or work from a large online community (not outsourcing). Crowdfunding raises small amounts of money from many people.</li>
+      <li>Businesses use social computing for marketing, customer service, product feedback, recruiting and internal collaboration. Social commerce lets people shop inside platforms.</li>
+      <li>Risks: privacy loss, misinformation and deepfakes, trolls and cyberbullying, brand reputation damage, and fake reviews.</li>
+      <li>Safeguards: social media policy, social listening, content moderation, and employee training. Disclose sponsored content.</li>
+    </ul>
+    <p style="font-size:0.75rem;color:var(--muted);margin-top:1rem;text-align:center;">Press <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">Space</kbd> or <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">→</kbd> to reveal each takeaway</p>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Six glowing bullet point panels — Web 2.0, tools, crowdsourcing, business use, risks, safeguards — sky blue on dark background</div>
+  </section>
+
+  <!-- SLIDE 12 -->
+  <section class="slide" id="s12" aria-label="Slide 12 of 12">
+    <div class="slide-eyebrow">Chapter 9 · Game Time</div>
+    <div class="slide-title">🎮 Game Time!</div>
+    <div class="accent-line"></div>
+    <div class="slide-sub">Open the <strong>MIS Journey App</strong> and play the Chapter 9 quiz<br>to lock in what you learned today</div>
+    <div class="stats-row" style="margin-top:1.5rem;">
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Quiz questions: Web 2.0, crowdsourcing, wikis, social networks, business uses</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Study tips pre-loaded in the app</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Exam-relevant — Web 2.0 and crowdsourcing definitions are classic IS exam questions</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center;">
+      <span class="badge badge-sky" style="font-size:0.85rem;padding:8px 20px;">Remember: Web 2.0 = user-generated content · Crowdsourcing ≠ outsourcing · Wiki = anyone can edit</span>
+    </div>
+    <div class="ai-prompt-box"><strong>AI image prompt:</strong> Glowing game controller with social media icons and speech bubbles — sky-blue neon celebration style on dark background</div>
+  </section>
+
+</div><!-- /slides-wrap -->
+
+<div id="controls" role="navigation" aria-label="Slide navigation">
+  <button class="ctrl-btn" id="btn-sb" onclick="toggleSB()" aria-label="Toggle scoreboard">🏆</button>
+  <button class="ctrl-btn" id="btn-print" onclick="window.print()" aria-label="Print slides">🖨</button>
+  <button class="ctrl-btn" id="btn-prev" onclick="navigate(-1)" disabled aria-label="Previous slide">← Prev</button>
+  <button class="ctrl-btn" id="btn-next" onclick="navigate(1)" aria-label="Next slide">Next →</button>
+</div>
+
+<script>
+  const TOTAL = 12;
+  let current = 1;
+  const scores = { r: 0, b: 0, g: 0 };
+  let takeawayIdx = 0;
+  const TAKEAWAY_SLIDE = 11;
+
+  function navigate(dir) {
+    if (current === TAKEAWAY_SLIDE && dir === 1) {
+      const items = document.querySelectorAll('#takeaways-s11 li');
+      if (takeawayIdx < items.length) { items[takeawayIdx].classList.add('show'); takeawayIdx++; return; }
+    }
+    const prev = document.getElementById('s' + current);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 420);
+    current = Math.max(1, Math.min(TOTAL, current + dir));
+    document.getElementById('s' + current).classList.add('active');
+    updateUI();
+    if (current === TAKEAWAY_SLIDE) takeawayIdx = 0;
+  }
+
+  function updateUI() {
+    document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+    const pb = document.getElementById('progress-bar');
+    pb.style.width = (current / TOTAL * 100).toFixed(2) + '%';
+    pb.setAttribute('aria-valuenow', current);
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navigate(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+  });
+
+  function toggleSB() {
+    const sb = document.getElementById('scoreboard');
+    sb.style.display = sb.style.display === 'block' ? 'none' : 'block';
+  }
+  function adj(team, delta) {
+    scores[team] = Math.max(0, scores[team] + delta);
+    document.getElementById('sc-' + team).textContent = scores[team];
+  }
+
+  function reveal(card)    { card.classList.toggle('revealed'); }
+  function revealSc(card)  { card.classList.toggle('revealed'); }
+  function revealRev(card) { card.classList.toggle('revealed'); }
+
+  let timerIntervals = {};
+  function startTimer(id, seconds) {
+    if (timerIntervals[id]) clearInterval(timerIntervals[id]);
+    let remaining = seconds;
+    const el = document.getElementById(id);
+    const btn = el.nextElementSibling;
+    btn.textContent = '⏹ Stop';
+    btn.onclick = () => { clearInterval(timerIntervals[id]); btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds); };
+    function tick() {
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      el.textContent = m + ':' + String(s).padStart(2, '0');
+      if (remaining <= 0) {
+        clearInterval(timerIntervals[id]); el.textContent = '⏱ Done!';
+        btn.textContent = '▶ Restart'; btn.onclick = () => startTimer(id, seconds);
+      }
+      remaining--;
+    }
+    tick();
+    timerIntervals[id] = setInterval(tick, 1000);
+  }
+</script>
+</body>
+</html>
