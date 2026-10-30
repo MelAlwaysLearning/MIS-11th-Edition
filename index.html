@@ -785,6 +785,34 @@
         { q: "Prescriptive analytics helps organizations:", o: ["Describe historical performance","Predict customer behavior","Visualize data in charts","Recommend actions to achieve desired outcomes"], a: 3 },
         { q: "A business intelligence dashboard primarily:", o: ["Controls network security","Processes financial transactions","Manages employee schedules","Displays key performance metrics visually"], a: 3 },
         { q: "Data visualization is important because it:", o: ["Encrypts sensitive business data","Speeds up database queries","Reduces storage costs","Makes complex data easier to understand through charts & graphs"], a: 3 }
+      ]},
+      "13": { title: "Ch 13: Acquiring Information Systems", emoji: "🔨",
+        tips: [
+          "<strong>SDLC</strong> order: <strong>Planning/Analysis → Design → Build/Test → Implement → Maintain</strong>. Analysis = <em>what</em>; design = <em>how</em>",
+          "<strong>Agile</strong> builds in <strong>short sprints</strong> with constant user feedback; <strong>waterfall</strong> finishes each phase before the next",
+          "<strong>Prototyping</strong> = build a quick rough model so users can react <strong>early</strong> — great when requirements are unclear",
+          "<strong>Buy vs. build vs. outsource:</strong> build only when the system gives <strong>competitive advantage</strong>; buy or rent for common needs",
+          "An <strong>RFP</strong> (Request for Proposal) invites vendors to bid; <strong>direct conversion is riskiest</strong>, parallel is safest"
+        ], qs: [
+        { q: "In the SDLC, the analysis stage determines:", o: ["How the system will be built","How to train users","What the system must do","When to retire the system"], a: 2 },
+        { q: "Agile development is best described as:", o: ["Finishing each phase completely before starting the next","Building in short iterations with frequent user feedback","Buying software instead of building it","Skipping the planning stage"], a: 1 },
+        { q: "The longest and costliest phase of the SDLC is usually:", o: ["Planning","Design","Testing","Maintenance"], a: 3 },
+        { q: "A Request for Proposal (RFP) is used to:", o: ["Invite vendors to bid on supplying a system","Train employees on a new system","Test software for bugs","Convert data from an old system"], a: 0 },
+        { q: "Which conversion strategy carries the HIGHEST risk?", o: ["Parallel","Phased","Pilot","Direct"], a: 3 }
+      ]},
+      "14": { title: "Ch 14: Artificial Intelligence", emoji: "🤖",
+        tips: [
+          "<strong>AI ⊃ Machine Learning ⊃ Deep Learning</strong> — each is a subset of the one before",
+          "<strong>Machine learning</strong> = algorithms that <strong>learn patterns from data</strong> instead of following hand-written rules",
+          "<strong>Supervised</strong> learning uses <strong>labeled</strong> data; <strong>unsupervised</strong> finds patterns in unlabeled data",
+          "<strong>Generative AI</strong> creates new content — and can <strong>hallucinate</strong> (confident but false answers)",
+          "All business AI today is <strong>narrow AI</strong>; keep a <strong>human in the loop</strong> for high-stakes decisions"
+        ], qs: [
+        { q: "Which statement about AI, machine learning, and deep learning is correct?", o: ["Deep learning contains AI","Machine learning is a subset of AI","They are three unrelated fields","AI is a subset of deep learning"], a: 1 },
+        { q: "Supervised machine learning uses:", o: ["Unlabeled data only","Labeled training examples","No data at all","Only hand-written rules"], a: 1 },
+        { q: "Natural language processing (NLP) lets computers:", o: ["Understand and generate human language","Store data faster","Encrypt network traffic","Build hardware"], a: 0 },
+        { q: "When a generative AI confidently produces a false answer, it is called:", o: ["Overfitting","Encryption","Hallucination","Virtualization"], a: 2 },
+        { q: "The safeguard of having a person review and own high-stakes AI decisions is called:", o: ["Human in the loop","Deep learning","Data mining","Cloud scaling"], a: 0 }
       ]}
     };
 
@@ -1009,11 +1037,47 @@
           { t: "Business Intelligence (BI)", d: "Technologies and strategies used to collect, analyze, and visualize data to support business decisions" },
           { t: "KPI (Key Performance Indicator)", d: "Measurable value tracking how effectively an organization is achieving a specific business objective" }
         ]
+      },
+      "13": {
+        overview: "Organizations acquire information systems by building, buying, renting, or outsourcing them. Success depends on clear requirements, the right development method, strong project management, and a safe conversion plan.",
+        concepts: [
+          "<strong>SDLC</strong>: Planning/Analysis → Design → Build/Test → Implement → Maintain; <strong>analysis = what</strong>, <strong>design = how</strong>",
+          "<strong>Agile</strong>: short sprints with continuous user feedback; <strong>waterfall</strong>: sequential phases with requirements fixed up front",
+          "<strong>Prototyping and RAD</strong> build quick working models so users can react early when requirements are unclear",
+          "<strong>Buy vs. build vs. SaaS vs. outsource</strong>: build only for competitive advantage; use an <strong>RFP</strong> to choose among vendors",
+          "<strong>Feasibility</strong> (technical, economic, organizational) and the <strong>triple constraint</strong> (scope, time, cost) guide project management",
+          "<strong>Conversion</strong>: direct (riskiest), parallel (safest, costliest), phased, and pilot; <strong>scope creep</strong> and weak change management cause most failures"
+        ],
+        terms: [
+          { t: "SDLC (Systems Development Life Cycle)", d: "Traditional step-by-step framework for planning, building, implementing, and maintaining an information system" },
+          { t: "Agile", d: "Iterative development approach that delivers working software in short sprints and adapts to feedback" },
+          { t: "RFP (Request for Proposal)", d: "Document inviting vendors to bid on providing a system or service to stated requirements" },
+          { t: "Scope Creep", d: "Uncontrolled growth of project requirements after the project has started" },
+          { t: "Direct Conversion", d: "Switching from the old system to the new one all at once — fastest but highest risk" }
+        ]
+      },
+      "14": {
+        overview: "Artificial intelligence lets machines perform tasks that normally need human intelligence. Machine learning, deep learning, NLP, and generative AI now power business functions from marketing to operations, bringing both advantage and ethical risk.",
+        concepts: [
+          "<strong>AI ⊃ Machine Learning ⊃ Deep Learning</strong>; generative AI is a type of deep learning that creates new content",
+          "<strong>Supervised</strong> (labeled data), <strong>unsupervised</strong> (find patterns), and <strong>reinforcement</strong> (rewards) are the main learning types",
+          "<strong>NLP</strong>, <strong>computer vision</strong>, <strong>expert and recommendation systems</strong>, and <strong>RPA</strong> are common business AI technologies",
+          "AI is used in <strong>marketing, customer service, finance (fraud), and operations</strong> (predictive maintenance)",
+          "Risks: <strong>bias, lack of transparency, privacy, hallucination</strong>, and unsettled intellectual-property rules",
+          "All business AI today is <strong>narrow AI</strong>; keep a <strong>human in the loop</strong> for high-stakes decisions"
+        ],
+        terms: [
+          { t: "Artificial Intelligence (AI)", d: "Ability of machines to perform tasks that normally require human intelligence" },
+          { t: "Machine Learning", d: "Branch of AI in which algorithms learn patterns from data and improve with experience" },
+          { t: "Neural Network / Deep Learning", d: "Machine learning using many-layered networks loosely modeled on the brain" },
+          { t: "Generative AI", d: "Models that create new text, images, audio, or code from prompts" },
+          { t: "Hallucination", d: "When a generative AI produces confident but false or invented output" }
+        ]
       }
     };
 
     // ─────────────────────────────────────────────
-    // SEED DATA — all 12 chapters (11th Edition)
+    // SEED DATA — all 14 chapters (11th Edition)
     // ─────────────────────────────────────────────
     const NOW = Date.now();
     const DAY = 86400000;
@@ -1029,7 +1093,9 @@
       { id:"ch-9",  title:"Ch 9: Social Computing",                                                       url:"game:9",   category:"Digital Business",  notes:"Web 2.0, social networks, wikis, blogs, deepfakes, trolls, X/platforms, crowdsourcing, and social computing in business.",      createdAt: NOW - 3*DAY  },
       { id:"ch-10", title:"Ch 10: Information Systems within the Organization",                            url:"game:10",  category:"Organizational IS", notes:"TPS, MIS, DSS, EIS, and ERP — the full spectrum of IS supporting business operations.",                                         createdAt: NOW - 2*DAY  },
       { id:"ch-11", title:"Ch 11: Customer Relationship Management (CRM) and Supply Chain Management",    url:"game:11",  category:"Organizational IS", notes:"Customer relationship management, CLV, SCM, JIT inventory, and supply chain optimization.",                                    createdAt: NOW - 1*DAY  },
-      { id:"ch-12", title:"Ch 12: Business Analytics & Artificial Intelligence",                          url:"game:12",  category:"Analytics & AI",    notes:"Descriptive, predictive & prescriptive analytics, ChatGPT, machine learning, data visualization, and AI in business.",          createdAt: NOW          }
+      { id:"ch-12", title:"Ch 12: Business Analytics & Artificial Intelligence",                          url:"game:12",  category:"Analytics & AI",    notes:"Descriptive, predictive & prescriptive analytics, ChatGPT, machine learning, data visualization, and AI in business.",          createdAt: NOW          },
+      { id:"ch-13", title:"Ch 13: Acquiring Information Systems",                                         url:"game:13",  category:"Systems Dev",       notes:"SDLC, prototyping, Agile, RFPs, buy vs. build vs. outsource strategies.",                       createdAt: NOW + 1      },
+      { id:"ch-14", title:"Ch 14: Artificial Intelligence",                                               url:"game:14",  category:"Analytics & AI",    notes:"Machine learning, NLP, expert systems, deep learning, neural networks, and AI in business.",    createdAt: NOW + 2      }
     ];
 
     const STORAGE_KEY = "tjourney_bookmarks_v1";
@@ -1079,12 +1145,19 @@
       if (!bookmarks || bookmarks.length === 0) {
         bookmarks = CHAPTER_BOOKMARKS.map(b => ({ ...b }));
         saveToStorage();
+      } else {
+        // Refresh built-in chapter cards so updates reach returning visitors; keep the user's own bookmarks.
+        const chNum = t => { const m = /^Ch (\d+):/.exec(t || ""); return m ? m[1] : null; };
+        const seedNums = new Set(CHAPTER_BOOKMARKS.map(b => chNum(b.title)));
+        bookmarks = bookmarks.filter(b => !(chNum(b.title) && seedNums.has(chNum(b.title))));
+        bookmarks = [...bookmarks, ...CHAPTER_BOOKMARKS.map(b => ({ ...b }))];
+        saveToStorage();
       }
     }
     function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks)); }
 
     // ── CHAPTER RESOURCE LOOKUP (add more chapters as slides are created) ──
-    const SLIDES     = { "1": "ch1-slides.html", "2": "ch2-slides.html", "3": "ch3-slides.html", "4": "ch4-slides.html", "5": "ch5-slides.html", "6": "ch6-slides.html", "7": "ch7-slides.html" };
+    const SLIDES     = { "1": "ch1-slides.html", "2": "ch2-slides.html", "3": "ch3-slides.html", "4": "ch4-slides.html", "5": "ch5-slides.html", "6": "ch6-slides.html", "7": "ch7-slides.html", "8": "ch8-slides.html", "9": "ch9-slides.html", "10": "ch10-slides.html", "11": "ch11-slides.html", "12": "ch12-slides.html", "13": "ch13-slides.html", "14": "ch14-slides.html" };
     const PRINTABLES = { "1": "ch1-printables.html", "2": "ch2-printables.html", "3": "ch3-printables.html", "4": "ch4-printables.html", "5": "ch5-printables.html", "6": "ch6-printables.html", "7": "ch7-printables.html" };
 
     // ── HELPERS ──
